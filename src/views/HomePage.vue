@@ -1,17 +1,23 @@
 <!-- HomePage.vue -->
 <template lang="">
-    <div>
-        home page
-    </div>
+    <MainHeader></MainHeader>
+    <router-view v-slot="{Component}">
+        <keep-alive>
+            <component :is="Component"></component>
+        </keep-alive>
+    </router-view>
+    <MainFooter></MainFooter>
 </template>
 
 <script>
+import MainHeader from "./MainHeader.vue"
+import MainFooter from "./MainFooter.vue"
 export default {
     methods: {
     },
-
-    //components
     components: {
+        MainHeader,
+        MainFooter,
     },
 }
 </script>
