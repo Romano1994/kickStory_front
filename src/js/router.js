@@ -2,13 +2,11 @@ import { createRouter, createWebHistory } from "vue-router";
 import HomePage from "@/views/HomePage.vue";
 import menus from "./menu/menus";
 
-
 const mainRoutes= [];
 
 (function loadRoutes(menus){
   for(let menu of menus){
-    //절대 경로(@/views/) 안됨
-    menu.component = () => import(`../views/${menu.componentPath}.vue`);
+    menu.component = () => import(`@/views/${menu.componentPath}.vue`);
     mainRoutes.push(menu);
   }
 })(menus);

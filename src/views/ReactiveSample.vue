@@ -1,6 +1,6 @@
 <template lang="">
     <div>
-        
+        reactive sample
     </div>
 </template>
 <script>
