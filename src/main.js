@@ -2,7 +2,7 @@ import { createApp, defineAsyncComponent } from 'vue'
 import App from './App.vue'
 import router from '@/js/router'
 import axios from 'axios';
-
+import './js/total-css';
 
 const app = createApp(App);
 const COMMON_COMPONENTS=[];

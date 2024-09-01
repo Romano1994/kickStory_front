@@ -1,7 +1,7 @@
 <!-- HomePage.vue -->
 <template lang="">
     <MainHeader></MainHeader>
-    <router-link to="ReactiveSample" >reative</router-link>
+    <router-link to="/sample" >reative sample</router-link>
     <router-view v-slot="{Component}">
         <keep-alive>
             <component :is="Component"></component>
