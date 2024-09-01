@@ -5,7 +5,17 @@
 </template>
 <script>
 export default {
-    
+    mounted(){
+        this.getApi('/test', null, this.success, this.fail);
+    },
+    methods:{
+        success(data) {
+            console.log(data);
+        },
+        fail(err) {
+            console.log(err.message);
+        },
+    }
 }
 </script>
 <style>

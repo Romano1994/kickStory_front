@@ -3,22 +3,42 @@
 
 :root {
     --color1: #03FF00;
-    --main-font:'Helvetica';
-    --header-font:"Micro 5 Charted";
-    --sub-font:'SBAggroB';
+    --main-font: 'Helvetica';
+    --header-font: "Micro 5 Charted";
+    --sub-font: 'SBAggroB';
     font-family: var(--main-font);
     color: var(--color1);
-    --max-width:720px;
+    --max-width: 720px;
     background-color: black;
 }
-@media screen and (width > 720px){
 
-html{
-    font-size:2vw;
-}
-}
-@media screen and (max-width: 720px){
-    html{
-        font-size:3vw;
+
+@media screen and (max-width> 720px) {
+    :root {
+        font-size: 1vw;
     }
-} 
+}
+
+@media screen and (max-width: 720px) {
+    :root {
+        font-size: 2vw;
+    }
+}
+
+/* @media screen and (max-width: 720px) {
+    :root {
+        font-size: 13px;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    :root {
+        font-size: 12px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    :root {
+        font-size: 10px;
+    }
+} */
