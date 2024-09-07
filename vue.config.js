@@ -3,7 +3,8 @@ module.exports = {
     proxy: {
       '/':{
         target:process.env.VUE_APP_API_BASE_URL,
-        changeOrigin: true
+        changeOrigin: true,
+        ws: false,
       }
     }
   }
