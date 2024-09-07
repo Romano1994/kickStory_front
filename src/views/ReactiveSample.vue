@@ -6,7 +6,12 @@
 <script>
 export default {
     mounted(){
-        this.getApi('/test', null, this.success, this.fail);
+        this.getApi('/test',{test:"test"}, this.success, this.fail);
+        this.postApi('/posttest', {test:"test"}, this.success, this.fail);
+        this.putApi('/puttest', {test:"test"}, this.success, this.fail);
+        this.deleteApi('/deletetest', {test:"test"}, this.success, this.fail);
+
+
     },
     methods:{
         success(data) {

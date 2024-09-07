@@ -13,19 +13,20 @@
 }
 
 
-@media screen and (max-width> 720px) {
+@media screen and (max-width: 1200px) {
     :root {
-        font-size: 1vw;
+        font-size: 15px;
+    }
+}
+
+
+@media screen and (max-width: 960px) {
+    :root {
+        font-size: 14px;
     }
 }
 
 @media screen and (max-width: 720px) {
-    :root {
-        font-size: 2vw;
-    }
-}
-
-/* @media screen and (max-width: 720px) {
     :root {
         font-size: 13px;
     }
@@ -41,4 +42,4 @@
     :root {
         font-size: 10px;
     }
-} */
+}
