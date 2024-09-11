@@ -1,5 +1,5 @@
 <template lang="">
-    <div>
+    <div class="footer-container">
         MainFooter
     </div>
 </template>
@@ -8,6 +8,15 @@ export default {
     
 }
 </script>
-<style lang="">
+<style>
+    .footer-container{
+        border: 1px solid rgb(255, 244, 204);
+        grid-column:2/3;
+    }
+@media screen and (max-width:720px) {
+    .footer-container{
+        grid-column:1/2;
+    }
     
+}
 </style>

@@ -25,8 +25,7 @@ export default {
 <style>
 .header-container-outline{
     border: 4px solid rgb(255, 244, 204);
-    grid-column-start: 2;
-    grid-column-end: 5;
+    grid-column:2/3;
 
 }
 .header-container {
@@ -69,19 +68,10 @@ export default {
 }
 
 @media screen and (max-width:720px) {
-    .header-container {
-        height: 6rem;
-        justify-content: center;
-        /* 작은 화면에서도 중앙 정렬 */
+    .header-container-outline{
+    border: 4px solid rgb(255, 244, 204);
+    grid-column:1/2;
     }
 
-    .logo-container {
-        background-color: black;
-        font-family: "Micro 5 Charted";
-        font-size: 5rem;
-        color: var(--color1);
-        display: flex;
-        padding: 0%;
-    }
 }
 </style>
