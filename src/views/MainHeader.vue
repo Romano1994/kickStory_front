@@ -7,12 +7,16 @@
             </div>
         </div>
         <div class="login-container">
+            <router-link to="/login">
             <div class="login-item">
-                로그인
-            </div>      
-            <div class="login-item">
-                회원가입
+              LogIn
             </div>
+        </router-link>
+            <router-link to="/join">      
+            <div class="login-item">
+                Join
+            </div>
+        </router-link>
         </div>
     </div>
 </div>
@@ -48,6 +52,7 @@ export default {
     width: 13rem;
     background-size: cover;
     overflow: hidden;
+
 }
 
 .logo-img {
@@ -61,10 +66,20 @@ export default {
     right: 0;
     margin: 10px;
     display: flex;
+    height: 2rem;
+    align-items: end;
 }
 
 .login-item {
     margin: 4px;
+    color: rgb(255, 244, 204);
+    text-decoration: none;
+}
+
+.login-item:hover {
+    margin: 4px;
+    color: white;
+    font-size: larger;
 }
 
 @media screen and (max-width:720px) {

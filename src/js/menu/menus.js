@@ -31,7 +31,18 @@ const menus = [
         componentPath:"KicksCommunity",//실제 컴포넌트 경로
         depth:1
     },
-    
+    {
+        path: "/login",
+        name: "LogIn",
+        componentPath:"LogIn",
+        depth:0
+    },
+    {
+        path: "/join",
+        name: "MemberJoin",
+        componentPath:"MemberJoin",
+        depth:0
+    },    
   ];
   
   export default menus;
