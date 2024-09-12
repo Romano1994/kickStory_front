@@ -10,8 +10,28 @@ const menus = [
     {
         path: "sample",//URL 경로
         name: "ReactiveSample",//컴포넌트명
-        componentPath:"ReactiveSample"//실제 컴포넌트 경로
-    }
+        componentPath:"ReactiveSample",//실제 컴포넌트 경로
+        depth:0
+    },
+    {
+        path: "/",
+        name: "KicksHistory",//컴포넌트명
+        componentPath:"KicksHistory",//실제 컴포넌트 경로
+        depth:1
+    },
+    {
+        path: "/kp",
+        name: "KicksProfile",//컴포넌트명
+        componentPath:"KicksProfile",//실제 컴포넌트 경로
+        depth:1
+    },
+    {
+        path: "/kc",
+        name: "KicksCommunity",//컴포넌트명
+        componentPath:"KicksCommunity",//실제 컴포넌트 경로
+        depth:1
+    },
+    
   ];
   
   export default menus;

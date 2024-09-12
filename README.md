@@ -1,4 +1,9 @@
-# kick_story_ui
+# Router
+* 설정 파일 위치 : @/js/router.js
+* 메뉴 파일 위치 : @/js/menu/menus.js
+* 메인 메뉴 : depth 1
+* 하위 메뉴 : 기존 메뉴 depth + 1
+* 예외 메뉴 : depth 0
 
 ## Project setup
 ```
