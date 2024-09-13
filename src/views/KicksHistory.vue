@@ -22,11 +22,11 @@ export default {
         display: flex;
         justify-content: center;
         margin: 1rem;
-        color: black;
+        color: var(--color2);
     }
     .card-item{
         width: 15rem;
         height: 20rem;
-        background-color: white;
+        background-color: var(--color3);
     }
 </style>

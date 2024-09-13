@@ -41,7 +41,7 @@ export default {
 
 .body-container{
     grid-column:2/3;
-    border: 1px solid rgb(255, 244, 204);
+    border: 1px solid var(--color1);
 }
 
 
@@ -52,7 +52,7 @@ export default {
     }
     .body-container{
         grid-column:1/2;
-        border: 1px solid rgb(255, 244, 204);
+        border: 1px solid var(--color1);
     }
 }
 </style>

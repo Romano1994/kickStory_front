@@ -4,6 +4,9 @@
 :root {
     /* --color1: #03FF00; */
     --color1 :  rgb(255, 244, 204);
+    --color2 : black;
+    --color3 : rgb(36, 32, 28);
+    --color4 : white;
     --main-font: 'Helvetica';
     --header-font: "Micro 5 Charted";
     --sub-font: 'SBAggroB';

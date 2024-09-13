@@ -28,14 +28,14 @@ export default {
 </script>
 <style>
 .header-container-outline{
-    border: 4px solid rgb(255, 244, 204);
+    border: 4px solid var(--color1);
     grid-column:2/3;
 
 }
 .header-container {
-    background-color: rgb(36, 32, 28);
+    background-color:var(--color3);
     margin: 3px;
-    border: 2px solid rgb(255, 244, 204);
+    border: 2px solid var(--color1);
     height: 10rem;
     display: flex;
     align-items: center;

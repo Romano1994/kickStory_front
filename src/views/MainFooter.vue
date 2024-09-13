@@ -10,7 +10,7 @@ export default {
 </script>
 <style>
     .footer-container{
-        border: 1px solid rgb(255, 244, 204);
+        border: 1px solid var(--color1);
         grid-column:2/3;
     }
 @media screen and (max-width:720px) {

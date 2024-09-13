@@ -25,7 +25,7 @@ export default {
 </script>
 <style>
     .reactive-sample-container{
-        background-color: white;
+        background-color: var(--color4);
         height:100px;
         font-size: 1rem;
         color: var(--color1);
