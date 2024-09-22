@@ -37,7 +37,6 @@
             <div class="input-div">
                 <input class="input-box" v-model="inputNm">
             </div>
-            <div></div>
             <div class="button-div">
                 <button class="button-box" @click="fnConfirmJoin">
                     확인
@@ -121,8 +120,33 @@ export default {
 
         //회원 가입 확인
         fnConfirmJoin() {
-            
+            console.log(this.valid.email);
+            console.log(this.inputEmail);
+            if(this.inputEmail == '' || this.valid.email) {
+                alert('이메일을 다시 입력해주세요.');
+                return;
+            }
+            if(this.inputpwd == '' || this.valid.pwd) {
+                alert('비밀번호를 다시 입력해주세요.');
+                return;
+            }
+
+            var joinInfo = {
+                "email": this.inputEmail
+                , "pwd": this.inputpwd
+                , "name": this.inputNm
+            }
+
+            this.postApi('/join', joinInfo, this.success, this.fail);
         },
+
+        success(result) {
+            console.log(result);
+        },
+
+        fail(result) {
+            console.log(result);
+        }
     }
 }
 </script>
