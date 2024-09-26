@@ -120,8 +120,6 @@ export default {
 
         //회원 가입 확인
         fnConfirmJoin() {
-            console.log(this.valid.email);
-            console.log(this.inputEmail);
             if(this.inputEmail == '' || this.valid.email) {
                 alert('이메일을 다시 입력해주세요.');
                 return;
@@ -132,11 +130,11 @@ export default {
             }
 
             var joinInfo = {
-                "email": this.inputEmail
-                , "pwd": this.inputpwd
-                , "name": this.inputNm
+                "email": this.inputEmail    //이메일
+                , "mbrPwd": this.inputPwd   //비밀번호
+                , "regNm": this.inputNm     //사용자 이름
             }
-
+            
             this.postApi('/join', joinInfo, this.success, this.fail);
         },
 
