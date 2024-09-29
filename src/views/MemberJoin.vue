@@ -138,12 +138,14 @@ export default {
             this.postApi('/join', joinInfo, this.success, this.fail);
         },
 
+        //회원가입 성공
         success(result) {
-            console.log(result);
+            alert(result.data[0].message);
         },
 
+        //회원가입 실패
         fail(result) {
-            console.log(result);
+            alert(result.data[0].message);
         }
     }
 }
