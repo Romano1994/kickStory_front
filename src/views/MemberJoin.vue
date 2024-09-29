@@ -1,9 +1,9 @@
 <template lang="">
-    <div class="join-window">
-        <div class="join-text">
+    <div id="join-window">
+        <div id="join-text">
             회원가입
         </div>
-        <div class="container">
+        <div id="join-container">
             <div class="text-div">
                 이메일
             </div>
@@ -143,7 +143,7 @@ export default {
             let resultCode = result.data[0].resultCode;
 
             if(resultCode === 'S') {
-                alert("회원가입이 완료됐습니다.");
+                alert("인증번호가 메일로 발송됐습니다.");
                 this.$router.push('/');
 
             } else if(resultCode === 'F') {
@@ -163,19 +163,18 @@ export default {
 }
 </script>
 <style>
-    .join-window{
+    #join-window{
         height: 40rem;
         align-content: center;
-        justify-content: center;
     }
-    .join-text{
+    #join-text{
         text-align: center;
         font-size: 2rem;
         margin-bottom: 1rem;
     }
-    .container {
+    #join-container {
         display: grid;
-        height: 500px;
+        height: 30rem;
         grid-template-columns: repeat(5, 1fr);
         row-gap: 10px;
     }
