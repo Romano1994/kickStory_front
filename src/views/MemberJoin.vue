@@ -140,7 +140,19 @@ export default {
 
         //회원가입 성공
         success(result) {
-            alert(result.data[0].message);
+            let resultCode = result.data[0].resultCode;
+
+            if(resultCode === 'S') {
+                alert("회원가입이 완료됐습니다.");
+                this.$router.push('/');
+
+            } else if(resultCode === 'F') {
+                alert("이미 존재하는 이메일입니다.");
+
+                if(confirm('비밀번호 검색 화면으로 이동하시겠습니까?')) {
+                    this.$router.push('/kp');
+                }
+            }
         },
 
         //회원가입 실패
