@@ -149,8 +149,8 @@ export default {
             } else if(resultCode === 'F') {
                 alert("이미 존재하는 이메일입니다.");
 
-                if(confirm('비밀번호 검색 화면으로 이동하시겠습니까?')) {
-                    this.$router.push('/kp');
+                if(confirm('로그인 화면으로 이동하시겠습니까?')) {
+                    this.$router.push('/login');
                 }
             }
         },
