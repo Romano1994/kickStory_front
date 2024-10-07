@@ -156,8 +156,8 @@ export default {
         },
 
         //회원가입 실패
-        fail(result) {
-            alert(result.data[0].message);
+        fail(message) {
+            alert(message);
         }
     }
 }
