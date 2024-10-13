@@ -8,20 +8,23 @@
                 이메일
             </div>
             <div class="input-div">
-                <input class="input-box">
+                <input class="input-box" v-model="email">
+                <div class="valid-div" v-show="valid.email">
+                    이메일을 확인해주세요.
+                </div>
             </div>
             <div class="text-div">
                 비밀번호
             </div>
             <div class="input-div">
-                <input class="input-box">
+                <input type="password" class="input-box" v-model="mbrPwd">
             </div>
             <div class="button-div">
-                <button class="button-box" @click="fnConfirmJoin">
+                <button class="button-box" @click="fnConfirmLogin">
                     확인
                 </button>
                 <button class="button-box">
-                    취소
+                    비밀번호 찾기
                 </button>
             </div>
         </div>
@@ -29,7 +32,66 @@
 </template>
 <script>
 export default {
-    
+    data() {
+        return {
+            email:  "",
+            mbrPwd: "",
+            valid: {
+                email: false,
+            }
+        }
+    },
+
+    watch: {
+        'email': function() {
+            this.checkEamil();
+        }
+    },
+
+    methods: {
+         //이메일 형식 체크
+         checkEamil() {
+            //xxx@xxx.xxx 형식
+            const validateEmail = /^[A-Za-z0-9_\\.\\-]+@[A-Za-z0-9\\-]+\.[A-Za-z0-9\\-]+/;
+
+            if(!validateEmail.test(this.email) || !this.email) {
+                this.valid.email = true;
+                return;
+
+            } else {
+                this.valid.email = false;
+                return;
+            }
+        },
+
+        //로그인
+        fnConfirmLogin() {
+            if(this.email == '' || this.valid.email) {
+                alert('이메일을 다시 입력해주세요.');
+                return;
+            }
+            var loginInfo = {
+                "email": this.email         //이메일
+                , "mbrPwd": this.mbrPwd     //비밀번호
+            }
+
+            console.log(loginInfo);
+
+            this.postApi('/login', loginInfo, this.success, this.fail);
+        },
+
+        //회원가입 성공
+        success() {
+            
+
+            
+        },
+
+        //회원가입 실패
+        fail(message) {
+            alert(message);
+        }
+    }
 }
 </script>
 <style>
@@ -73,7 +135,7 @@ export default {
         padding-right: 1rem;
     }
     .button-box{
-        width: 5rem;
+        min-width: 5rem;
         height: 2rem;
         background-color: var(--color1);
     }

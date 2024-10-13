@@ -41,9 +41,6 @@
                 <button class="button-box" @click="fnConfirmJoin">
                     확인
                 </button>
-                <button class="button-box">
-                    취소
-                </button>
             </div>
         </div>
     </div>
@@ -203,7 +200,7 @@ export default {
         padding-right: 1rem;
     }
     .button-box{
-        width: 5rem;
+        min-width: 5rem;
         height: 2rem;
         background-color: var(--color1);
     }
