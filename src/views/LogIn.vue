@@ -75,16 +75,13 @@ export default {
                 , "mbrPwd": this.mbrPwd     //비밀번호
             }
 
-            console.log(loginInfo);
-
             this.postApi('/login', loginInfo, this.success, this.fail);
         },
 
         //회원가입 성공
         success() {
-            
-
-            
+            alert("로그인에 성공했습니다.");
+            this.$router.push('/');
         },
 
         //회원가입 실패
