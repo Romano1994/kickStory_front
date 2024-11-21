@@ -132,7 +132,7 @@ export default {
                 , "regNm": this.inputNm     //사용자 이름
             }
             
-            this.postApi('/join', joinInfo, this.success, this.fail);
+            this.postApi('/auth/signup', joinInfo, this.success, this.fail);
         },
 
         //회원가입 성공
