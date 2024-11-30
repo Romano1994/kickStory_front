@@ -1,4 +1,6 @@
 <template lang="">
+
+    <span class="badge bg-warning">Warning</span>
     <div class="reactive-sample-container">
         sample container
     </div>
