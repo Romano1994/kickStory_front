@@ -1,7 +1,16 @@
 import axios from "axios";
 // import { commSwitch } from "@/js/comm-switch";
 
-axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL
+axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL;
+axios.defaults.paramsSerializer = function(paramObj) {
+  const params = new URLSearchParams()
+  for (const key in paramObj) {
+      params.append(key, paramObj[key])
+  }
+
+  return params.toString()
+}
+
 
 function response(data,sucFunc){
   sucFunc(data);
