@@ -12,7 +12,6 @@
     </div>
     <MainFooter></MainFooter>   
     </div>
-    
 </template>
 
 <script>
