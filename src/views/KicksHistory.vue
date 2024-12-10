@@ -26,8 +26,8 @@
              @mouseleave="e=>moveCard(e,index,false)" @click="()=> changeCardSize(index)">
           <div class="overlay" :ref="`overlay${index}`"></div>
           <div class="holo-overlay" :class="{radial : index%2!==0}"></div>
-          <!--        <div  :class="{'holo-overlay': index/2==0}"></div>-->
-          <div class="outer-layer p-2">
+
+          <div class="outer-layer front p-2">
             <div class="inner card p-3">
               <div class="card-title ">
                 <span class="badge bg-warning card-badge">Best</span>
@@ -42,7 +42,14 @@
             </div>
             <img class="card-img-top" :src="getImgUrl(item.imgPath)" alt="jrd-img">
           </div>
+
+          <!--        BackFace-->
+          <div class="outer-layer back">
+            <img src="@/assets/kickstory.webp" style="width: 300px;" alt="jrd-img">
+          </div>
         </div>
+
+
       </div>
     </div>
   </div>
@@ -56,6 +63,7 @@ export default {
     return {
       cards: [],
       isBig: false,
+      currIndex: -1,
     }
   },
   methods: {
@@ -80,13 +88,16 @@ export default {
       let jordan = this.$refs[`jordan${idx}`][0];
       let overlay = this.$refs[`overlay${idx}`][0];
       if (!flag) {
-        jordan.style = `transform: rotateY(0deg) rotateX(0deg); transition: all ease 5s`;
+        if (this.currIndex === idx) {
+          jordan.style = 'animation: flip 3s';
+        }else{
+          jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
+        }
         overlay.style = 'filter:opacity(0)';
         overlay.style = '';
 
         return;
       }
-
       let offsetX = e.offsetX;
       let offsetY = e.offsetY;
 
@@ -96,17 +107,23 @@ export default {
       let yDegree = (offsetX - width / 2) / width * 50;
       let xDegree = (offsetY - height / 2) / height * 50;
 
-      jordan.style = `transform: rotateY(${yDegree}deg) rotateX(${xDegree}deg)`;
+      jordan.style = `transform: rotateY(${yDegree}deg) rotateX(${xDegree}deg);`;
       overlay.style = `background: radial-gradient(farthest-corner at ${offsetX}px ${offsetY}px, #ffffff, #000000); filter:brightness(1.3) opacity(0.7)`;
     },
     changeCardSize(idx) {
       this.isBig = !this.isBig;
-      let jordan = this.$refs[`wrapper${idx}`][0];
-      jordan.classList.toggle("big");
+      this.currIndex = idx;
+      let wrapper = this.$refs[`wrapper${idx}`][0];
+      let jordan = this.$refs[`jordan${idx}`][0];
+      wrapper.classList.toggle("big");
       if (this.isBig) {
-        jordan.style = 'transform: rotateY(720deg) translate(-50%,-50%) scale(1.3)';
+        wrapper.style = 'transform : translate(-50%,-50%) scale(1.3)';
+        // jordan.style = 'animation: flip 5s '
       } else {
+        wrapper.style = '';
         jordan.style = '';
+        this.currIndex = -1;
+
       }
     }
   },
@@ -120,16 +137,26 @@ export default {
   border: none;
   /* padding: 1rem 1rem 0 0; */
 }
+
+.wrapper {
+  perspective: 1000px;
+  /*
+  transition: all 5s;
+  */
+}
+
 .card {
   transition: all 0.5s;
   width: 23rem;
   height: 32rem;
+  /*animation: flip 5s;*/
 }
 
 .outer {
   background-image: url(@/assets/wave_back.png);
   background-size: cover;
   align-items: center;
+  transform-style: preserve-3d;
 }
 
 .big {
@@ -226,5 +253,22 @@ export default {
   left: 46%;
   transform: translateX(-50%) rotate(-25deg);
   pointer-events: none;
+}
+
+.front, .back {
+  position: absolute;
+  -webkit-backface-visibility: hidden; /* Safari */
+  backface-visibility: hidden;
+}
+
+.back {
+  transform: rotateY(180deg);
+  width: inherit;
+  height: inherit;
+}
+@keyframes flip {
+  100% {
+    transform: rotateY(720deg);
+  }
 }
 </style>
