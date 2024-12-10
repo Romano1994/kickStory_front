@@ -26,18 +26,21 @@
              @mouseleave="e=>moveCard(e,index,false)" @click="()=> changeCardSize(index)">
           <div class="overlay" :ref="`overlay${index}`"></div>
           <div class="holo-overlay" :class="{radial : index%2!==0}"></div>
-
+          <!--Front Face-->
           <div class="outer-layer front p-2">
-            <div class="inner card p-3">
+            <div class="inner p-3">
               <div class="card-title ">
                 <span class="badge bg-warning card-badge">Best</span>
                 <span>{{ item.commCdDtlNm }}</span>
               </div>
               <div class="card-background"></div>
-              <div class="card-text-container">
+              <div v-if="currIndex!=index" class="card-text-container">
                 <div class="card-text">
                   <span>{{ item.jrdHstrySmmryCntnt }}</span>
                 </div>
+              </div>
+              <div v-else-if="currIndex==index" class="card-content">
+                <span>안녕</span>
               </div>
             </div>
             <img class="card-img-top" :src="getImgUrl(item.imgPath)" alt="jrd-img">
@@ -48,8 +51,6 @@
             <img src="@/assets/kickstory.webp" style="width: 300px;" alt="jrd-img">
           </div>
         </div>
-
-
       </div>
     </div>
   </div>
@@ -90,7 +91,7 @@ export default {
       if (!flag) {
         if (this.currIndex === idx) {
           jordan.style = 'animation: flip 3s';
-        }else{
+        } else {
           jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
         }
         overlay.style = 'filter:opacity(0)';
@@ -144,14 +145,12 @@ export default {
   transition: all 5s;
   */
 }
-
 .card {
   transition: all 0.5s;
   width: 23rem;
   height: 32rem;
   /*animation: flip 5s;*/
 }
-
 .outer {
   background-image: url(@/assets/wave_back.png);
   background-size: cover;
@@ -194,7 +193,6 @@ export default {
   height: inherit;
   background: linear-gradient(#2c313190, #36969c90);
 }
-
 .inner {
   align-items: center;
   width: 96%;
@@ -202,7 +200,6 @@ export default {
   background: linear-gradient(#52d4eb60, #7FC7B660);
   /* opacity: 0.6; */
 }
-
 .card-title {
   z-index: 999;
   font-weight: bold;
@@ -265,7 +262,9 @@ export default {
   transform: rotateY(180deg);
   width: inherit;
   height: inherit;
+  background-color: #000000;
 }
+
 @keyframes flip {
   100% {
     transform: rotateY(720deg);
