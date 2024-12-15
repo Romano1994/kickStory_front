@@ -168,6 +168,7 @@ export default {
         text-align: center;
         font-size: 2rem;
         margin-bottom: 1rem;
+        color: var(--color4);
     }
     #join-container {
         display: grid;
@@ -181,6 +182,7 @@ export default {
         grid-column-start: 2;
         align-content: center;
         padding-right: 30px;
+        color: var(--color4);
     }
     .input-div{
         grid-column-start: 3;
@@ -202,11 +204,13 @@ export default {
     .button-box{
         min-width: 5rem;
         height: 2rem;
-        background-color: var(--color1);
+        color: var(--color2);
+        font-size: 1.2rem;
     }
     .valid-div{
         position: absolute;
         padding-top: 8px;
+        color: var(--color4);
     }
     .button-box:hover{
         transform: scale(1.14);

@@ -106,8 +106,6 @@ export default {
 
             let yDegree = (offsetX - width / 2) / width * 60;
             let xDegree = (offsetY - height / 2) / height * 60;
-            console.log("yDegree", yDegree);
-            console.log("yDegree", xDegree);
 
             // this.$refs[`jordan${idx}`][0].style.transform = `perspective(${height * 10}px) rotateY(${yDegree}deg) rotateX(${xDegree}deg)`;
             this.$refs[`jordan1`].style.transform = `perspective(${height * 10}px) rotateY(${yDegree}deg) rotateX(${xDegree}deg)`;

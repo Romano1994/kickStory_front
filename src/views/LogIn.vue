@@ -70,23 +70,25 @@ export default {
                 alert('이메일을 다시 입력해주세요.');
                 return;
             }
-            var loginInfo = {
-                "email": this.email         //이메일
-                , "mbrPwd": this.mbrPwd     //비밀번호
-            }
 
-            this.postApi('/login', loginInfo, this.success, this.fail);
+            let formData = new FormData();
+            formData.append('username', this.email);
+            formData.append('password', this.mbrPwd);
+
+            this.postApi('/login', formData, this.success, this.fail);
         },
 
         //회원가입 성공
-        success() {
+        success(result) {
+            console.log(result);
+
             alert("로그인에 성공했습니다.");
-            this.$router.push('/');
+            // this.$router.push('/');
         },
 
         //회원가입 실패
-        fail(message) {
-            alert(message);
+        fail() {
+            alert("로그인에 실패했습니다.");
         }
     }
 }
@@ -100,6 +102,7 @@ export default {
         text-align: center;
         font-size: 2rem;
         margin-bottom: 1rem;
+        color: var(--color1);
     }
     #login-container {
         display: grid;
@@ -113,6 +116,7 @@ export default {
         grid-column-start: 2;
         align-content: center;
         padding-right: 30px;
+        color: var(--color1);
     }
     .input-div{
         grid-column-start: 3;
@@ -134,7 +138,8 @@ export default {
     .button-box{
         min-width: 5rem;
         height: 2rem;
-        background-color: var(--color1);
+        color: var(--color2);
+        font-size: 1.2rem;
     }
     .button-box:hover{
         transform: scale(1.14);
@@ -144,5 +149,10 @@ export default {
     input[type="password"] {
         font: small-caption;
         font-size: 20px;
+    }
+    .valid-div{
+        position: absolute;
+        padding-top: 8px;
+        color: var(--color4);
     }
 </style>
