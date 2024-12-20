@@ -12,6 +12,8 @@
     --main-font: 'Helvetica';
     --header-font: "Micro 5 Charted";
     --sub-font: 'SBAggroB';
+    --left:0px;
+    --top:0px;
     font-family: var(--main-font);
     color: var(--color1);
     --max-width: 720px;

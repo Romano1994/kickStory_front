@@ -2,8 +2,10 @@
   <div class="page-container grid-column-3">
     <div class="card-container" v-for="(item,index) in cards" :key="index">
       <div class="wrapper" :ref="`wrapper${index}`">
-        <div class="outer card" :ref="`jordan${index}`" @mousemove="e=>moveCard(e,index,true)"
-             @mouseleave="e=>moveCard(e,index,false)" @click="()=> changeCardSize(index)">
+        <div class="outer card" :ref="`jordan${index}`"
+        @click="()=> changeCardSize(index)">
+<!--          <div class="outer card" :ref="`jordan${index}`" @mousemove="e=>moveCard(e,index,true)"
+             @mouseleave="e=>moveCard(e,index,false)" @click="()=> changeCardSize(index)">-->
           <div class="overlay" :ref="`overlay${index}`"></div>
           <div class="holo-overlay" :class="{radial : index%2!==0}"></div>
           <!--Front Face-->
@@ -45,6 +47,7 @@ export default {
       cards: [],
       isBig: false,
       currIndex: -1,
+      isEnter: false,
     }
   },
   methods: {
@@ -69,16 +72,12 @@ export default {
       let jordan = this.$refs[`jordan${idx}`][0];
       let overlay = this.$refs[`overlay${idx}`][0];
       if (!flag) {
-        /*if (this.currIndex === idx) {
-          jordan.style = 'animation: flip 3s ease-in-out';
-        } else {
+        if (!this.isEnter) {
           jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
-        }*/
-        if (this.currIndex !== idx) {
-          jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
+          overlay.style = 'filter:opacity(0)';
+          overlay.style = '';
         }
-        overlay.style = 'filter:opacity(0)';
-        overlay.style = '';
+        this.isEnter = false;
 
         return;
       }
@@ -100,8 +99,19 @@ export default {
       let wrapper = this.$refs[`wrapper${idx}`][0];
       let jordan = this.$refs[`jordan${idx}`][0];
       wrapper.classList.toggle("big");
+      let rect = wrapper.getBoundingClientRect();
+
+      document.documentElement.style.setProperty('--left',`${rect.left}px`);
+      document.documentElement.style.setProperty('--top',`${rect.top}px`);
+
       if (this.isBig) {
-        wrapper.style = 'animation: bigger 3s forwards'
+        this.isEnter = true;
+        if((idx+1)%3!==0){
+        wrapper.style = `animation: bigger-left 3s forwards`;
+        }else{
+        wrapper.style = `animation: bigger-right 3s forwards`;
+
+        }
         jordan.style = 'animation: flip 3s';
       } else {
         wrapper.style = '';
@@ -141,9 +151,6 @@ export default {
 .big {
   position: absolute;
   z-index: 9999;
-  left: 50%;
-  top: 50%;
-  transition: all 3s;
 }
 .overlay {
   position: absolute;
@@ -251,13 +258,34 @@ export default {
     transform: rotateY(1800deg);
   }
 }
-
-@keyframes bigger {
+@keyframes bigger-left{
+  0% {
+    left:var(--left);
+    top:var(--top);
+  }
+  50%{
+    left:60%;
+    top:60%;
+  }
   100% {
     left: 50%;
     top: 50%;
-    transform: scale(1.3) translate(-50%, -50%);
-    /*   transform: scale(1.3);*/
+    transform:translate(-50%, -50%) scale(1.3) ;
+  }
+}
+@keyframes bigger-right{
+  0% {
+    left:var(--left);
+    top:var(--top);
+  }
+  50%{
+    left:40%;
+    top:40%;
+  }
+  100% {
+    left: 50%;
+    top: 50%;
+    transform:translate(-50%, -50%) scale(1.3) ;
   }
 }
 </style>
