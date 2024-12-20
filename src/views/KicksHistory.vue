@@ -89,11 +89,11 @@ export default {
       let jordan = this.$refs[`jordan${idx}`][0];
       let overlay = this.$refs[`overlay${idx}`][0];
       if (!flag) {
-        if (this.currIndex === idx) {
-          jordan.style = 'animation: flip 3s';
-        } else {
-          jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
-        }
+        // if (this.currIndex === idx) {
+        //   jordan.style = 'animation: flip 3s ease-in-out';
+        // } else {
+        //   jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
+        // }
         overlay.style = 'filter:opacity(0)';
         overlay.style = '';
 
@@ -118,7 +118,11 @@ export default {
       let jordan = this.$refs[`jordan${idx}`][0];
       wrapper.classList.toggle("big");
       if (this.isBig) {
-        wrapper.style = 'transform : translate(-50%,-50%) scale(1.3)';
+        // wrapper.style = 'animation: flip 3s;';
+        // wrapper.style = 'transform : translate(-50%,-50%) scale(1.3)';
+        wrapper.style = 'animation: bigger 3s'
+        jordan.style = 'animation: flip 3s';
+
         // jordan.style = 'animation: flip 5s '
       } else {
         wrapper.style = '';
@@ -163,6 +167,7 @@ export default {
   z-index: 9999;
   left: 50%;
   top: 50%;
+  transition: all 3s;
 }
 
 .overlay {
@@ -266,8 +271,27 @@ export default {
 }
 
 @keyframes flip {
+/*  50% {
+    left: 25%;
+    top: 25%;
+    transform: rotateY(900deg) translate(-25%,-25%);
+  }*/
   100% {
-    transform: rotateY(720deg);
+/*    left: 50%;
+    top: 50%;*/
+    /*
+    transform: scale(1.3) rotateY(1800deg) translate(-50%,-50%);
+    */
+    transform: rotateY(1800deg) ;
   }
+}
+
+@keyframes bigger {
+ 100%{
+   /*left: 50%;
+   top: 50%;
+   transform: translate(-50%,-50%) scale(1.3);*/
+   transform: scale(1.3);
+ }
 }
 </style>
