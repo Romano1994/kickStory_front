@@ -1,25 +1,5 @@
 <template>
   <div class="page-container grid-column-3">
-    <!--    <div class="card-container">-->
-    <!--      <div class="outer card big">-->
-    <!--        <div class="overlay" ref="overlay1"></div>-->
-    <!--        <div class="outer-layer p-2">-->
-    <!--          <div class="inner card p-3">-->
-    <!--            <div class="card-title ">-->
-    <!--              <span class="badge bg-warning card-badge">Best</span>-->
-    <!--              <span>Jordan 1</span>-->
-    <!--            </div>-->
-    <!--            <div class="card-background"></div>-->
-    <!--            <div class="card-container">-->
-    <!--              <div class="card-text">-->
-    <!--                조던 1은 .....-->
-    <!--              </div>-->
-    <!--            </div>-->
-    <!--          </div>-->
-    <!--          <img class="card-img-top" src="@/assets/jordan1.webp" alt="jrd-img">-->
-    <!--        </div>-->
-    <!--      </div>-->
-    <!--    </div>-->
     <div class="card-container" v-for="(item,index) in cards" :key="index">
       <div class="wrapper" :ref="`wrapper${index}`">
         <div class="outer card" :ref="`jordan${index}`" @mousemove="e=>moveCard(e,index,true)"
@@ -89,11 +69,14 @@ export default {
       let jordan = this.$refs[`jordan${idx}`][0];
       let overlay = this.$refs[`overlay${idx}`][0];
       if (!flag) {
-        // if (this.currIndex === idx) {
-        //   jordan.style = 'animation: flip 3s ease-in-out';
-        // } else {
-        //   jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
-        // }
+        /*if (this.currIndex === idx) {
+          jordan.style = 'animation: flip 3s ease-in-out';
+        } else {
+          jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
+        }*/
+        if (this.currIndex !== idx) {
+          jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
+        }
         overlay.style = 'filter:opacity(0)';
         overlay.style = '';
 
@@ -118,17 +101,12 @@ export default {
       let jordan = this.$refs[`jordan${idx}`][0];
       wrapper.classList.toggle("big");
       if (this.isBig) {
-        // wrapper.style = 'animation: flip 3s;';
-        // wrapper.style = 'transform : translate(-50%,-50%) scale(1.3)';
-        wrapper.style = 'animation: bigger 3s'
+        wrapper.style = 'animation: bigger 3s forwards'
         jordan.style = 'animation: flip 3s';
-
-        // jordan.style = 'animation: flip 5s '
       } else {
         wrapper.style = '';
         jordan.style = '';
         this.currIndex = -1;
-
       }
     }
   },
@@ -142,7 +120,6 @@ export default {
   border: none;
   /* padding: 1rem 1rem 0 0; */
 }
-
 .wrapper {
   perspective: 1000px;
   /*
@@ -161,7 +138,6 @@ export default {
   align-items: center;
   transform-style: preserve-3d;
 }
-
 .big {
   position: absolute;
   z-index: 9999;
@@ -169,7 +145,6 @@ export default {
   top: 50%;
   transition: all 3s;
 }
-
 .overlay {
   position: absolute;
   width: inherit;
@@ -177,11 +152,10 @@ export default {
   /*background: radial-gradient(farthest-corner at center,#ffffff, #000000);
   filter: brightness(1.3) opacity(0.3);*/
 }
-
 .holo-overlay {
   position: absolute;
   background: repeating-linear-gradient(#e66465, #9198e5 20%);
-  filter: opacity(0.3);
+  filter: opacity(0.5);
   width: inherit;
   height: inherit;
 }
@@ -198,6 +172,7 @@ export default {
   height: inherit;
   background: linear-gradient(#2c313190, #36969c90);
 }
+
 .inner {
   align-items: center;
   width: 96%;
@@ -205,6 +180,7 @@ export default {
   background: linear-gradient(#52d4eb60, #7FC7B660);
   /* opacity: 0.6; */
 }
+
 .card-title {
   z-index: 999;
   font-weight: bold;
@@ -271,27 +247,17 @@ export default {
 }
 
 @keyframes flip {
-/*  50% {
-    left: 25%;
-    top: 25%;
-    transform: rotateY(900deg) translate(-25%,-25%);
-  }*/
   100% {
-/*    left: 50%;
-    top: 50%;*/
-    /*
-    transform: scale(1.3) rotateY(1800deg) translate(-50%,-50%);
-    */
-    transform: rotateY(1800deg) ;
+    transform: rotateY(1800deg);
   }
 }
 
 @keyframes bigger {
- 100%{
-   /*left: 50%;
-   top: 50%;
-   transform: translate(-50%,-50%) scale(1.3);*/
-   transform: scale(1.3);
- }
+  100% {
+    left: 50%;
+    top: 50%;
+    transform: scale(1.3) translate(-50%, -50%);
+    /*   transform: scale(1.3);*/
+  }
 }
 </style>
