@@ -92,10 +92,10 @@ export default {
       }
     },
     changeCardSize(idx) {
-      console.log("window.scrollY();",window.scrollY);
       if (this.currIndex !== -1) {
         let currWrapper = document.getElementsByClassName('big')[0];
         if (currWrapper !== undefined) {
+
           currWrapper.style = '';
           currWrapper.classList.toggle('big');
         }
@@ -118,11 +118,15 @@ export default {
         this.isEnter = true;
 
         if ((idx + 1) % 3 !== 0) {
-          wrapper.style = `animation: bigger-left 3s forwards`;
+          wrapper.style = `animation: bigger-left 3s forwards;-webkit-animation:bigger-left 3s forwards;`;
+          // wrapper.classList.add("bigger-left"); // 클래스 추가
+
         } else {
-          wrapper.style = `animation: bigger-right 3s forwards`;
+          wrapper.style = `animation: bigger-right 3s forwards;-webkit-animation:bigger-right 3s forwards;`;
+          // wrapper.classList.add("bigger-right");
         }
         jordan.style = 'animation: flip 3s';
+        // jordan.classList.add("flip");
 
       }
     },
