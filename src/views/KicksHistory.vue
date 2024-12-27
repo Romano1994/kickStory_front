@@ -3,11 +3,10 @@
     <div class="card-container" v-for="(item,index) in cards" :key="index">
       <div class="wrapper" :ref="`wrapper${index}`">
 
-          <div class="outer card" :ref="`jordan${index}`"
+        <div class="outer card" :ref="`jordan${index}`"
              @mousemove="e=>moveCard(e,index,true)"
              @mouseleave="e=>moveCard(e,index,false)" @click="()=> changeCardSize(index)"
-             @animationend="()=>{isEnter=false;
-             console.log('애니메이션 end 실행',index)}">
+             @animationend="isEnter=false">
           <div class="overlay" :ref="`overlay${index}`"></div>
           <div class="holo-overlay" :class="{radial : index%2!==0}"></div>
           <!--Front Face-->
@@ -70,7 +69,7 @@ export default {
       console.log(err);
     },
     moveCard(e, idx, flag) {
-      if (!this.isEnter && (this.currIndex === idx || this.currIndex===-1)) {
+      if (!this.isEnter && (this.currIndex === idx || this.currIndex === -1)) {
         let jordan = this.$refs[`jordan${idx}`][0];
         let overlay = this.$refs[`overlay${idx}`][0];
         if (!flag) {
@@ -93,6 +92,7 @@ export default {
       }
     },
     changeCardSize(idx) {
+      console.log("window.scrollY();",window.scrollY);
       if (this.currIndex !== -1) {
         let currWrapper = document.getElementsByClassName('big')[0];
         if (currWrapper !== undefined) {
@@ -107,30 +107,23 @@ export default {
 
         this.currIndex = idx;
         let wrapper = this.$refs[`wrapper${idx}`][0];
-        console.log("wrapper", wrapper);
         let jordan = this.$refs[`jordan${idx}`][0];
         wrapper.classList.toggle("big");
         let rect = wrapper.getBoundingClientRect();
 
         document.documentElement.style.setProperty('--left', `${rect.left}px`);
         document.documentElement.style.setProperty('--top', `${rect.top}px`);
+        document.documentElement.style.setProperty('--scroll', `${window.scrollY}px`);
 
-        // if (this.isBig) {
         this.isEnter = true;
+
         if ((idx + 1) % 3 !== 0) {
           wrapper.style = `animation: bigger-left 3s forwards`;
         } else {
-          console.log("들어오는지 확인")
           wrapper.style = `animation: bigger-right 3s forwards`;
         }
         jordan.style = 'animation: flip 3s';
-        // } else {
-        //   this.isEnter = true;
-        //
-        //   wrapper.style = 'animaition:smaller 3s';
-        //   jordan.style = '';
-        //   this.currIndex = -1;
-        // }
+
       }
     },
 
