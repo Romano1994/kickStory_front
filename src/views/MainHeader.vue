@@ -7,30 +7,58 @@
             </div>
         </div>
         <div class="login-container">
-            <router-link to="/login">
-            <div class="login-item">
-              LogIn
-            </div>
-        </router-link>
-            <router-link to="/join">      
-            <div class="login-item">
-                Join
-            </div>
-        </router-link>
+            <template v-if="!isLoggedIn">
+                <router-link to="/login">
+                <div class="login-item">
+                  LogIn
+                </div>
+                </router-link>
+                <router-link to="/join">      
+                <div class="login-item">
+                    Join
+                </div>
+                </router-link>
+            </template>
+            <template v-if="isLoggedIn">
+                <div class="login-item" @click="logOut">
+                  LogOut
+                </div>
+            </template>
         </div>
     </div>
 </div>
 </template>
 <script>
+import axios from "axios";
 export default {
+    props: {
+        isLoggedIn: {
+            type: String,
+            Required: false
+        }
+    },
 
+    methods: {
+        logOut() {
+            // 쿠키 저장을 위해서는 withCredentials 옵션을 활성화 해야됨
+            axios.post('/logout', {}, { withCredentials: true })
+            .then(() => {
+                alert('로그아웃에 성공했습니다.');
+                // 홈으로 이동
+                // this.$router.push('/');
+                this.$router.replace({ path: '/', query: { refresh: Date.now() } });
+            })
+            .catch(() => {
+                alert('로그아웃에 실패했습니다.');
+            });
+        }
+    }
 }
 </script>
 <style>
 .header-container-outline{
     border: 4px solid var(--color1);
     grid-column:2/3;
-
 }
 .header-container {
     background-color:var(--color3);

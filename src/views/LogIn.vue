@@ -8,7 +8,7 @@
                 이메일
             </div>
             <div class="input-div">
-                <input class="input-box" v-model="email">
+                <input class="input-box" v-model="email" @keyup.enter="fnConfirmLogin">
                 <div class="valid-div" v-show="valid.email">
                     이메일을 확인해주세요.
                 </div>
@@ -17,20 +17,23 @@
                 비밀번호
             </div>
             <div class="input-div">
-                <input type="password" class="input-box" v-model="mbrPwd">
+                <input type="password" class="input-box" v-model="mbrPwd" @keyup.enter="fnConfirmLogin">
             </div>
             <div class="button-div">
                 <button class="button-box" @click="fnConfirmLogin">
                     확인
                 </button>
-                <button class="button-box">
-                    비밀번호 찾기
+                <button class="button-box" @click="fnFindPwd" style="color: black;">
+                    <router-link to="/join" style="color: black;">   
+                        비밀번호 찾기
+                    </router-link>
                 </button>
             </div>
         </div>
     </div>
 </template>
 <script>
+import axios from "axios";
 export default {
     data() {
         return {
@@ -75,21 +78,18 @@ export default {
             formData.append('username', this.email);
             formData.append('password', this.mbrPwd);
 
-            this.postApi('/login', formData, this.success, this.fail);
+            // 쿠키 저장을 위해서는 withCredentials 옵션을 활성화 해야됨
+            axios.post('/login', formData, { withCredentials: true })
+            .then(() => {
+                alert('로그인에 성공했습니다.');
+                // 홈으로 이동
+                // this.$router.push('/');
+                this.$router.replace({ path: '/', query: { refresh: Date.now() } });
+            })
+            .catch(() => {
+                alert('로그인에 실패했습니다.');
+            });
         },
-
-        //회원가입 성공
-        success(result) {
-            console.log(result);
-
-            alert("로그인에 성공했습니다.");
-            // this.$router.push('/');
-        },
-
-        //회원가입 실패
-        fail() {
-            alert("로그인에 실패했습니다.");
-        }
     }
 }
 </script>

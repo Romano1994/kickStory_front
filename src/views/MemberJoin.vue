@@ -128,7 +128,7 @@ export default {
 
             var joinInfo = {
                 "email": this.inputEmail    //이메일
-                , "mbrPwd": this.inputPwd   //비밀번호
+                , "pwd": this.inputPwd      //비밀번호
                 , "regNm": this.inputNm     //사용자 이름
             }
             
