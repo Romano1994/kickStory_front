@@ -1,5 +1,5 @@
 <!-- HomePage.vue -->
-<template lang="">
+<template>
     <div class="main-container">
         <MainHeader></MainHeader>
         <div class="body-container">
@@ -12,7 +12,6 @@
     </div>
     <MainFooter></MainFooter>   
     </div>
-    
 </template>
 
 <script>
@@ -35,10 +34,8 @@ export default {
 .main-container{
     display: grid;
     grid-template-columns: 10rem auto 10rem;
+    background-color: var(--color2 );
 }
-
-
-
 .body-container{
     grid-column:2/3;
     border: 1px solid var(--color1);
