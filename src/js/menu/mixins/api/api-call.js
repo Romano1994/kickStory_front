@@ -18,7 +18,12 @@ function response(data,sucFunc){
 }
 
 function onFail(error,failFunc){
-  failFunc(error);
+  let message = error.response.data;
+  if(message !== undefined) {
+    failFunc(message);
+  } else {
+    failFunc(error);
+  }
   // commSwitch.off('LoadingBar');
 }
 
