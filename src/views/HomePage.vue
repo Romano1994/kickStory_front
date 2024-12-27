@@ -1,5 +1,5 @@
 <!-- HomePage.vue -->
-<template lang="">
+<template>
     <div class="main-container">
         <MainHeader></MainHeader>
         <div class="body-container">

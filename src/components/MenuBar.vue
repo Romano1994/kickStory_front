@@ -1,7 +1,7 @@
-<template lang="">
+<template>
   <div class="menu-container">
                 <div class="menu-item" v-for="(item,index) in filteredMenus" :key="index" >
-                    <router-link :to="item.path">
+                    <router-link class="menu-router" :to="item.path">
                         <span class="menu-item-link">{{item.name}}</span>
                     </router-link>
                 </div>
@@ -12,7 +12,7 @@ import menus from '@/js/menu/menus';
 export default {
     computed:{
         filteredMenus(){
-            return this.menus.filter(menu => menu.depth==1);
+            return this.menus.filter(menu => menu.depth===1);
         }
     },
     data(){
@@ -42,5 +42,8 @@ export default {
 .menu-item-link:hover{
     color:white;
     font-size: larger;
+}
+.menu-router{
+  text-decoration: none;
 }
 </style>

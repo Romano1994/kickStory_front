@@ -2,10 +2,12 @@
   <div class="page-container grid-column-3">
     <div class="card-container" v-for="(item,index) in cards" :key="index">
       <div class="wrapper" :ref="`wrapper${index}`">
-        <div class="outer card" :ref="`jordan${index}`"
-        @click="()=> changeCardSize(index)">
-<!--          <div class="outer card" :ref="`jordan${index}`" @mousemove="e=>moveCard(e,index,true)"
-             @mouseleave="e=>moveCard(e,index,false)" @click="()=> changeCardSize(index)">-->
+
+          <div class="outer card" :ref="`jordan${index}`"
+             @mousemove="e=>moveCard(e,index,true)"
+             @mouseleave="e=>moveCard(e,index,false)" @click="()=> changeCardSize(index)"
+             @animationend="()=>{isEnter=false;
+             console.log('애니메이션 end 실행',index)}">
           <div class="overlay" :ref="`overlay${index}`"></div>
           <div class="holo-overlay" :class="{radial : index%2!==0}"></div>
           <!--Front Face-->
@@ -16,28 +18,29 @@
                 <span>{{ item.commCdDtlNm }}</span>
               </div>
               <div class="card-background"></div>
-              <div v-if="currIndex!=index" class="card-text-container">
+              <div v-if="currIndex!==index" class="card-text-container">
                 <div class="card-text">
                   <span>{{ item.jrdHstrySmmryCntnt }}</span>
                 </div>
               </div>
-              <div v-else-if="currIndex==index" class="card-content">
+              <div v-else-if="currIndex===index" class="card-content">
                 <span>안녕</span>
               </div>
             </div>
             <img class="card-img-top" :src="getImgUrl(item.imgPath)" alt="jrd-img">
           </div>
-
           <!--        BackFace-->
           <div class="outer-layer back">
             <img src="@/assets/kickstory.webp" style="width: 300px;" alt="jrd-img">
           </div>
         </div>
+
       </div>
     </div>
   </div>
 </template>
 <script>
+
 export default {
   mounted() {
     this.getSmmry();
@@ -55,237 +58,86 @@ export default {
       if (src == null) {
         return null
       }
-      let image = require('@/assets' + src);
-      return image;
+      return require('@/assets' + src);
     },
     getSmmry() {
       this.getApi('/getSmmryHstry', {commCd: '0001'}, this.setSmmry, this.fail);
     },
     setSmmry(res) {
-      let data = res.data;
-      this.cards = data;
+      this.cards = res.data;
     },
     fail(err) {
       console.log(err);
     },
     moveCard(e, idx, flag) {
-      let jordan = this.$refs[`jordan${idx}`][0];
-      let overlay = this.$refs[`overlay${idx}`][0];
-      if (!flag) {
-        if (!this.isEnter) {
+      if (!this.isEnter && (this.currIndex === idx || this.currIndex===-1)) {
+        let jordan = this.$refs[`jordan${idx}`][0];
+        let overlay = this.$refs[`overlay${idx}`][0];
+        if (!flag) {
           jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
           overlay.style = 'filter:opacity(0)';
           overlay.style = '';
+          return;
         }
-        this.isEnter = false;
+        let offsetX = e.offsetX;
+        let offsetY = e.offsetY;
 
-        return;
+        let width = e.target.getBoundingClientRect().width;
+        let height = e.target.getBoundingClientRect().height;
+
+        let yDegree = (offsetX - width / 2) / width * 50;
+        let xDegree = (offsetY - height / 2) / height * 50;
+
+        jordan.style = `transform: rotateY(${yDegree}deg) rotateX(${xDegree}deg);`;
+        overlay.style = `background: radial-gradient(farthest-corner at ${offsetX}px ${offsetY}px, #ffffff, #000000); filter:brightness(1.3) opacity(0.7)`;
       }
-      let offsetX = e.offsetX;
-      let offsetY = e.offsetY;
-
-      let width = e.target.getBoundingClientRect().width;
-      let height = e.target.getBoundingClientRect().height;
-
-      let yDegree = (offsetX - width / 2) / width * 50;
-      let xDegree = (offsetY - height / 2) / height * 50;
-
-      jordan.style = `transform: rotateY(${yDegree}deg) rotateX(${xDegree}deg);`;
-      overlay.style = `background: radial-gradient(farthest-corner at ${offsetX}px ${offsetY}px, #ffffff, #000000); filter:brightness(1.3) opacity(0.7)`;
     },
     changeCardSize(idx) {
-      this.isBig = !this.isBig;
-      this.currIndex = idx;
-      let wrapper = this.$refs[`wrapper${idx}`][0];
-      let jordan = this.$refs[`jordan${idx}`][0];
-      wrapper.classList.toggle("big");
-      let rect = wrapper.getBoundingClientRect();
+      if (this.currIndex !== -1) {
+        let currWrapper = document.getElementsByClassName('big')[0];
+        if (currWrapper !== undefined) {
+          currWrapper.style = '';
+          currWrapper.classList.toggle('big');
+        }
+      }
 
-      document.documentElement.style.setProperty('--left',`${rect.left}px`);
-      document.documentElement.style.setProperty('--top',`${rect.top}px`);
+      if (this.currIndex === idx) {
+        this.currIndex = -1;
+      } else if (this.currIndex === -1 || this.currIndex !== idx) {
 
-      if (this.isBig) {
+        this.currIndex = idx;
+        let wrapper = this.$refs[`wrapper${idx}`][0];
+        console.log("wrapper", wrapper);
+        let jordan = this.$refs[`jordan${idx}`][0];
+        wrapper.classList.toggle("big");
+        let rect = wrapper.getBoundingClientRect();
+
+        document.documentElement.style.setProperty('--left', `${rect.left}px`);
+        document.documentElement.style.setProperty('--top', `${rect.top}px`);
+
+        // if (this.isBig) {
         this.isEnter = true;
-        if((idx+1)%3!==0){
-        wrapper.style = `animation: bigger-left 3s forwards`;
-        }else{
-        wrapper.style = `animation: bigger-right 3s forwards`;
-
+        if ((idx + 1) % 3 !== 0) {
+          wrapper.style = `animation: bigger-left 3s forwards`;
+        } else {
+          console.log("들어오는지 확인")
+          wrapper.style = `animation: bigger-right 3s forwards`;
         }
         jordan.style = 'animation: flip 3s';
-      } else {
-        wrapper.style = '';
-        jordan.style = '';
-        this.currIndex = -1;
+        // } else {
+        //   this.isEnter = true;
+        //
+        //   wrapper.style = 'animaition:smaller 3s';
+        //   jordan.style = '';
+        //   this.currIndex = -1;
+        // }
       }
-    }
-  },
+    },
+
+  },//methods
+
 }
 </script>
 <style>
-.card-container {
-  display: flex;
-  justify-content: center;
-  margin: 1.5rem;
-  border: none;
-  /* padding: 1rem 1rem 0 0; */
-}
-.wrapper {
-  perspective: 1000px;
-  /*
-  transition: all 5s;
-  */
-}
-.card {
-  transition: all 0.5s;
-  width: 23rem;
-  height: 32rem;
-  /*animation: flip 5s;*/
-}
-.outer {
-  background-image: url(@/assets/wave_back.png);
-  background-size: cover;
-  align-items: center;
-  transform-style: preserve-3d;
-}
-.big {
-  position: absolute;
-  z-index: 9999;
-}
-.overlay {
-  position: absolute;
-  width: inherit;
-  height: inherit;
-  /*background: radial-gradient(farthest-corner at center,#ffffff, #000000);
-  filter: brightness(1.3) opacity(0.3);*/
-}
-.holo-overlay {
-  position: absolute;
-  background: repeating-linear-gradient(#e66465, #9198e5 20%);
-  filter: opacity(0.5);
-  width: inherit;
-  height: inherit;
-}
 
-.radial {
-  background: repeating-radial-gradient(#e66465, #9198e5 30%);
-}
-
-.outer-layer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: inherit;
-  height: inherit;
-  background: linear-gradient(#2c313190, #36969c90);
-}
-
-.inner {
-  align-items: center;
-  width: 96%;
-  height: 96%;
-  background: linear-gradient(#52d4eb60, #7FC7B660);
-  /* opacity: 0.6; */
-}
-
-.card-title {
-  z-index: 999;
-  font-weight: bold;
-  font-size: 1.3rem;
-  background-color: var(--color1);
-  width: 98%;
-  padding: 2px 2rem;
-}
-
-.card-badge {
-  left: -1rem;
-  position: absolute;
-  transform: rotate(-10deg);
-}
-
-.card-background {
-  display: flex;
-  width: 98%;
-  height: 55%;
-  background-color: #00000060;
-  justify-content: center;
-  align-items: center;
-  border: 1mm ridge rgba(211, 220, 50, .6);
-  pointer-events: none;
-}
-
-.card-text-container {
-  width: inherit;
-  pointer-events: none;
-}
-
-.card-text {
-  max-height: 7rem;
-  overflow-y: scroll;
-  padding: 0.5rem;
-  -ms-overflow-style: none;
-  pointer-events: none;
-}
-
-.card-text::-webkit-scrollbar {
-  display: none;
-}
-
-.card-img-top {
-  position: absolute;
-  width: 26rem;
-  top: -13%;
-  left: 46%;
-  transform: translateX(-50%) rotate(-25deg);
-  pointer-events: none;
-}
-
-.front, .back {
-  position: absolute;
-  -webkit-backface-visibility: hidden; /* Safari */
-  backface-visibility: hidden;
-}
-
-.back {
-  transform: rotateY(180deg);
-  width: inherit;
-  height: inherit;
-  background-color: #000000;
-}
-
-@keyframes flip {
-  100% {
-    transform: rotateY(1800deg);
-  }
-}
-@keyframes bigger-left{
-  0% {
-    left:var(--left);
-    top:var(--top);
-  }
-  50%{
-    left:60%;
-    top:60%;
-  }
-  100% {
-    left: 50%;
-    top: 50%;
-    transform:translate(-50%, -50%) scale(1.3) ;
-  }
-}
-@keyframes bigger-right{
-  0% {
-    left:var(--left);
-    top:var(--top);
-  }
-  50%{
-    left:40%;
-    top:40%;
-  }
-  100% {
-    left: 50%;
-    top: 50%;
-    transform:translate(-50%, -50%) scale(1.3) ;
-  }
-}
 </style>
