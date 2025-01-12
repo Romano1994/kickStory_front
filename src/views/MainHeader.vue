@@ -1,33 +1,64 @@
-<template>
-  <div class="header-container-outline">
-  <div class="header-container">
-      <div class="logo-container">
-          <div class="logo-item">
-              <img class="logo-img" src="@/assets/logo1.jpg" alt="logo1.jpg">
-          </div>
-      </div>
-      <div class="login-container">
-          <router-link class="login-item" to="/login">
-          <span>
-            LogIn
-          </span>
-      </router-link>
-          <router-link class="login-item" to="/join" >
-          <span>
-              Join
-          </span>
-      </router-link>
-      </div>
-  </div>
+<template lang="">
+    <div class="header-container-outline">
+    <div class="header-container">
+        <div class="logo-container">
+            <div class="logo-item">
+                <img class="logo-img" src="@/assets/logo1.jpg">
+            </div>
+        </div>
+        <div class="login-container">
+            <template v-if="!isLoggedIn">
+                <router-link to="/login">
+                <div class="login-item">
+                  LogIn
+                </div>
+                </router-link>
+                <router-link to="/join">      
+                <div class="login-item">
+                    Join
+                </div>
+                </router-link>
+            </template>
+            <template v-if="isLoggedIn">
+                <div class="login-item" @click="logOut">
+                  LogOut
+                </div>
+            </template>
+        </div>
+    </div>
 </div>
 </template>
 <script>
-export default {}
+import axios from "axios";
+export default {
+    props: {
+        isLoggedIn: {
+            type: String,
+            Required: false
+        }
+    },
+
+    methods: {
+        logOut() {
+            // 쿠키 저장을 위해서는 withCredentials 옵션을 활성화 해야됨
+            axios.post('/logout', {}, { withCredentials: true })
+            .then(() => {
+                alert('로그아웃에 성공했습니다.');
+                // 홈으로 이동
+                // this.$router.push('/');
+                this.$router.replace({ path: '/', query: { refresh: Date.now() } });
+            })
+            .catch(() => {
+                alert('로그아웃에 실패했습니다.');
+            });
+        }
+    }
+}
 </script>
 <style>
-.header-container-outline {
-  border: 4px solid var(--color1);
-  grid-column: 2/3;
+.header-container-outline{
+    border: 4px solid var(--color1);
+    grid-column:2/3;
 }
 
 .header-container {
