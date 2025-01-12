@@ -25,14 +25,14 @@
                 <!--                <div class="">* 출시년도 1993</div>-->
                 <span v-if="currIndex!==index">
                 <div class="card-text">
-                  {{ item.jrdHstrySmmryCntnt }}
+                  {{ item.kcksHstrySmmryCntnt }}
                 </div>
                 </span>
                 <span v-else-if="currIndex===index">
                 <div class="card-text">
-                  {{ item.jrdHstry }}
+                  {{ item.kcksHstry }}
                 </div>
-                <div class="more-btn" @click="moreInfo">더보기</div>
+                <div class="more-btn" v-if="!isShowSlide" @click="openSlide">더보기</div>
                 </span>
               </div>
             </div>
@@ -40,16 +40,16 @@
           </div>
           <!--        BackFace-->
           <div class="outer-layer back">
-            <img src="@/assets/kickstory.webp" style="width: 300px;" alt="jrd-img">
+            <img src="@/assets/kickstory.webp" style="width: 300px;" alt="kcks-img">
           </div>
         </div>
 
       </div>
     </div>
   </div>
-    <div class="slide" ref="slide" v-if="isShowSlide">
-<!--  <div class="slide" ref="slide">-->
-    <button type="button" class="close  ms-auto" aria-label="Close">
+  <div class="slide" ref="slide" v-if="isShowSlide">
+    <!--  <div class="slide" ref="slide">-->
+    <button type="button" class="close  ms-auto" aria-label="Close" @click="closeSlide">
       <span aria-hidden="true">&times;</span>
     </button>
     <h1>JORDAN 1</h1>
@@ -88,7 +88,7 @@
 
 export default {
   mounted() {
-    this.getSmmry();
+    this.getHstry();
   },
   data() {
     return {
@@ -106,7 +106,7 @@ export default {
       }
       return require('@/assets' + src);
     },
-    getSmmry() {
+    getHstry() {
       this.getApi('/getHstry', {commCd: '0001'}, this.setHstry, this.fail);
     },
     setHstry(res) {
@@ -180,16 +180,24 @@ export default {
       console.log("호출됨?")
       e.target.src = "../assets/jordan1.webp";
     },
-    moreInfo(e) {
+    openSlide(e) {
       this.isShowSlide = true;
       e.stopPropagation();
       let wrapper = this.$refs[`wrapper${this.currIndex}`][0];
-      wrapper.style = "left:25%;top:50%;-webkit-transform: translate(-50%, -50%) scale(1.3);position:fixed"
+      wrapper.style = "left:25%;top:50%;-webkit-transform: translate(-50%, -50%) scale(1.3);"
       let height = document.body.scrollHeight;
       this.$nextTick(() => {
+        // this.$refs.slide.style='animation:slide-in 3s forwards;'
         this.$refs.slide.style = `height: ${height}px;`
+
       })
     },
+    closeSlide() {
+      this.isShowSlide = false;
+      document.documentElement.style.setProperty('--scroll', `${window.scrollY}px`);
+      let wrapper = this.$refs[`wrapper${this.currIndex}`][0];
+      wrapper.style = "left:50%;top:50%;margin-top:var(--scroll);transform: translate(-50%, -50%) scale(1.3)"
+    }
   },//methods
 
 
