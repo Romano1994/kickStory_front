@@ -24,9 +24,7 @@
                     확인
                 </button>
                 <button class="button-box" @click="fnFindPwd" style="color: black;">
-                    <router-link to="/join" style="color: black;">   
-                        비밀번호 찾기
-                    </router-link>
+                    비밀번호 찾기
                 </button>
             </div>
         </div>
@@ -83,12 +81,31 @@ export default {
             .then(() => {
                 alert('로그인에 성공했습니다.');
                 // 홈으로 이동
-                // this.$router.push('/');
-                this.$router.replace({ path: '/', query: { refresh: Date.now() } });
+                this.$router.replace({ path: '/', query: { refresh: Date.now() } })
+                .then(() => {
+                    window.location.reload();
+                });
             })
             .catch(() => {
                 alert('로그인에 실패했습니다.');
             });
+        },
+
+        // 비밀번호 찾기 - 가입한 이메일인지 체크
+        fnFindPwd() {
+            alert("입력하신 이메일로 인증번호가 전송됩니다.");
+
+            let formData = new FormData();
+            formData.append('username', this.email);
+
+            axios.post('/chkEmail', formData)
+            .then((result) => {
+                console.log(result);
+            })
+            .catch(() => {
+                alert('로그인에 실패했습니다.');
+            });
+
         },
     }
 }

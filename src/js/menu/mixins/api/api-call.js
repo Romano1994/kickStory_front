@@ -1,6 +1,7 @@
 import axios from "axios";
 // import { commSwitch } from "@/js/comm-switch";
 
+axios.defaults.withCredentials = true;
 axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL;
 axios.defaults.paramsSerializer = function(paramObj) {
   const params = new URLSearchParams()
@@ -27,13 +28,40 @@ function onFail(error,failFunc){
   // commSwitch.off('LoadingBar');
 }
 
+function checkExp() {
+  const cookies = document.cookie.split("; ");
+  let expTime = "";
+
+  for (const cookie of cookies) {
+      const [key, value] = cookie.split("=");
+      if (key == "kick_exp") {
+        expTime = value;
+      }
+  }
+  
+  let isExpired = false;
+  if(expTime) {
+    isExpired = Date.now() >= expTime;
+  } else {
+    isExpired = false;
+  }
+
+  if(isExpired) {
+    axios.post("/reissue", {})
+    .then(() => {
+    });
+  }
+}
+
 
 export default{
   get:function getApi(url,params,success,fail){
     
     let param=null;
     if(params!=null)param={params};
-        
+    
+    checkExp();
+
     // commSwitch.on('LoadingBar'); 
     axios.get(url,param)
     .then((data)=>response(data,success))
@@ -41,6 +69,9 @@ export default{
   },
   post:function postApi(url,param,success,fail){
     // commSwitch.on('LoadingBar');
+
+    checkExp();
+
     axios.post(url,param)
       .then((data)=>response(data,success))
       .catch((error)=>onFail(error,fail));
@@ -48,6 +79,9 @@ export default{
   },
   put:function putApi(url,param,success,fail){
     // commSwitch.on('LoadingBar');
+
+    checkExp();
+
     axios.put(url,param)
       .then((data)=>response(data,success))
       .catch((error)=>onFail(error,fail));
@@ -55,6 +89,8 @@ export default{
   },
   delete:function deleteApi(url,params,success,fail){
     let param={params}; 
+
+    checkExp();
 
     // commSwitch.on('LoadingBar');
     axios.delete(url,param)
