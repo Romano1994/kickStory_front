@@ -17,9 +17,9 @@
               <div class="card-background"></div>
               <div class="card-text-container">
                 <div class="rating">
-                  <span>⭐⭐⭐⭐⭐ </span>
+                  <span>⭐ {{ item.avgRating }} / {{ item.nop }} 명 참여 </span>
                   <span class="mid-dot"> &#183; </span>
-                  <span class="release-year"> 1993</span>
+                  <span class="release-year"> {{ item.releaseYear }} 출시 </span>
                 </div>
                 <hr>
                 <!--                <div class="">* 출시년도 1993</div>-->
