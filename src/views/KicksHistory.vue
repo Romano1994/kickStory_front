@@ -29,10 +29,13 @@
                 </div>
                 </span>
                 <span v-else-if="currIndex===index">
-                <div class="card-text">
-                  {{ item.kcksHstry }}
-                </div>
-                <div class="more-btn" v-if="!isShowSlide" @click="openSlide">더보기</div>
+                  <div class="card-text" v-if="item.kcksHstryMdfctnYn==='Y'">
+                    {{ item.mdfctnCntnt }}
+                  </div>
+                  <div class="card-text" v-else>
+                        {{ item.kcksHstry }}
+                  </div>
+                <div class="more-btn" v-if="!isShowSlide" @click="e=>openSlide(e,item.commCdDtl)">더보기</div>
                 </span>
               </div>
             </div>
@@ -47,46 +50,15 @@
       </div>
     </div>
   </div>
-  <div class="slide" ref="slide" v-if="isShowSlide">
-    <!--  <div class="slide" ref="slide">-->
-    <button type="button" class="close  ms-auto" aria-label="Close" @click="closeSlide">
-      <span aria-hidden="true">&times;</span>
-    </button>
-    <h1>JORDAN 1</h1>
-    <!--    <hr>-->
-    <br><br>
-
-    <h2>About</h2>
-    <hr>
-    <div>
-      여기는 조던1에 대한 설명글을 작성한 부분입니다.
-    </div>
-    <br><br>
-
-    <h2>Release</h2>
-    <hr>
-    <div>
-      발매정보를 보여줍니다.
-    </div>
-    <br><br>
-
-    <h2>Community</h2>
-    <hr>
-    <div>
-      커뮤니티 관련 글들을 보여줍니다.
-    </div>
-    <br><br>
-
-    <h2>About</h2><span>ai가 작성한 내용입니다.</span>
-    <hr>
-    <div>
-      여기는 조던1에 대한 설명글을 작성한 부분입니다.
-    </div>
-  </div>
+  <!--  <div class="slide" ref="slide" v-if="isShowSlide">-->
+  <KcksHstrySlide  v-if="isShowSlide" ref="slide" :content="content" :aiContent="aiContent" @closeSlide="closeSlide"></KcksHstrySlide>
 </template>
 <script>
 
+import KcksHstrySlide from "@/components/KcksHstrySlide.vue";
+
 export default {
+  components: {KcksHstrySlide},
   mounted() {
     this.getHstry();
   },
@@ -97,6 +69,9 @@ export default {
       currIndex: -1,
       isEnter: false,
       isShowSlide: false,
+      currCard: -1,
+      content: '',
+      aiContent: '',
     }
   },
   methods: {
@@ -142,9 +117,11 @@ export default {
       if (this.currIndex !== -1) {
         let currWrapper = document.getElementsByClassName('big')[0];
         if (currWrapper !== undefined) {
-
           currWrapper.style = '';
           currWrapper.classList.toggle('big');
+        }
+        if (this.isShowSlide) {
+          this.isShowSlide = false;
         }
       }
 
@@ -167,7 +144,6 @@ export default {
         if ((idx + 1) % 3 !== 0) {
           wrapper.style = `animation: bigger-left 3s forwards;-webkit-animation:bigger-left 3s forwards;`;
           // wrapper.classList.add("bigger-left"); // 클래스 추가
-
         } else {
           wrapper.style = `animation: bigger-right 3s forwards;-webkit-animation:bigger-right 3s forwards;`;
           // wrapper.classList.add("bigger-right");
@@ -177,22 +153,25 @@ export default {
       }
     },
     setAltImg(e) {
-      console.log("호출됨?")
       e.target.src = "../assets/jordan1.webp";
     },
-    openSlide(e) {
+    openSlide(e, commCdDtl) {
+      this.currCard = commCdDtl;
       this.isShowSlide = true;
       e.stopPropagation();
       let wrapper = this.$refs[`wrapper${this.currIndex}`][0];
       wrapper.style = "left:25%;top:50%;-webkit-transform: translate(-50%, -50%) scale(1.3);"
-      let height = document.body.scrollHeight;
-      this.$nextTick(() => {
-        // this.$refs.slide.style='animation:slide-in 3s forwards;'
-        this.$refs.slide.style = `height: ${height}px;`
-
-      })
+      // let height = document.body.scrollHeight;
+      // this.$nextTick(() => {
+      //   // this.$refs.slide.style='animation:slide-in 3s forwards;'
+      //   this.$refs.slide.$refs.slideContainer.style = `height: ${height}px;`
+      // })
+      let card = this.cards[this.currIndex];
+      this.content = card.mdfctnCntnt;
+      this.aiContent = card.kcksHstry;
     },
     closeSlide() {
+      this.currCard = -1;
       this.isShowSlide = false;
       document.documentElement.style.setProperty('--scroll', `${window.scrollY}px`);
       let wrapper = this.$refs[`wrapper${this.currIndex}`][0];
