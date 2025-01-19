@@ -50,8 +50,8 @@
       </div>
     </div>
   </div>
-  <!--  <div class="slide" ref="slide" v-if="isShowSlide">-->
   <KcksHstrySlide  v-if="isShowSlide" ref="slide" :content="content" :aiContent="aiContent" @closeSlide="closeSlide"></KcksHstrySlide>
+<!--  <KcksHstrySlide ref="slide" :orgContent="content" :aiContent="aiContent" @closeSlide="closeSlide"></KcksHstrySlide>-->
 </template>
 <script>
 

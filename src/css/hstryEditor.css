@@ -1,0 +1,14 @@
+.editor-wrapper {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 50%;
+    height: 100vh;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    font: 1rem Orbitron;
+    color: white;
+    padding: 1rem;
+    overflow-y: scroll;
+}

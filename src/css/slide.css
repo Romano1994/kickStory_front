@@ -1,0 +1,22 @@
+.slide-wrapper {
+    position: fixed;
+    left: 50%;
+    top: 0;
+    width: 50%;
+    height: 100vh;
+    background: black;
+    opacity: 90%;
+    display: flex;
+    flex-direction: column;
+    font: 1rem Orbitron;
+    /*font: 1rem "Helvetica Neue", Helvetica, Arial, sans-serif;*/
+    /*font-family: 'Press Start 2P', "Helvetica Neue";*/
+    color: white;
+    padding: 1rem;
+    overflow-y: scroll;
+}
+
+.slide-title{
+    display:inline-flex;
+    margin-right:1rem;
+}
