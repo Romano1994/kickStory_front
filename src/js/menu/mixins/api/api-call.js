@@ -47,7 +47,7 @@ function checkExp() {
   }
 
   if(isExpired) {
-    axios.post("/reissue", {})
+    axios.post("/auth/reissue", {})
     .then(() => {
     });
   }

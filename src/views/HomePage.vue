@@ -40,7 +40,7 @@ export default {
     methods: {
         getLoginStatus() {
             axios
-            .post("/loginStatus", {}, { withCredentials: true })
+            .post("/auth/loginStatus", {}, { withCredentials: true })
             .then((result) => {
                 this.isLoggedIn = result.data;
             })

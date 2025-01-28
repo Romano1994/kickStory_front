@@ -1,6 +1,6 @@
 <template lang="">
     <div id="join-window">
-        <div id="join-text">
+        <div class="join-text">
             회원가입
         </div>
         <div id="join-container">
@@ -11,6 +11,9 @@
                 <input class="input-box" v-model="inputEmail">
                 <div class="valid-div" v-show="valid.email">
                     이메일을 확인해주세요.
+                </div>
+                <div class="valid-div" v-show="!valid.email && inputEmail != ''">
+                    <button class="button-box" @click="fnVerifRequest">이메일 인증</button>
                 </div>
             </div>
             <div class="text-div">
@@ -43,10 +46,17 @@
                 </button>
             </div>
         </div>
+        <JoinVerifModal :visible="joinVerifModalOpen" :email="inputEmail" @originEmail="setOriginEmail" @close="joinVerifModalOpen=false"/>
     </div>
 </template>
 <script>
+import JoinVerifModal from "./popup/JoinVerifModal.vue";
+import axios from "axios";
 export default {
+    components: {
+        JoinVerifModal,
+    },
+
     data() {
         return {
             valid: {
@@ -58,8 +68,11 @@ export default {
             inputPwd:    "",
             inputPwdChk: "",
             inputNm:     "",
+            joinVerifModalOpen: false,
+            originEmail: "",
         }
     },
+
     watch: {
         'inputEmail': function() {
             this.checkEamil();
@@ -88,11 +101,10 @@ export default {
             }
         },
 
-        //비밀범호 형식 체크
+        //비밀번호 형식 체크
         checkPwd() {
             //숫자, 영어 대 소문자, 특수문자 포함 8자리 이상
             const validatePwd = /^(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,16}$/;
-
 
             if(!validatePwd.test(this.inputPwd) || !this.inputPwd) {
                 this.valid.pwd = true;
@@ -115,7 +127,34 @@ export default {
             }
         },
 
-        //회원 가입 확인
+        // 이메일 인증 코드 팝업
+        fnVerifRequest() {
+            if(this.inputEmail == '' || this.valid.email) {
+                alert('이메일을 다시 입력해주세요.');
+                return;
+            }
+
+            this.joinVerifModalOpen = true;
+
+            let mbr ={
+                "email" : this.inputEmail
+            }
+
+            axios.post('/auth/joinVerifRequest', mbr)
+            .then(() => {
+            })
+            .catch((result) => {
+                this.joinVerifModalOpen = false;
+                const message = result.response.data;
+                if(message) {
+                    alert(message);
+                } else {
+                    alert('이메일 인증에 실패했습니다.');
+                }
+            });
+        },
+
+        //회원 가입
         fnConfirmJoin() {
             if(this.inputEmail == '' || this.valid.email) {
                 alert('이메일을 다시 입력해주세요.');
@@ -123,6 +162,12 @@ export default {
             }
             if(this.inputpwd == '' || this.valid.pwd) {
                 alert('비밀번호를 다시 입력해주세요.');
+                return;
+            }
+            console.log(this.originEmail);
+            console.log(this.inputEmail);
+            if(this.originEmail !== this.inputEmail) {
+                alert('이메일을 인증해주세요.');
                 return;
             }
 
@@ -155,6 +200,11 @@ export default {
         //회원가입 실패
         fail(message) {
             alert(message);
+        },
+
+        // 인증받은 이메일 세팅
+        setOriginEmail(paramEamil) {
+            this.originEmail = paramEamil;
         }
     }
 }
@@ -164,7 +214,7 @@ export default {
         height: 40rem;
         align-content: center;
     }
-    #join-text{
+    .join-text{
         text-align: center;
         font-size: 2rem;
         margin-bottom: 1rem;
