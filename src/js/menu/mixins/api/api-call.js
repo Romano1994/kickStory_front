@@ -28,7 +28,7 @@ function onFail(error,failFunc){
   // commSwitch.off('LoadingBar');
 }
 
-function checkExp() {
+async function checkExp() {
   const cookies = document.cookie.split("; ");
   let expTime = "";
 
@@ -47,7 +47,7 @@ function checkExp() {
   }
 
   if(isExpired) {
-    axios.post("/auth/reissue", {})
+    await axios.post("/auth/reissue", {})
     .then(() => {
     });
   }
@@ -55,42 +55,42 @@ function checkExp() {
 
 
 export default{
-  get:function getApi(url,params,success,fail){
+  get:async function getApi(url,params,success,fail){
     
     let param=null;
     if(params!=null)param={params};
     
-    checkExp();
+    await checkExp();
 
     // commSwitch.on('LoadingBar'); 
     axios.get(url,param)
     .then((data)=>response(data,success))
     .catch((error)=>onFail(error,fail));
   },
-  post:function postApi(url,param,success,fail){
+  post:async function postApi(url,param,success,fail){
     // commSwitch.on('LoadingBar');
 
-    checkExp();
+    await checkExp();
 
     axios.post(url,param)
       .then((data)=>response(data,success))
       .catch((error)=>onFail(error,fail));
 
   },
-  put:function putApi(url,param,success,fail){
+  put:async function putApi(url,param,success,fail){
     // commSwitch.on('LoadingBar');
 
-    checkExp();
+    await checkExp();
 
     axios.put(url,param)
       .then((data)=>response(data,success))
       .catch((error)=>onFail(error,fail));
 
   },
-  delete:function deleteApi(url,params,success,fail){
+  delete:async function deleteApi(url,params,success,fail){
     let param={params}; 
 
-    checkExp();
+    await checkExp();
 
     // commSwitch.on('LoadingBar');
     axios.delete(url,param)
