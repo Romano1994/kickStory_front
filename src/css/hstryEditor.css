@@ -11,4 +11,5 @@
     color: white;
     padding: 1rem;
     overflow-y: scroll;
+    z-index: 9999;
 }

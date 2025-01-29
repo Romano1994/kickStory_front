@@ -4,19 +4,24 @@ import KcksHstryEditor from "@/components/KcksHstryEditor.vue";
 export default {
   name: "KcksHstrySlide",
   components: {KcksHstryEditor},
-  props: ["orgContent", "aiContent"],
-  data(){
+  props: ["orgHstryContent", "aiContent", "currCard", "avgRating", "nop", "releaseYear"],
+  data() {
     return {
-      content: "",
-      isShowEditor:false,
+      hstryContent: "",
+      isShowEditor: false,
     }
   },
   mounted() {
-    this.content = this.orgContent;
+    this.hstryContent = this.orgHstryContent;
+
   },
   methods: {
     openEditor() {
       this.isShowEditor = true;
+    },
+    updateContent(html) {
+      console.log("slide에 오나?", html);
+      this.hstryContent = html;
     },
   }
 }
@@ -29,12 +34,32 @@ export default {
     </button>
     <h1>JORDAN 1</h1>
     <br><br>
-    <div v-if="content!==''&&content!==null">
+
+    <span>
+      <h4 class="slide-title">
+        출시년도 {{ releaseYear === '0' ? '정보없음' : releaseYear }}
+      </h4>
+      <button type="button" class="btn btn-outline-secondary">편잡하기</button>
+      <hr>
+      <br>
+
+      <h4 class="slide-title">
+        Ratings
+        <span>⭐
+            {{ avgRating + "/" + nop }} 명 참여중
+          </span>
+      </h4>
+      <button type="button" class="btn btn-outline-secondary">평가하기</button>
+      <hr>
+      <br>
+  </span>
+    <span v-if="hstryContent!==''&&hstryContent!==null">
+
+
       <h2 class="slide-title">About</h2>
       <button class="btn btn-outline-secondary" @click="openEditor">편집하기</button>
       <hr>
-      <div>
-        {{ content }}
+      <div v-html="hstryContent">
       </div>
       <br><br>
 
@@ -55,15 +80,17 @@ export default {
       <h2>About</h2><span>ai가 작성한 내용입니다.</span>
       <hr>
       <div>
-        여기는 조던1에 대한 설명글을 작성한 부분입니다.
+        {{ aiContent }}
       </div>
-    </div>
-    <div v-else>
+    </span>
+
+    <span v-else>
+
       <h2>About</h2>
       <span>ai가 작성한 내용입니다.</span>
       <hr>
       <div>
-        여기는 조던1에 대한 설명글을 작성한 부분입니다.
+        {{ aiContent }}
       </div>
       <br><br>
 
@@ -87,10 +114,10 @@ export default {
       <div>
         작성된 내용이 없습니다. 내용을 추가해주세요.
       </div>
-    </div>
+    </span>
   </div>
-  <KcksHstryEditor v-if="isShowEditor" :content="content"></KcksHstryEditor>
-<!--  <KcksHstryEditor :content="content"></KcksHstryEditor>-->
+  <KcksHstryEditor v-if="isShowEditor" :content="content" @close-editor="isShowEditor=false"></KcksHstryEditor>
+  <!--  <KcksHstryEditor :hstryContent="hstryContent" @update:hstryContent="updateContent" :currCard="currCard"></KcksHstryEditor>-->
 </template>
 
 <style scoped>

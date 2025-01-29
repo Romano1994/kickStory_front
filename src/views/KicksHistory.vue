@@ -4,7 +4,7 @@
       <div class="wrapper" :ref="`wrapper${index}`">
         <div class="outer card" :ref="`jordan${index}`"
              @mousemove="e=>moveCard(e,index,true)"
-             @mouseleave="e=>moveCard(e,index,false)" @click="()=> changeCardSize(index)">
+             @mouseleave="e=>moveCard(e,index,false)" @click="()=> changeCardSize(index, item.commCdDtl)">
           <div class="overlay" :ref="`overlay${index}`"></div>
           <div class="holo-overlay" :class="{radial : index%2!==0}"></div>
           <!--Front Face-->
@@ -17,9 +17,12 @@
               <div class="card-background"></div>
               <div class="card-text-container">
                 <div class="rating">
-                  <span>⭐ {{ item.avgRating }} / {{ item.nop }} 명 참여 </span>
+                  <span>⭐ {{ item.avgRating === null ? 0 : item.avgRating }} / {{ item.nop === null ? 0 : item.nop }} 명 참여 </span>
                   <span class="mid-dot"> &#183; </span>
-                  <span class="release-year"> {{ item.releaseYear }} 출시 </span>
+                  <span class="release-year"> 출시년도 {{
+                      item.releaseYear === null ? "정보없음" : item.releaseYear + '년'
+                    }}
+                  </span>
                 </div>
                 <hr>
                 <!--                <div class="">* 출시년도 1993</div>-->
@@ -29,11 +32,11 @@
                 </div>
                 </span>
                 <span v-else-if="currIndex===index">
-                  <div class="card-text" v-if="item.kcksHstryMdfctnYn==='Y'">
-                    {{ item.mdfctnCntnt }}
+                  <div class="card-text" v-if="kcksHstryMdfctnYn==='Y'">
+                    {{ mdfctnCntnt }}
                   </div>
                   <div class="card-text" v-else>
-                        {{ item.kcksHstry }}
+                        {{ kcksHstry }}
                   </div>
                 <div class="more-btn" v-if="!isShowSlide" @click="e=>openSlide(e,item.commCdDtl)">더보기</div>
                 </span>
@@ -50,17 +53,18 @@
       </div>
     </div>
   </div>
-  <KcksHstrySlide  v-if="isShowSlide" ref="slide" :content="content" :aiContent="aiContent" @closeSlide="closeSlide"></KcksHstrySlide>
-<!--  <KcksHstrySlide ref="slide" :orgContent="content" :aiContent="aiContent" @closeSlide="closeSlide"></KcksHstrySlide>-->
+  <KcksHstrySlide v-if="isShowSlide" ref="slide" :orgHstryContent="mdfctnCntnt" :aiContent="kcksHstry"
+                  :avg-rating="avgRating" :nop="nop" :release-year="releaseYear"
+                  @closeSlide="closeSlide"></KcksHstrySlide>
+  <!--  <KcksHstrySlide ref="slide" :orgHstryContent="hstryContent" :aiContent="aiContent" @closeSlide="closeSlide" :currCard="currCard"></KcksHstrySlide>-->
 </template>
 <script>
-
 import KcksHstrySlide from "@/components/KcksHstrySlide.vue";
 
 export default {
   components: {KcksHstrySlide},
   mounted() {
-    this.getHstry();
+    this.getSmmry();
   },
   data() {
     return {
@@ -70,8 +74,14 @@ export default {
       isEnter: false,
       isShowSlide: false,
       currCard: -1,
-      content: '',
+      hstryContent: '안녕여기 데이터는\n 이렇게',
       aiContent: '',
+      kcksHstryMdfctnYn: "N",
+      mdfctnCntnt: '',
+      kcksHstry: '',
+      releaseYear: '',
+      avgRating: '',
+      nop: '',
     }
   },
   methods: {
@@ -81,16 +91,17 @@ export default {
       }
       return require('@/assets' + src);
     },
-    getHstry() {
-      this.getApi('/getHstry', {commCd: '0001'}, this.setHstry, this.fail);
+    getSmmry() {
+      this.getApi('/smmryHstry', {commCd: '0001'}, this.setSmmry, this.fail);
     },
-    setHstry(res) {
+    setSmmry(res) {
       this.cards = res.data;
     },
     fail(err) {
       console.log(err);
     },
     moveCard(e, idx, flag) {
+
       if (this.currIndex === -1) {
         let jordan = this.$refs[`jordan${idx}`][0];
         let overlay = this.$refs[`overlay${idx}`][0];
@@ -113,7 +124,8 @@ export default {
         overlay.style = `background: radial-gradient(farthest-corner at ${offsetX}px ${offsetY}px, #ffffff, #000000); filter:brightness(1.3) opacity(0.7)`;
       }
     },
-    changeCardSize(idx) {
+    changeCardSize(idx, commCdDtl) {
+
       if (this.currIndex !== -1) {
         let currWrapper = document.getElementsByClassName('big')[0];
         if (currWrapper !== undefined) {
@@ -127,7 +139,16 @@ export default {
 
       if (this.currIndex === idx) {
         this.currIndex = -1;
+        this.currCard = -1;
+        this.kcksHstry = '';
+        this.kcksHstryMdfctnYn = '';
+        this.mdfctnCntnt = '';
+        this.releaseYear = '';
+        this.avgRating = '';
+        this.nop = '';
       } else if (this.currIndex === -1 || this.currIndex !== idx) {
+        this.currCard = commCdDtl;
+        this.getApi(`/kcksHstry/${this.currCard}`, null, this.setHstry, this.fail);
 
         this.currIndex = idx;
         let wrapper = this.$refs[`wrapper${idx}`][0];
@@ -151,6 +172,7 @@ export default {
         jordan.style = 'animation: flip 3s';
         // jordan.classList.add("flip");
       }
+
     },
     setAltImg(e) {
       e.target.src = "../assets/jordan1.webp";
@@ -166,23 +188,28 @@ export default {
       //   // this.$refs.slide.style='animation:slide-in 3s forwards;'
       //   this.$refs.slide.$refs.slideContainer.style = `height: ${height}px;`
       // })
-      let card = this.cards[this.currIndex];
-      this.content = card.mdfctnCntnt;
-      this.aiContent = card.kcksHstry;
+
     },
+    setHstry(res) {
+      console.log("res", res.data);
+      let data = res.data;
+
+      this.kcksHstry = data.kcksHstry;
+      this.kcksHstryMdfctnYn = data.kcksHstryMdfctnYn;
+      this.mdfctnCntnt = data.mdfctnCntnt;
+      this.releaseYear = data.releaseYear;
+      this.avgRating = data.avgRating;
+      this.nop = data.nop;
+    },
+
     closeSlide() {
       this.currCard = -1;
       this.isShowSlide = false;
       document.documentElement.style.setProperty('--scroll', `${window.scrollY}px`);
       let wrapper = this.$refs[`wrapper${this.currIndex}`][0];
       wrapper.style = "left:50%;top:50%;margin-top:var(--scroll);transform: translate(-50%, -50%) scale(1.3)"
-    }
+    },
+
   },//methods
-
-
 }
 </script>
-<style>
-
-
-</style>
