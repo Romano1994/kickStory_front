@@ -18,7 +18,6 @@
 import MainHeader from "./MainHeader.vue"
 import MainFooter from "./MainFooter.vue"
 import MenuBar from "@/components/MenuBar.vue";
-import axios from "axios";
 export default {
     data() {
         return {
@@ -31,25 +30,23 @@ export default {
         MenuBar
     },
     mounted() {
+        // 로그인 상태 체크
         this.getLoginStatus();
     },
     beforeRouteUpdate(to, from, next) {
+        // 로그인 상태 체크
         this.getLoginStatus();
         next();
     },
     methods: {
-        getLoginStatus() {
-            axios
-            .post("/auth/loginStatus", {}, { withCredentials: true })
-            .then((result) => {
-                this.isLoggedIn = result.data;
-            })
-            .catch(() => {
-                this.isLoggedIn = false;
-            })
-        } 
         // 로그인 상태 체크
-        
+        getLoginStatus() {
+            this.postApi("/auth/loginStatus",
+                {},                                        // param
+                (result) => this.isLoggedIn = result.data, // success
+                () => this.isLoggedIn = false              // fail
+            );            
+        } 
     }
 
 }

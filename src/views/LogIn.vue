@@ -33,7 +33,6 @@
 </template>
 <script>
 import FindPwdModal from "./popup/FindPwdModal.vue";
-import axios from "axios";
 export default {
     components: {
         FindPwdModal,
@@ -83,19 +82,20 @@ export default {
             formData.append('username', this.email);
             formData.append('password', this.mbrPwd);
 
-            // 쿠키 저장을 위해서는 withCredentials 옵션을 활성화 해야됨
-            axios.post('/login', formData, { withCredentials: true })
-            .then(() => {
-                alert('로그인에 성공했습니다.');
-                // 홈으로 이동
-                this.$router.replace({ path: '/', query: { refresh: Date.now() } })
-                .then(() => {
-                    window.location.reload();
-                });
-            })
-            .catch(() => {
-                alert('로그인에 실패했습니다.');
-            });
+            this.postApi('/login',
+                formData,   // param
+                () => {     // success
+                    alert('로그인에 성공했습니다.');
+                    // 홈으로 이동
+                    this.$router.push('/')
+                    .then(() => {
+                        window.location.reload();
+                    });    
+                },
+                () =>{      // fail
+                    alert('로그인에 실패했습니다.');
+                }
+            )
         },
 
         // 비밀번호 찾기 요청
@@ -109,21 +109,24 @@ export default {
                 return;
             }
 
+            this.findPwdModalOpen = true;
+            
             let mbr = {"email": this.email};
 
-            axios.post('/auth/findPwdRequest', mbr)
-            .then(() => {
-                alert("인증번호가 발송됐습니다.");
-                this.findPwdModalOpen = true;
-            })
-            .catch((result) => {
-                const message = result.response.data;
-                if(message) {
-                    alert(message);
-                } else {
-                    alert('비밀번호 찾기에 실패했습니다.');
+            this.postApi('/auth/findPwdRequest',
+                mbr,        // param
+                () => {     // success
+                    alert("인증번호가 발송됐습니다.");
+                },
+                (result) => {   //fail
+                    const message = result.response.data;
+                    if(message) {
+                        alert(message);
+                    } else {
+                        alert('비밀번호 찾기에 실패했습니다.');
+                    }
                 }
-            });
+            )
         },
     }
 }

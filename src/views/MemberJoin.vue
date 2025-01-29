@@ -51,7 +51,6 @@
 </template>
 <script>
 import JoinVerifModal from "./popup/JoinVerifModal.vue";
-import axios from "axios";
 export default {
     components: {
         JoinVerifModal,
@@ -140,18 +139,19 @@ export default {
                 "email" : this.inputEmail
             }
 
-            axios.post('/auth/joinVerifRequest', mbr)
-            .then(() => {
-            })
-            .catch((result) => {
-                this.joinVerifModalOpen = false;
-                const message = result.response.data;
-                if(message) {
-                    alert(message);
-                } else {
-                    alert('이메일 인증에 실패했습니다.');
+            this.postApi('/auth/joinVerifRequest',
+                mbr,            // param
+                () => {},       // success
+                (result) => {   // fail
+                    this.joinVerifModalOpen = false;
+                    const message = result.response.data;
+                    if(message) {
+                        alert(message);
+                    } else {
+                        alert('이메일 인증에 실패했습니다.');
+                    }
                 }
-            });
+            )
         },
 
         //회원 가입
@@ -160,12 +160,12 @@ export default {
                 alert('이메일을 다시 입력해주세요.');
                 return;
             }
+
             if(this.inputpwd == '' || this.valid.pwd) {
                 alert('비밀번호를 다시 입력해주세요.');
                 return;
             }
-            console.log(this.originEmail);
-            console.log(this.inputEmail);
+
             if(this.originEmail !== this.inputEmail) {
                 alert('이메일을 인증해주세요.');
                 return;
@@ -185,8 +185,8 @@ export default {
             let resultCode = result.data[0].resultCode;
 
             if(resultCode === 'S') {
-                alert("인증번호가 메일로 발송됐습니다.");
-                this.$router.push('/');
+                alert("회원가입됐습니다.");
+                this.$router.push('/login');
 
             } else if(resultCode === 'F') {
                 alert("이미 존재하는 이메일입니다.");
