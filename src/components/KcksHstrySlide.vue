@@ -4,24 +4,22 @@ import KcksHstryEditor from "@/components/KcksHstryEditor.vue";
 export default {
   name: "KcksHstrySlide",
   components: {KcksHstryEditor},
-  props: ["orgHstryContent", "aiContent", "currCard", "avgRating", "nop", "releaseYear"],
+  props: ["orgMdfctnCntnt", "aiContent", "currCard", "avgRating", "nop", "releaseYear","kcksHstryMdfctnVer"],
   data() {
     return {
-      hstryContent: "",
+      mdfctnCntnt: null,
       isShowEditor: false,
     }
   },
   mounted() {
-    this.hstryContent = this.orgHstryContent;
-
+    this.mdfctnCntnt = this.orgMdfctnCntnt;
   },
   methods: {
     openEditor() {
       this.isShowEditor = true;
     },
     updateContent(html) {
-      console.log("slide에 오나?", html);
-      this.hstryContent = html;
+      this.mdfctnCntnt = html;
     },
   }
 }
@@ -53,13 +51,13 @@ export default {
       <hr>
       <br>
   </span>
-    <span v-if="hstryContent!==''&&hstryContent!==null">
+    <span v-if="mdfctnCntnt!==''&&mdfctnCntnt!==null">
 
 
       <h2 class="slide-title">About</h2>
       <button class="btn btn-outline-secondary" @click="openEditor">편집하기</button>
       <hr>
-      <div v-html="hstryContent">
+      <div v-html="mdfctnCntnt">
       </div>
       <br><br>
 
@@ -116,7 +114,8 @@ export default {
       </div>
     </span>
   </div>
-  <KcksHstryEditor v-if="isShowEditor" :content="content" @close-editor="isShowEditor=false"></KcksHstryEditor>
+  <KcksHstryEditor v-if="isShowEditor" :orgMdfctnCntnt="orgMdfctnCntnt" @update:mdfctnCntnt="updateContent" :mdfctnCntnt="mdfctnCntnt"
+                   :commCdDtl="currCard" :content="content" @close-editor="isShowEditor=false" :kcksHstryMdfctnVer="kcksHstryMdfctnVer"></KcksHstryEditor>
   <!--  <KcksHstryEditor :hstryContent="hstryContent" @update:hstryContent="updateContent" :currCard="currCard"></KcksHstryEditor>-->
 </template>
 

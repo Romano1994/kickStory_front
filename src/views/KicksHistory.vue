@@ -32,8 +32,7 @@
                 </div>
                 </span>
                 <span v-else-if="currIndex===index">
-                  <div class="card-text" v-if="kcksHstryMdfctnYn==='Y'">
-                    {{ mdfctnCntnt }}
+                  <div class="card-text" v-if="kcksHstryMdfctnYn==='Y'" v-html="mdfctnCntnt">
                   </div>
                   <div class="card-text" v-else>
                         {{ kcksHstry }}
@@ -53,8 +52,9 @@
       </div>
     </div>
   </div>
-  <KcksHstrySlide v-if="isShowSlide" ref="slide" :orgHstryContent="mdfctnCntnt" :aiContent="kcksHstry"
-                  :avg-rating="avgRating" :nop="nop" :release-year="releaseYear"
+  <KcksHstrySlide v-if="isShowSlide" ref="slide" :orgMdfctnCntnt="mdfctnCntnt" :aiContent="kcksHstry"
+                  :avg-rating="avgRating" :nop="nop" :release-year="releaseYear" :currCard="currCard"
+                  :kcksHstryMdfctnVer="kcksHstryMdfctnVer"
                   @closeSlide="closeSlide"></KcksHstrySlide>
   <!--  <KcksHstrySlide ref="slide" :orgHstryContent="hstryContent" :aiContent="aiContent" @closeSlide="closeSlide" :currCard="currCard"></KcksHstrySlide>-->
 </template>
@@ -79,6 +79,7 @@ export default {
       kcksHstryMdfctnYn: "N",
       mdfctnCntnt: '',
       kcksHstry: '',
+      kcksHstryMdfctnVer:'',
       releaseYear: '',
       avgRating: '',
       nop: '',
@@ -191,15 +192,17 @@ export default {
 
     },
     setHstry(res) {
-      console.log("res", res.data);
       let data = res.data;
 
       this.kcksHstry = data.kcksHstry;
       this.kcksHstryMdfctnYn = data.kcksHstryMdfctnYn;
-      this.mdfctnCntnt = data.mdfctnCntnt;
       this.releaseYear = data.releaseYear;
       this.avgRating = data.avgRating;
       this.nop = data.nop;
+      this.kcksHstryMdfctnVer=data.kcksHstryMdfctnVer;
+      //
+      // let cntnt = JSON.parse(data.mdfctnCntnt);
+      // for()
     },
 
     closeSlide() {

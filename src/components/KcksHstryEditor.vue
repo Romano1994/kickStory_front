@@ -1,23 +1,27 @@
 <script>
 import {QuillEditor} from "@vueup/vue-quill";
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import {diff_match_patch} from "diff-match-patch";
 
 export default {
   name: "KcksHstryEditor",
   props: {
-    hstryContent: String,
     currCard: String,
+    orgMdfctnCntnt: String,
+    mdfctnCntnt: String,
+    commCdDtl:String,
+    kcksHstryMdfctnVer:Number,
   },
-  emits: ['update:hstryContent', 'closeEditor'],
+  emits: ['update:mdfctnCntnt', 'closeEditor'],
   components: {
     QuillEditor,
   },
   mounted() {
-    console.log(this.content);
+    // this.mdfctnCntnt = this.orgMdfctnCntnt;
   },
   data() {
     return {
-      contents: "안녕\n나는 ddd",
+      // mdfctnCntnt:null,
       options: {
         theme: 'snow',
         modules: {
@@ -28,31 +32,74 @@ export default {
 
             [{'header': 1}, {'header': 2}],               // custom button values
             [{'list': 'ordered'}, {'list': 'bullet'}, {'list': 'check'}],
-            [{'script': 'sub'}, {'script': 'super'}],      // superscript/subscript
-            [{'indent': '-1'}, {'indent': '+1'}],          // outdent/indent
-            [{'direction': 'rtl'}],                         // text direction
-
-            [{'size': ['small', false, 'large', 'huge']}],  // custom dropdown
+            [{'script': 'sub'}, {'script': 'super'}],
+            [{'indent': '-1'}, {'indent': '+1'}],
+            [{'direction': 'rtl'}],
+            [{'size': ['small', false, 'large', 'huge']}],
             [{'header': [1, 2, 3, 4, 5, 6, false]}],
-
-            [{'color': ['white', 'red', 'green', 'yellow', 'blue', 'grey', 'black']}, {'background': []}],          // dropdown with defaults from theme
+            [{'color': ['white', 'red', 'green', 'yellow', 'blue', 'grey', 'black']}, {'background': []}],
             [{'font': []}],
             [{'align': []}],
-
-            ['clean']                                         // remove formatting button
+            ['clean']
           ]
         },//modules
       },//options
+      dmp: null,
     }
   },
   methods: {
     updateContent(html) {
-      console.log(html);
-      this.$emit("update:hstryContent", html);
+      this.$emit("update:mdfctnCntnt", html);
     },
     saveContent() {
+      if (this.dmp === null) this.dmp = new diff_match_patch();
+
+      let diff = this.orgMdfctnCntnt === null ? this.dmp.diff_main('', this.mdfctnCntnt) : this.dmp.diff_main(this.orgMdfctnCntnt, this.mdfctnCntnt);
+      this.dmp.diff_cleanupSemantic(diff);
+
+      console.log(diff)
+
+      let idx = 0;
+      let operations=[];
+      for (let arr of diff) {
+
+        let type = arr[0];
+        let value = arr[1];
+        let length = arr[2];
+        let obj = {};
+
+        if (type === 0) {
+          idx += length;
+        } else {
+          if (type === 1) {
+            obj.type = 'add';
+            obj.position = idx;
+            idx += length;
+          } else if (type === -1) {
+            obj.type = 'delete';
+          }
+          obj.str = value;
+        }
+        operations.push(obj);
+      }//for
+
+      console.log("operations", JSON.stringify(operations));
+
+      console.log("commCdDtl", this.commCdDtl);
+      this.postApi('/kcksHstryMdfctn',{mbrno:1,commCdDtl:this.commCdDtl,mdfctnCntnt:JSON.stringify(operations),kcksHstryMdfctnVer:this.kcksHstryMdfctnVer,},this.insertSuccess,this.fail);
+
+      // console.log(diff)
+      // alert(diff);
+
       // this.postApi("/");
-      this.$emit('closeEditor');
+      // this.$emit('closeEditor');
+
+    },
+    insertSuccess() {
+      console.log("insertSuccess");
+    },
+    fail(err) {
+      console.log(err);
     },
   }
 }
@@ -67,7 +114,8 @@ export default {
     <br><br>
     <h2 class="slide-title">About</h2>
     <hr>
-    <QuillEditor ref="quill" :content="content" content-type="html" :options="options" @update:content="updateContent">
+    <QuillEditor ref="quill" :content="mdfctnCntnt" content-type="html" :options="options"
+                 @update:content="updateContent">
     </QuillEditor>
     <hr>
     <div>
