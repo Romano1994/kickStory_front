@@ -18,6 +18,7 @@
 import MainHeader from "./MainHeader.vue"
 import MainFooter from "./MainFooter.vue"
 import MenuBar from "@/components/MenuBar.vue";
+import auth from "../js/auth"
 export default {
     data() {
         return {
@@ -33,19 +34,10 @@ export default {
         // 로그인 상태 체크
         this.getLoginStatus();
     },
-    beforeRouteUpdate(to, from, next) {
-        // 로그인 상태 체크
-        this.getLoginStatus();
-        next();
-    },
     methods: {
         // 로그인 상태 체크
-        getLoginStatus() {
-            this.postApi("/auth/loginStatus",
-                {},                                        // param
-                (result) => this.isLoggedIn = result.data, // success
-                () => this.isLoggedIn = false              // fail
-            );            
+        async getLoginStatus() {
+            this.isLoggedIn = await auth.getLoginStatus();
         } 
     }
 

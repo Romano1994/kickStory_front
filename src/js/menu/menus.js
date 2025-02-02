@@ -11,43 +11,50 @@ const menus = [
         path: "sample",//URL 경로
         name: "ReactiveSample",//컴포넌트명
         componentPath:"ReactiveSample",//실제 컴포넌트 경로
-        depth:0
+        depth:0,
+        meta: {requiresAuth:true}
     },
     {
         path: "/",
         name: "KicksHistory",//컴포넌트명
         componentPath:"KicksHistory",//실제 컴포넌트 경로
-        depth:1
+        depth:1,
+        meta: {requiresAuth:true}
     },
     {
         path: "/kp",
         name: "KicksProfile",//컴포넌트명
         componentPath:"KicksProfile",//실제 컴포넌트 경로
-        depth:1
+        depth:1,
+        meta: {requiresAuth:true}
     },
     {
         path: "/kc",
         name: "KicksCommunity",//컴포넌트명
         componentPath:"KicksCommunity",//실제 컴포넌트 경로
-        depth:1
+        depth:1,
+        meta: {requiresAuth:true}
     },
     {
         path: "/km",
         name: "KicksMap",//컴포넌트명
         componentPath:"KicksMap",//실제 컴포넌트 경로
-        depth:1
+        depth:1,
+        meta: {requiresAuth:true}
     },
     {
         path: "/login",
         name: "LogIn",
         componentPath:"LogIn",
-        depth:0
+        depth:0,
+        meta: {requiresAuth:true}
     },
     {
         path: "/join",
         name: "MemberJoin",
         componentPath:"MemberJoin",
-        depth:0
+        depth:0,
+        meta: {requiresAuth:true}
     },    
   ];
   

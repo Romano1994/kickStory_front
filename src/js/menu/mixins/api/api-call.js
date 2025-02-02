@@ -28,6 +28,7 @@ function onFail(error,failFunc){
   // commSwitch.off('LoadingBar');
 }
 
+// 토큰 재발급
 async function checkExp() {
   const cookies = document.cookie.split("; ");
   let expTime = "";

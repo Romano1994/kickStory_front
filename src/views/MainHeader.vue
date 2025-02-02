@@ -32,7 +32,7 @@
 export default {
     props: {
         isLoggedIn: {
-            type: String,
+            type: Boolean,
             Required: false
         }
     },
@@ -46,7 +46,6 @@ export default {
                 alert('로그아웃에 성공했습니다.');
                 // 홈으로 이동
                 this.$router.push('/')
-                // this.$router.replace({ path: '/', query: { refresh: Date.now() } })
                 .then(() => {
                     window.location.reload();
                 });
