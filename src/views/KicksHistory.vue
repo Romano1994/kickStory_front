@@ -79,7 +79,7 @@ export default {
       kcksHstryMdfctnYn: "N",
       mdfctnCntnt: '',
       kcksHstry: '',
-      kcksHstryMdfctnVer:'',
+      kcksHstryMdfctnVer: '',
       releaseYear: '',
       avgRating: '',
       nop: '',
@@ -149,6 +149,8 @@ export default {
         this.nop = '';
       } else if (this.currIndex === -1 || this.currIndex !== idx) {
         this.currCard = commCdDtl;
+
+
         this.getApi(`/kcksHstry/${this.currCard}`, null, this.setHstry, this.fail);
 
         this.currIndex = idx;
@@ -192,17 +194,35 @@ export default {
 
     },
     setHstry(res) {
-      let data = res.data;
+      let list = res.data;
 
-      this.kcksHstry = data.kcksHstry;
-      this.kcksHstryMdfctnYn = data.kcksHstryMdfctnYn;
-      this.releaseYear = data.releaseYear;
-      this.avgRating = data.avgRating;
-      this.nop = data.nop;
-      this.kcksHstryMdfctnVer=data.kcksHstryMdfctnVer;
-      //
-      // let cntnt = JSON.parse(data.mdfctnCntnt);
-      // for()
+      list.forEach((data, idx) => {
+
+        if (idx === 0) {
+          this.kcksHstryMdfctnYn = data.kcksHstryMdfctnYn;
+          this.releaseYear = data.releaseYear;
+          this.avgRating = data.avgRating;
+          this.nop = data.nop;
+          this.kcksHstryMdfctnVer = data.kcksHstryMdfctnVer;
+          this.kcksHstry = data.kcksHstry;
+        }
+
+        if (this.kcksHstryMdfctnYn !== 'N') {
+
+          let cntntArr = JSON.parse(data.mdfctnCntnt);
+          for (let temp of cntntArr) {
+            if (this.mdfctnCntnt.length === 0) {
+              this.mdfctnCntnt = temp.str;
+            } else if (temp.type === 'add') {
+              this.mdfctnCntnt = this.mdfctnCntnt.slice(0, temp.position) + temp.str + this.mdfctnCntnt.slice(temp.position);
+            } else if (temp.type === 'delete') {
+              this.mdfctnCntnt = this.mdfctnCntnt.slice(0, temp.position) + this.mdfctnCntnt.slice(temp.position + temp.length);
+            }
+
+          }
+
+        }
+      })
     },
 
     closeSlide() {

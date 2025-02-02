@@ -54,9 +54,11 @@ export default {
     saveContent() {
       if (this.dmp === null) this.dmp = new diff_match_patch();
 
-      let diff = this.orgMdfctnCntnt === null ? this.dmp.diff_main('', this.mdfctnCntnt) : this.dmp.diff_main(this.orgMdfctnCntnt, this.mdfctnCntnt);
+      let diff = this.orgMdfctnCntnt === null ? this.dmp.diff_main('', this.mdfctnCntnt.replaceAll('<br>','')) : this.dmp.diff_main(this.orgMdfctnCntnt, this.mdfctnCntnt.replaceAll('<br>',''));
       this.dmp.diff_cleanupSemantic(diff);
-
+      console.log("this.mdctnCntnt",this.mdfctnCntnt);
+      console.log("this.orgMdfctnCntnt",this.orgMdfctnCntnt);
+      console.log("this.mdctnCntnt",this.mdfctnCntnt.replaceAll('<br>',''));
       console.log(diff)
 
       let idx = 0;
@@ -64,8 +66,8 @@ export default {
       for (let arr of diff) {
 
         let type = arr[0];
-        let value = arr[1];
-        let length = arr[2];
+        let str = arr[1];
+        let length = arr[1].length;
         let obj = {};
 
         if (type === 0) {
@@ -77,22 +79,18 @@ export default {
             idx += length;
           } else if (type === -1) {
             obj.type = 'delete';
+            obj.position = idx;
+            // obj.oldStr = '';
+            obj.length = str.length;
           }
-          obj.str = value;
+
+          obj.str = str;
+          operations.push(obj);
         }
-        operations.push(obj);
       }//for
 
-      console.log("operations", JSON.stringify(operations));
-
-      console.log("commCdDtl", this.commCdDtl);
-      this.postApi('/kcksHstryMdfctn',{mbrno:1,commCdDtl:this.commCdDtl,mdfctnCntnt:JSON.stringify(operations),kcksHstryMdfctnVer:this.kcksHstryMdfctnVer,},this.insertSuccess,this.fail);
-
-      // console.log(diff)
-      // alert(diff);
-
-      // this.postApi("/");
-      // this.$emit('closeEditor');
+      this.postApi('/kcksHstryMdfctn',{mbrNo:1,commCdDtl:this.commCdDtl,mdfctnCntnt:JSON.stringify(operations),kcksHstryMdfctnVer:this.kcksHstryMdfctnVer,},this.insertSuccess,this.fail);
+      this.$emit('closeEditor');
 
     },
     insertSuccess() {

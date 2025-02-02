@@ -35,7 +35,7 @@ export default {
 
     <span>
       <h4 class="slide-title">
-        출시년도 {{ releaseYear === '0' ? '정보없음' : releaseYear }}
+        출시년도 {{ releaseYear === 0 ? '정보없음' : releaseYear }}
       </h4>
       <button type="button" class="btn btn-outline-secondary">편잡하기</button>
       <hr>
