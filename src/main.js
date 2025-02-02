@@ -7,6 +7,7 @@ import './js/total-css';
 import apiCall from './js/menu/mixins/api/api-call';
 import apiMix from './js/menu/mixins/api/api-mix';
 import axios from 'axios';
+import store from './js/store'
 
 
 const app = createApp(App);
