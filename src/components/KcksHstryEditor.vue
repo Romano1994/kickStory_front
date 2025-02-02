@@ -9,15 +9,14 @@ export default {
     currCard: String,
     orgMdfctnCntnt: String,
     mdfctnCntnt: String,
-    commCdDtl:String,
-    kcksHstryMdfctnVer:Number,
+    commCdDtl: String,
+    kcksHstryMdfctnVer: Number,
   },
   emits: ['update:mdfctnCntnt', 'closeEditor'],
   components: {
     QuillEditor,
   },
   mounted() {
-    // this.mdfctnCntnt = this.orgMdfctnCntnt;
   },
   data() {
     return {
@@ -54,15 +53,14 @@ export default {
     saveContent() {
       if (this.dmp === null) this.dmp = new diff_match_patch();
 
-      let diff = this.orgMdfctnCntnt === null ? this.dmp.diff_main('', this.mdfctnCntnt.replaceAll('<br>','')) : this.dmp.diff_main(this.orgMdfctnCntnt, this.mdfctnCntnt.replaceAll('<br>',''));
+      let diff = this.orgMdfctnCntnt === null ? this.dmp.diff_main('', this.mdfctnCntnt.replaceAll('<br>', '')) : this.dmp.diff_main(this.orgMdfctnCntnt, this.mdfctnCntnt.replaceAll('<br>', ''));
+      console.log("diff",JSON.stringify(diff));
+
       this.dmp.diff_cleanupSemantic(diff);
-      console.log("this.mdctnCntnt",this.mdfctnCntnt);
-      console.log("this.orgMdfctnCntnt",this.orgMdfctnCntnt);
-      console.log("this.mdctnCntnt",this.mdfctnCntnt.replaceAll('<br>',''));
-      console.log(diff)
+      console.log("diff",JSON.stringify(diff));
 
       let idx = 0;
-      let operations=[];
+      let operations = [];
       for (let arr of diff) {
 
         let type = arr[0];
@@ -89,7 +87,12 @@ export default {
         }
       }//for
 
-      this.postApi('/kcksHstryMdfctn',{mbrNo:1,commCdDtl:this.commCdDtl,mdfctnCntnt:JSON.stringify(operations),kcksHstryMdfctnVer:this.kcksHstryMdfctnVer,},this.insertSuccess,this.fail);
+      this.postApi('/kcksHstryMdfctn', {
+        mbrNo: 1,
+        commCdDtl: this.commCdDtl,
+        mdfctnCntnt: JSON.stringify(operations),
+        kcksHstryMdfctnVer: this.kcksHstryMdfctnVer,
+      }, this.insertSuccess, this.fail);
       this.$emit('closeEditor');
 
     },

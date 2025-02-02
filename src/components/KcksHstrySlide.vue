@@ -4,7 +4,8 @@ import KcksHstryEditor from "@/components/KcksHstryEditor.vue";
 export default {
   name: "KcksHstrySlide",
   components: {KcksHstryEditor},
-  props: ["orgMdfctnCntnt", "aiContent", "currCard", "avgRating", "nop", "releaseYear","kcksHstryMdfctnVer"],
+  emits:['getHstry'],
+  props: ["orgMdfctnCntnt", "aiContent", "currCard", "avgRating", "nop", "releaseYear", "kcksHstryMdfctnVer"],
   data() {
     return {
       mdfctnCntnt: null,
@@ -17,10 +18,15 @@ export default {
   methods: {
     openEditor() {
       this.isShowEditor = true;
+      this.$emit('getHstry');
     },
     updateContent(html) {
       this.mdfctnCntnt = html;
     },
+    closeEditor(){
+      this.$emit("getHstry");
+      this.isShowEditor=false;
+    }
   }
 }
 </script>
@@ -114,8 +120,10 @@ export default {
       </div>
     </span>
   </div>
-  <KcksHstryEditor v-if="isShowEditor" :orgMdfctnCntnt="orgMdfctnCntnt" @update:mdfctnCntnt="updateContent" :mdfctnCntnt="mdfctnCntnt"
-                   :commCdDtl="currCard" :content="content" @close-editor="isShowEditor=false" :kcksHstryMdfctnVer="kcksHstryMdfctnVer"></KcksHstryEditor>
+  <KcksHstryEditor v-if="isShowEditor" :orgMdfctnCntnt="orgMdfctnCntnt" @update:mdfctnCntnt="updateContent"
+                   :mdfctnCntnt="mdfctnCntnt"
+                   :commCdDtl="currCard" :content="content" @close-editor="closeEditor"
+                   :kcksHstryMdfctnVer="kcksHstryMdfctnVer"></KcksHstryEditor>
   <!--  <KcksHstryEditor :hstryContent="hstryContent" @update:hstryContent="updateContent" :currCard="currCard"></KcksHstryEditor>-->
 </template>
 

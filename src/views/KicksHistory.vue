@@ -54,7 +54,7 @@
   </div>
   <KcksHstrySlide v-if="isShowSlide" ref="slide" :orgMdfctnCntnt="mdfctnCntnt" :aiContent="kcksHstry"
                   :avg-rating="avgRating" :nop="nop" :release-year="releaseYear" :currCard="currCard"
-                  :kcksHstryMdfctnVer="kcksHstryMdfctnVer"
+                  :kcksHstryMdfctnVer="kcksHstryMdfctnVer" @get-hstry="getHstry"
                   @closeSlide="closeSlide"></KcksHstrySlide>
   <!--  <KcksHstrySlide ref="slide" :orgHstryContent="hstryContent" :aiContent="aiContent" @closeSlide="closeSlide" :currCard="currCard"></KcksHstrySlide>-->
 </template>
@@ -149,10 +149,7 @@ export default {
         this.nop = '';
       } else if (this.currIndex === -1 || this.currIndex !== idx) {
         this.currCard = commCdDtl;
-
-
-        this.getApi(`/kcksHstry/${this.currCard}`, null, this.setHstry, this.fail);
-
+        this.getHstry();
         this.currIndex = idx;
         let wrapper = this.$refs[`wrapper${idx}`][0];
         let jordan = this.$refs[`jordan${idx}`][0];
@@ -193,11 +190,15 @@ export default {
       // })
 
     },
+    getHstry() {
+      this.getApi(`/kcksHstry/${this.currCard}`, null, this.setHstry, this.fail);
+    },
     setHstry(res) {
       let list = res.data;
 
-      list.forEach((data, idx) => {
+      this.mdfctnCntnt='';
 
+      list.forEach((data, idx) => {
         if (idx === 0) {
           this.kcksHstryMdfctnYn = data.kcksHstryMdfctnYn;
           this.releaseYear = data.releaseYear;
@@ -205,18 +206,24 @@ export default {
           this.nop = data.nop;
           this.kcksHstryMdfctnVer = data.kcksHstryMdfctnVer;
           this.kcksHstry = data.kcksHstry;
+
         }
-
         if (this.kcksHstryMdfctnYn !== 'N') {
-
           let cntntArr = JSON.parse(data.mdfctnCntnt);
           for (let temp of cntntArr) {
+
             if (this.mdfctnCntnt.length === 0) {
               this.mdfctnCntnt = temp.str;
             } else if (temp.type === 'add') {
+
               this.mdfctnCntnt = this.mdfctnCntnt.slice(0, temp.position) + temp.str + this.mdfctnCntnt.slice(temp.position);
+              console.log("tempStr", temp.str);
+              console.log("mdfctnCntnt", this.mdfctnCntnt);
+
             } else if (temp.type === 'delete') {
               this.mdfctnCntnt = this.mdfctnCntnt.slice(0, temp.position) + this.mdfctnCntnt.slice(temp.position + temp.length);
+              console.log("delete tempStr", temp.str);
+              console.log("mdfctnCntnt", this.mdfctnCntnt);
             }
 
           }
