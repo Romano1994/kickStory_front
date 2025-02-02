@@ -1,6 +1,6 @@
 <template lang="">
     <div id="login-window">
-        <div id="login-text">
+        <div class="login-text">
             로그인
         </div>
         <div id="login-container">
@@ -23,30 +23,34 @@
                 <button class="button-box" @click="fnConfirmLogin">
                     확인
                 </button>
-                <button class="button-box" @click="fnFindPwd" style="color: black;">
-                    <router-link to="/join" style="color: black;">   
-                        비밀번호 찾기
-                    </router-link>
+                <button class="button-box" @click="fnFindPwdRequest" style="color: black;">
+                    비밀번호 찾기
                 </button>
             </div>
         </div>
+        <FindPwdModal :visible="findPwdModalOpen" :email="email" @close="findPwdModalOpen=false"/>
     </div>
 </template>
 <script>
-import axios from "axios";
+import FindPwdModal from "./popup/FindPwdModal.vue";
 export default {
+    components: {
+        FindPwdModal,
+    },
     data() {
         return {
             email:  "",
             mbrPwd: "",
             valid: {
                 email: false,
-            }
+            },
+            findPwdModalOpen: false,
         }
     },
 
     watch: {
         'email': function() {
+            // 이메일 형식 검증
             this.checkEamil();
         }
     },
@@ -78,17 +82,51 @@ export default {
             formData.append('username', this.email);
             formData.append('password', this.mbrPwd);
 
-            // 쿠키 저장을 위해서는 withCredentials 옵션을 활성화 해야됨
-            axios.post('/login', formData, { withCredentials: true })
-            .then(() => {
-                alert('로그인에 성공했습니다.');
-                // 홈으로 이동
-                // this.$router.push('/');
-                this.$router.replace({ path: '/', query: { refresh: Date.now() } });
-            })
-            .catch(() => {
-                alert('로그인에 실패했습니다.');
-            });
+            this.postApi('/login',
+                formData,   // param
+                () => {     // success
+                    alert('로그인에 성공했습니다.');
+                    // 홈으로 이동
+                    this.$router.push('/')
+                    .then(() => {
+                        window.location.reload();
+                    });    
+                },
+                () =>{      // fail
+                    alert('로그인에 실패했습니다.');
+                }
+            )
+        },
+
+        // 비밀번호 찾기 요청
+        fnFindPwdRequest() {
+            if(!confirm("입력하신 이메일로 인증번호를 전송하시겠습니까?")) {
+                return;
+            }
+
+            if(this.email == '' || this.valid.email) {
+                alert('이메일을 다시 입력해주세요.');
+                return;
+            }
+
+            this.findPwdModalOpen = true;
+            
+            let mbr = {"email": this.email};
+
+            this.postApi('/auth/findPwdRequest',
+                mbr,        // param
+                () => {     // success
+                    alert("인증번호가 발송됐습니다.");
+                },
+                (result) => {   //fail
+                    const message = result.response.data;
+                    if(message) {
+                        alert(message);
+                    } else {
+                        alert('비밀번호 찾기에 실패했습니다.');
+                    }
+                }
+            )
         },
     }
 }
@@ -98,7 +136,7 @@ export default {
         height: 30rem;
         align-content: center;
     }
-    #login-text {
+    .login-text {
         text-align: center;
         font-size: 2rem;
         margin-bottom: 1rem;
