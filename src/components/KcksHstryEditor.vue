@@ -11,6 +11,7 @@ export default {
     mdfctnCntnt: String,
     commCdDtl: String,
     kcksHstryMdfctnVer: Number,
+    kcksHstryMdfctnNo:Number,
   },
   emits: ['update:mdfctnCntnt', 'closeEditor'],
   components: {
@@ -54,10 +55,8 @@ export default {
       if (this.dmp === null) this.dmp = new diff_match_patch();
 
       let diff = this.orgMdfctnCntnt === null ? this.dmp.diff_main('', this.mdfctnCntnt.replaceAll('<br>', '')) : this.dmp.diff_main(this.orgMdfctnCntnt, this.mdfctnCntnt.replaceAll('<br>', ''));
-      console.log("diff",JSON.stringify(diff));
 
       this.dmp.diff_cleanupSemantic(diff);
-      console.log("diff",JSON.stringify(diff));
 
       let idx = 0;
       let operations = [];
@@ -92,15 +91,17 @@ export default {
         commCdDtl: this.commCdDtl,
         mdfctnCntnt: JSON.stringify(operations),
         kcksHstryMdfctnVer: this.kcksHstryMdfctnVer,
-      }, this.insertSuccess, this.fail);
+        kcksHstryMdfctnNo:this.kcksHstryMdfctnNo,
+      }, this.insertSuccess, this.insertFail);
       this.$emit('closeEditor');
 
     },
     insertSuccess() {
       console.log("insertSuccess");
     },
-    fail(err) {
-      console.log(err);
+    insertFail(err) {
+      // console.log(err);
+      alert(err.message);
     },
   }
 }

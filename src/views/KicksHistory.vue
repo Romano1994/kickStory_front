@@ -32,9 +32,12 @@
                 </div>
                 </span>
                 <span v-else-if="currIndex===index">
-                  <div class="card-text" v-if="kcksHstryMdfctnYn==='Y'" v-html="mdfctnCntnt">
+<!--                  <div class="card-text" v-if="kcksHstryMdfctnYn==='Y'" v-html="mdfctnCntnt">
                   </div>
                   <div class="card-text" v-else>
+                        {{ kcksHstry }}
+                  </div>-->
+                  <div class="card-text">
                         {{ kcksHstry }}
                   </div>
                 <div class="more-btn" v-if="!isShowSlide" @click="e=>openSlide(e,item.commCdDtl)">더보기</div>
@@ -54,7 +57,7 @@
   </div>
   <KcksHstrySlide v-if="isShowSlide" ref="slide" :orgMdfctnCntnt="mdfctnCntnt" :aiContent="kcksHstry"
                   :avg-rating="avgRating" :nop="nop" :release-year="releaseYear" :currCard="currCard"
-                  :kcksHstryMdfctnVer="kcksHstryMdfctnVer" @get-hstry="getHstry"
+                  :kcksHstryMdfctnVer="kcksHstryMdfctnVer"  :kcksHstryMdfctnNo="kcksHstryMdfctnNo" @get-hstry="getHstry"
                   @closeSlide="closeSlide"></KcksHstrySlide>
   <!--  <KcksHstrySlide ref="slide" :orgHstryContent="hstryContent" :aiContent="aiContent" @closeSlide="closeSlide" :currCard="currCard"></KcksHstrySlide>-->
 </template>
@@ -83,6 +86,7 @@ export default {
       releaseYear: '',
       avgRating: '',
       nop: '',
+      kcksHstryMdfctnNo:-1,
     }
   },
   methods: {
@@ -147,6 +151,7 @@ export default {
         this.releaseYear = '';
         this.avgRating = '';
         this.nop = '';
+        this.kcksHstryMdfctnNo=-1;
       } else if (this.currIndex === -1 || this.currIndex !== idx) {
         this.currCard = commCdDtl;
         this.getHstry();
@@ -206,7 +211,7 @@ export default {
           this.nop = data.nop;
           this.kcksHstryMdfctnVer = data.kcksHstryMdfctnVer;
           this.kcksHstry = data.kcksHstry;
-
+          this.kcksHstryMdfctnNo=data.kcksHstryMdfctnNo;
         }
         if (this.kcksHstryMdfctnYn !== 'N') {
           let cntntArr = JSON.parse(data.mdfctnCntnt);
@@ -215,15 +220,9 @@ export default {
             if (this.mdfctnCntnt.length === 0) {
               this.mdfctnCntnt = temp.str;
             } else if (temp.type === 'add') {
-
               this.mdfctnCntnt = this.mdfctnCntnt.slice(0, temp.position) + temp.str + this.mdfctnCntnt.slice(temp.position);
-              console.log("tempStr", temp.str);
-              console.log("mdfctnCntnt", this.mdfctnCntnt);
-
             } else if (temp.type === 'delete') {
               this.mdfctnCntnt = this.mdfctnCntnt.slice(0, temp.position) + this.mdfctnCntnt.slice(temp.position + temp.length);
-              console.log("delete tempStr", temp.str);
-              console.log("mdfctnCntnt", this.mdfctnCntnt);
             }
 
           }

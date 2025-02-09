@@ -5,7 +5,7 @@ export default {
   name: "KcksHstrySlide",
   components: {KcksHstryEditor},
   emits:['getHstry'],
-  props: ["orgMdfctnCntnt", "aiContent", "currCard", "avgRating", "nop", "releaseYear", "kcksHstryMdfctnVer"],
+  props: ["orgMdfctnCntnt", "aiContent", "currCard", "avgRating", "nop", "releaseYear", "kcksHstryMdfctnVer",'kcksHstryMdfctnNo'],
   data() {
     return {
       mdfctnCntnt: null,
@@ -121,7 +121,7 @@ export default {
     </span>
   </div>
   <KcksHstryEditor v-if="isShowEditor" :orgMdfctnCntnt="orgMdfctnCntnt" @update:mdfctnCntnt="updateContent"
-                   :mdfctnCntnt="mdfctnCntnt"
+                   :mdfctnCntnt="mdfctnCntnt" :kcksHstryMdfctnNo="kcksHstryMdfctnNo"
                    :commCdDtl="currCard" :content="content" @close-editor="closeEditor"
                    :kcksHstryMdfctnVer="kcksHstryMdfctnVer"></KcksHstryEditor>
   <!--  <KcksHstryEditor :hstryContent="hstryContent" @update:hstryContent="updateContent" :currCard="currCard"></KcksHstryEditor>-->
