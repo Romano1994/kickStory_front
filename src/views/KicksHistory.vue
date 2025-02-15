@@ -57,7 +57,8 @@
   </div>
   <KcksHstrySlide v-if="isShowSlide" ref="slide" :orgMdfctnCntnt="mdfctnCntnt" :aiContent="kcksHstry"
                   :avg-rating="avgRating" :nop="nop" :release-year="releaseYear" :currCard="currCard"
-                  :kcksHstryMdfctnVer="kcksHstryMdfctnVer"  :kcksHstryMdfctnNo="kcksHstryMdfctnNo" @get-hstry="getHstry"
+                  :kcksHstryMdfctnYn="kcksHstryMdfctnYn"
+                  :kcksHstryMdfctnVer="kcksHstryMdfctnVer" :kcksHstryMdfctnNo="kcksHstryMdfctnNo" @get-hstry="getHstry"
                   @closeSlide="closeSlide"></KcksHstrySlide>
   <!--  <KcksHstrySlide ref="slide" :orgHstryContent="hstryContent" :aiContent="aiContent" @closeSlide="closeSlide" :currCard="currCard"></KcksHstrySlide>-->
 </template>
@@ -86,7 +87,7 @@ export default {
       releaseYear: '',
       avgRating: '',
       nop: '',
-      kcksHstryMdfctnNo:-1,
+      kcksHstryMdfctnNo: -1,
     }
   },
   methods: {
@@ -151,7 +152,7 @@ export default {
         this.releaseYear = '';
         this.avgRating = '';
         this.nop = '';
-        this.kcksHstryMdfctnNo=-1;
+        this.kcksHstryMdfctnNo = -1;
       } else if (this.currIndex === -1 || this.currIndex !== idx) {
         this.currCard = commCdDtl;
         this.getHstry();
@@ -201,7 +202,7 @@ export default {
     setHstry(res) {
       let list = res.data;
 
-      this.mdfctnCntnt='';
+      this.mdfctnCntnt = '';
 
       list.forEach((data, idx) => {
         if (idx === 0) {
@@ -211,7 +212,6 @@ export default {
           this.nop = data.nop;
           this.kcksHstryMdfctnVer = data.kcksHstryMdfctnVer;
           this.kcksHstry = data.kcksHstry;
-          this.kcksHstryMdfctnNo=data.kcksHstryMdfctnNo;
         }
         if (this.kcksHstryMdfctnYn !== 'N') {
           let cntntArr = JSON.parse(data.mdfctnCntnt);
@@ -226,6 +226,7 @@ export default {
             }
 
           }
+          this.kcksHstryMdfctnNo = data.kcksHstryMdfctnNo;
 
         }
       })
