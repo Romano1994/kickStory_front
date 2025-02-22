@@ -29,3 +29,9 @@
     overflow-y: scroll;
     z-index: 9999;
 }
+.ql-editor  {
+    overflow-y: auto; /* 넘칠 경우 스크롤 */
+    height: 30rem;
+    word-wrap: break-word;
+    /*word-break: break-word;*/
+}

@@ -7,7 +7,7 @@ export default {
   name: "KcksHstrySlide",
   components: {KcksHstryEditor, KcksHstryMergeEditor},
   emits: ['getHstry'],
-  props: ["orgMdfctnCntnt", "aiContent", "currCard", "avgRating", "nop", "releaseYear", "kcksHstryMdfctnVer", 'kcksHstryMdfctnNo', 'kcksHstryMdfctnYn'],
+  props: ["orgMdfctnCntnt", "aiContent", "currCard", "avgRating", "nop", "releaseYear", "kcksHstryMdfctnVer", 'kcksHstryMdfctnNo', 'kcksHstryMdfctnYn', 'commCdDtlNm'],
   data() {
     return {
       mdfctnCntnt: '',
@@ -15,6 +15,7 @@ export default {
       isMerge: false,
       mergeCntntnt: '',
       dmp: null,
+      isRating: false,
     }
   },
   mounted() {
@@ -74,7 +75,7 @@ export default {
     <button type="button" class="close  ms-auto" aria-label="Close" @click="$emit('closeSlide')">
       <span aria-hidden="true">&times;</span>
     </button>
-    <h1>JORDAN 1</h1>
+    <h1>{{ commCdDtlNm }}</h1>
     <br><br>
     <span>
         <h4 class="slide-title">
@@ -90,7 +91,14 @@ export default {
               {{ avgRating + "/" + nop }} 명 참여중
             </span>
         </h4>
-        <button type="button" class="btn btn-outline-secondary">평가하기</button>
+        <button type="button" class="btn btn-outline-secondary" @click="isRating=!isRating">평가하기</button>
+      <!--        <div v-if="isRating">-->
+        <div>
+          <label style="width:0.5rem; overflow: hidden;" for="rating">★</label>
+          <input type="radio" id="rating" style="display:none;">
+          <label style="width:1rem; " for="rating">☆</label>
+          <input type="radio" id="rating" style="display:none;">
+        </div>
         <hr>
         <br>
       </span>

@@ -23,6 +23,31 @@
     display: grid;
 }
 
+::-webkit-scrollbar {
+    width: 0.5rem;  /* 세로축 스크롤바 폭 너비 */
+    height: 0.5rem;  /* 가로축 스크롤바 폭 너비 */
+}
+
+::-webkit-scrollbar-thumb {
+    /*background: var(--color1); !* 스크롤바 막대 색상 *!*/
+    /*border: 2px solid #9b6a2f; !* 스크롤바 막대 테두리 설정  *!*/
+    /*border-radius: 12px 12px 12px 12px;    */
+    background: var(white); /* 스크롤바 막대 색상 */
+    border: 2px solid white; /* 스크롤바 막대 테두리 설정  */
+    border-radius: 12px 12px 12px 12px;
+}
+
+/* 스크롤이 움직이는 뒷 배경 */
+::-webkit-scrollbar-track {
+    /*background: #9b6a2f; !* 스크롤바 뒷 배경 색상 *!*/
+    background: black; /* 스크롤바 뒷 배경 색상 */
+}
+
+::-webkit-scrollbar-corner {
+    /*background: #9b6a2f; !* 스크롤바 코너 색상 *!*/
+    background: black; /* 스크롤바 코너 색상 */
+}
+
 .mt20 {margin-top: 20px;}
 
 @media screen and (max-width: 1200px) {

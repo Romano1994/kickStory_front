@@ -57,7 +57,7 @@
   </div>
   <KcksHstrySlide v-if="isShowSlide" ref="slide" :orgMdfctnCntnt="mdfctnCntnt" :aiContent="kcksHstry"
                   :avg-rating="avgRating" :nop="nop" :release-year="releaseYear" :currCard="currCard"
-                  :kcksHstryMdfctnYn="kcksHstryMdfctnYn"
+                  :kcksHstryMdfctnYn="kcksHstryMdfctnYn" :commCdDtlNm="commCdDtlNm"
                   :kcksHstryMdfctnVer="kcksHstryMdfctnVer" :kcksHstryMdfctnNo="kcksHstryMdfctnNo" @get-hstry="getHstry"
                   @closeSlide="closeSlide"></KcksHstrySlide>
   <!--  <KcksHstrySlide ref="slide" :orgHstryContent="hstryContent" :aiContent="aiContent" @closeSlide="closeSlide" :currCard="currCard"></KcksHstrySlide>-->
@@ -88,6 +88,7 @@ export default {
       avgRating: '',
       nop: '',
       kcksHstryMdfctnNo: -1,
+      commCdDtlNm:'',
     }
   },
   methods: {
@@ -206,6 +207,7 @@ export default {
 
       list.forEach((data, idx) => {
         if (idx === 0) {
+          this.commCdDtlNm=data.commCdDtlNm;
           this.kcksHstryMdfctnYn = data.kcksHstryMdfctnYn;
           this.releaseYear = data.releaseYear;
           this.avgRating = data.avgRating;

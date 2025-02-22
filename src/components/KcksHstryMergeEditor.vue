@@ -138,7 +138,7 @@ export default {
     <div>
       <h2 class="slide-title">충돌 부분</h2>
       <hr>
-      <div v-html="diffCntnt" style="background-color: darkgrey;height:500px; overflow-y:auto"></div>
+      <div v-html="diffCntnt" style="background-color: darkgrey;height:25rem; overflow-y:auto"></div>
     </div>
     <br><br>
 
@@ -148,20 +148,17 @@ export default {
         <h2 class="slide-title">작성중인 내용</h2>
         <hr>
         <div>
-
-
-            <div  style="background-color:darkgrey;height:500px; overflow-y:auto;" v-html="mergeCntnt"></div>
-
+            <div  style="background-color:darkgrey;height:25rem; overflow-y:auto;" v-html="mergeCntnt"></div>
         </div>
       </div>
       <div style="  word-break: break-word;">
         <h2 class="slide-title">현재 내용</h2>
         <hr>
-        <div style="background-color:darkgrey;height:500px; overflow-y:auto;" v-html="orgMdfctnCntnt"></div>
+        <div style="background-color:darkgrey;height:25rem; overflow-y:auto;" v-html="orgMdfctnCntnt"></div>
       </div>
     </div>
     <br><br>
-    <h2 class="slide-title">About</h2>
+    <h2 class="slide-title">충돌 내용 편집</h2>
     <hr>
     <QuillEditor ref="quill" :content="mdfctnCntnt" content-type="html" :options="options"
                  @update:content="updateContent">
