@@ -84,7 +84,8 @@ export default {
 
             this.postApi('/login',
                 formData,   // param
-                () => {     // success
+                (result) => {     // success
+                    console.log(result.data);
                     alert('로그인에 성공했습니다.');
                     // 홈으로 이동
                     this.$router.push('/')

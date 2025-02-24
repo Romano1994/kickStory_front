@@ -1,5 +1,5 @@
 <template>
-    <div class="page-container grid-column-3">
+    <div class="page-container kp-container">
         <!-- 유저 정보 섹션-->
         <div class="info-div">
 
@@ -16,12 +16,32 @@
 </template>
 <script>
 export default {
-    
+    data() {
+        return {
+
+        }
+    },
+    mounted() {
+        
+    },
+    methods: {
+        getMbrInfo() {
+        }
+    }
 }
 </script>
 <style>
+    .kp-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        align-content: center;
+    }
     .info-div {
+        display: flex;
         border: 1px solid white;
-        min-height: 50px;
+        width: 40rem;
+        height: 10rem;
+        margin-top: 50px;
     }
 </style>
