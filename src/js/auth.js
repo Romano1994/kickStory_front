@@ -20,13 +20,21 @@ const checkExp = async () => {
     }
 
     if(isExpired) {
-        await axios.post("/auth/reissue", {})
-        .then(() => {
-        });
+
+        reissue;  
     }
 }
 
-  // 로그인 여부 확인
+// 토큰 재발급
+const reissue = () => {
+    try {
+        axios.post("/auth/reissue", {});
+    } catch(error) {
+        // 로그아웃 로직 추가
+    }
+}
+
+// 로그인 여부 확인
 const getLoginStatus = async () => {
     try {
       const result = await axios.post("/auth/loginStatus",{}, {withCredentials: true});
