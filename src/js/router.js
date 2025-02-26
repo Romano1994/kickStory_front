@@ -31,7 +31,7 @@ const router = createRouter({
 // 네비게이션 가드 - 전역 가드
 router.beforeEach(async(to, from, next) => {
   // 토큰 만료 체크 및 재발급
-  await auth.checkExp();
+  //await auth.checkExp();
 
   // 로그인 여부 검사
   const isLoggedIn = await auth.getLoginStatus();
