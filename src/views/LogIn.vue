@@ -33,6 +33,7 @@
 </template>
 <script>
 import FindPwdModal from "./popup/FindPwdModal.vue";
+import auth from "../js/auth"
 export default {
     components: {
         FindPwdModal,
@@ -87,6 +88,10 @@ export default {
                 (result) => {     // success
                     console.log(result.data);
                     alert('로그인에 성공했습니다.');
+
+                    // 토큰 재발급 등록
+                    auth.schduleTokenReissue();
+
                     // 홈으로 이동
                     this.$router.push('/')
                     .then(() => {

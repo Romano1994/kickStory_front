@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// 토큰 재발급
-const checkExp = async () => {
+// 토큰 만료 시간 확인
+const getExpTime = async () => {
     const cookies = document.cookie.split("; ");
     let expTime = "";
 
@@ -12,26 +12,31 @@ const checkExp = async () => {
         }
     }
 
-    let isExpired = false;
     if(expTime) {
-        isExpired = Date.now() >= expTime;
-    } else {
-        isExpired = false;
-    }
-
-    if(isExpired) {
-
-        reissue;  
+        return expTime - Math.floor(Date.now() / 1000);
     }
 }
 
-// 토큰 재발급
-const reissue = () => {
+// 토큰 재발급 axios
+const reissue = async () => {
     try {
-        axios.post("/auth/reissue", {});
+        await axios.post("/auth/reissue", {});
     } catch(error) {
-        // 로그아웃 로직 추가
+        // 재발급 실패 시 로그아웃
+        this.postApi('/logout', {}, () =>{
+            this.$router.push('/')
+            .then(() => {
+                window.location.reload();
+            });
+        })
     }
+}
+
+// 토큰 재발급 예약
+const schduleTokenReissue = () => {
+    const oneMinBefore = (getExpTime() - 60) * 1000;
+
+    setTimeout(reissue(), oneMinBefore > 0 ? oneMinBefore : 0);
 }
 
 // 로그인 여부 확인
@@ -44,4 +49,4 @@ const getLoginStatus = async () => {
     }
 }
 
-export default {checkExp, getLoginStatus};
+export default {schduleTokenReissue, getLoginStatus};
