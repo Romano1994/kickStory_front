@@ -87,6 +87,16 @@ export default{
       .catch((error)=>onFail(error,fail));
 
   },
+  patch:async function patchApi(url,param,success,fail){
+    // commSwitch.on('LoadingBar');
+
+    await checkExp();
+
+    axios.patch(url,param)
+      .then((data)=>response(data,success))
+      .catch((error)=>onFail(error,fail));
+
+  },
   delete:async function deleteApi(url,params,success,fail){
     let param={params}; 
 

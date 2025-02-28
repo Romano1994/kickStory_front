@@ -7,7 +7,7 @@ export default {
   name: "KcksHstrySlide",
   components: {KcksHstryEditor, KcksHstryMergeEditor},
   emits: ['getHstry'],
-  props: ["orgMdfctnCntnt", "aiContent", "currCard", "avgRating", "nop", "releaseYear", "kcksHstryMdfctnVer", 'kcksHstryMdfctnNo', 'kcksHstryMdfctnYn', 'commCdDtlNm'],
+  props: ["orgMdfctnCntnt", "aiContent", "commCdDtl", "avgRating", "nop", "releaseYear", "kcksHstryMdfctnVer", 'kcksHstryMdfctnNo', 'kcksHstryMdfctnYn', 'commCdDtlNm'],
   data() {
     return {
       mdfctnCntnt: '',
@@ -16,6 +16,7 @@ export default {
       mergeCntntnt: '',
       dmp: null,
       isRating: false,
+      rating: 0
     }
   },
   mounted() {
@@ -55,6 +56,19 @@ export default {
       this.dmp.diff_cleanupSemantic(diff);
       return diff;
     },
+    saveRating(){
+      // this.putApi('/rating',{commCdDtl:this.commCdDtl,rating:this.rating,mbrNo:this.mbrNo},this.succRating,this.ratingFail)
+      this.putApi('/rating',{commCdDtl:this.commCdDtl,rating:this.rating,mbrNo:1},this.succRating,this.ratingFail)
+      // this.patch('/rating',{commCdDtl:this.commCdDtl,rating:this.rating,mbrNo:1},this.succRating,this.fail)
+    },
+    succRating(res){
+      alert(res.data);
+      this.isRating=false;
+    },
+    ratingFail(err){
+      alert(err);
+    }
+
   },
   computed: {
     diffCntnt() {
@@ -66,6 +80,12 @@ export default {
       diff = diff.replaceAll('#ffe6e6', 'red');
       diff = diff.replaceAll('#e6ffe6', 'blue');
       return diff;
+    },
+    starArr() {
+      return Array.from({length: 5}, (_, i) => ({
+        id: `rating-star-${i + 1}`,
+        checked: (i + 1) <= this.rating
+      }));
     }
   }
 }
@@ -86,18 +106,23 @@ export default {
         <br>
 
         <h4 class="slide-title">
-          Ratings
-          <span>⭐
-              {{ avgRating + "/" + nop }} 명 참여중
+          Ratings⭐
+          <span>
+            {{ avgRating + "/" + nop }} 명 참여중
             </span>
         </h4>
-        <button type="button" class="btn btn-outline-secondary" @click="isRating=!isRating">평가하기</button>
-      <!--        <div v-if="isRating">-->
-        <div>
-          <label style="width:0.5rem; overflow: hidden;" for="rating">★</label>
-          <input type="radio" id="rating" style="display:none;">
-          <label style="width:1rem; " for="rating">☆</label>
-          <input type="radio" id="rating" style="display:none;">
+        <button type="button" class="btn btn-outline-secondary" v-if="!isRating" @click="isRating=!isRating">평가하기</button>
+        <button type="button" class="btn btn-outline-secondary" v-else-if="isRating" @click="saveRating">저장하기</button>
+        <div v-if="isRating">
+          <span v-for="(item,idx) in starArr" :key="(idx+1)">
+          <label :for="item.id">
+            <i class="bi bi-star" v-if="!item.checked"></i>
+            <i class="bi bi-star-fill" v-else></i>
+          </label>
+          <input type="radio" name="rating-star" :value="idx+1" v-model="rating" style="display:none"
+                 :id='item.id'>
+          </span>
+
         </div>
         <hr>
         <br>
@@ -175,7 +200,7 @@ export default {
   <KcksHstryEditor v-if=" isShowEditor && !isMerge" :orgMdfctnCntnt="orgMdfctnCntnt"
                    @update:mdfctnCntnt="updateContent"
                    :mdfctnCntnt="mdfctnCntnt" :kcksHstryMdfctnNo="kcksHstryMdfctnNo"
-                   :commCdDtl="currCard" :content="content" @close-editor="closeEditor"
+                   :commCdDtl="commCdDtl" :content="content" @close-editor="closeEditor"
                    @update:changeStatus="changeStatus"
                    :kcksHstryMdfctnYn="kcksHstryMdfctnYn"
                    :kcksHstryMdfctnVer="kcksHstryMdfctnVer"></KcksHstryEditor>
@@ -183,7 +208,7 @@ export default {
                         @update:mdfctnCntnt="updateContent"
                         :diffCntnt="diffCntnt"
                         :mdfctnCntnt="mdfctnCntnt" :kcksHstryMdfctnNo="kcksHstryMdfctnNo"
-                        :commCdDtl="currCard" :content="content" @close-editor="closeEditor"
+                        :commCdDtl="commCdDtl" :content="content" @close-editor="closeEditor"
                         @update:changeStatus="changeStatus" :mergeCntnt="mergeCntntnt"
                         :isMerge="isMerge" :kcksHstryMdfctnYn="kcksHstryMdfctnYn"
                         :kcksHstryMdfctnVer="kcksHstryMdfctnVer"></KcksHstryMergeEditor>

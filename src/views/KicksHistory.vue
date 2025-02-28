@@ -56,7 +56,7 @@
     </div>
   </div>
   <KcksHstrySlide v-if="isShowSlide" ref="slide" :orgMdfctnCntnt="mdfctnCntnt" :aiContent="kcksHstry"
-                  :avg-rating="avgRating" :nop="nop" :release-year="releaseYear" :currCard="currCard"
+                  :avg-rating="avgRating" :nop="nop" :release-year="releaseYear" :commCdDtl="currCard"
                   :kcksHstryMdfctnYn="kcksHstryMdfctnYn" :commCdDtlNm="commCdDtlNm"
                   :kcksHstryMdfctnVer="kcksHstryMdfctnVer" :kcksHstryMdfctnNo="kcksHstryMdfctnNo" @get-hstry="getHstry"
                   @closeSlide="closeSlide"></KcksHstrySlide>
@@ -78,7 +78,7 @@ export default {
       isEnter: false,
       isShowSlide: false,
       currCard: -1,
-      hstryContent: '안녕여기 데이터는\n 이렇게',
+      hstryContent: '',
       aiContent: '',
       kcksHstryMdfctnYn: "N",
       mdfctnCntnt: '',
