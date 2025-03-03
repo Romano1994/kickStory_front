@@ -88,7 +88,7 @@ export default {
       avgRating: '',
       nop: '',
       kcksHstryMdfctnNo: -1,
-      commCdDtlNm:'',
+      commCdDtlNm: '',
     }
   },
   methods: {
@@ -113,11 +113,17 @@ export default {
         let jordan = this.$refs[`jordan${idx}`][0];
         let overlay = this.$refs[`overlay${idx}`][0];
         if (!flag) {
-          jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
-          overlay.style = 'filter:opacity(0)';
-          overlay.style = '';
+          requestAnimationFrame(() => {
+
+            jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
+            overlay.style = 'filter:opacity(0)';
+            overlay.style = '';
+
+          })
+
           return;
         }
+
         let offsetX = e.offsetX;
         let offsetY = e.offsetY;
 
@@ -127,9 +133,13 @@ export default {
         let yDegree = (offsetX - width / 2) / width * 50;
         let xDegree = (offsetY - height / 2) / height * 50;
 
-        jordan.style = `transform: rotateY(${yDegree}deg) rotateX(${xDegree}deg);`;
-        overlay.style = `background: radial-gradient(farthest-corner at ${offsetX}px ${offsetY}px, #ffffff, #000000); filter:brightness(1.3) opacity(0.7)`;
+        requestAnimationFrame(() => {
+          overlay.style = `background: radial-gradient(farthest-corner at ${offsetX}px ${offsetY}px, #ffffff, #000000); filter:brightness(1.3) opacity(0.7);`;
+          jordan.style = `transform: rotateY(${yDegree}deg) rotateX(${xDegree}deg);-webkit-transform: rotateY(${yDegree}deg) rotateX(${xDegree}deg);`;
+        });
+
       }
+
     },
     changeCardSize(idx, commCdDtl) {
 
@@ -163,21 +173,24 @@ export default {
         wrapper.classList.toggle("big");
         let rect = wrapper.getBoundingClientRect();
 
+
         document.documentElement.style.setProperty('--left', `${rect.left}px`);
         document.documentElement.style.setProperty('--top', `${rect.top}px`);
         document.documentElement.style.setProperty('--scroll', `${window.scrollY}px`);
 
-        this.isEnter = true;
+        requestAnimationFrame(() => {
+          this.isEnter = true;
 
-        if ((idx + 1) % 3 !== 0) {
-          wrapper.style = `animation: bigger-left 3s forwards;-webkit-animation:bigger-left 3s forwards;`;
-          // wrapper.classList.add("bigger-left"); // 클래스 추가
-        } else {
-          wrapper.style = `animation: bigger-right 3s forwards;-webkit-animation:bigger-right 3s forwards;`;
-          // wrapper.classList.add("bigger-right");
-        }
-        jordan.style = 'animation: flip 3s';
-        // jordan.classList.add("flip");
+          if ((idx + 1) % 3 !== 0) {
+            wrapper.style = `animation: bigger-left 3s forwards;`;
+            // wrapper.classList.add("bigger-left"); // 클래스 추가
+          } else {
+            wrapper.style = `animation: bigger-right 3s forwards;`;
+            // wrapper.classList.add("bigger-right");
+          }
+          // jordan.style = '-webkit-animation: flip 3s;animation: flip 3s;';
+          jordan.classList.add("flip");
+        })
       }
 
     },
@@ -207,7 +220,7 @@ export default {
 
       list.forEach((data, idx) => {
         if (idx === 0) {
-          this.commCdDtlNm=data.commCdDtlNm;
+          this.commCdDtlNm = data.commCdDtlNm;
           this.kcksHstryMdfctnYn = data.kcksHstryMdfctnYn;
           this.releaseYear = data.releaseYear;
           this.avgRating = data.avgRating;
