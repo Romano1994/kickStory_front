@@ -34,6 +34,7 @@
 <script>
 import FindPwdModal from "./popup/FindPwdModal.vue";
 import auth from "../js/auth"
+import axios from "axios";
 export default {
     components: {
         FindPwdModal,
@@ -73,7 +74,7 @@ export default {
         },
 
         //로그인
-        fnConfirmLogin() {
+        async fnConfirmLogin() {
             if(this.email == '' || this.valid.email) {
                 alert('이메일을 다시 입력해주세요.');
                 return;
@@ -83,25 +84,21 @@ export default {
             formData.append('username', this.email);
             formData.append('password', this.mbrPwd);
 
-            this.postApi('/login',
-                formData,   // param
-                (result) => {     // success
-                    console.log(result.data);
-                    alert('로그인에 성공했습니다.');
+            const response = await axios.post('/login', formData);
 
-                    // 토큰 재발급 등록
-                    auth.schduleTokenReissue();
+            const access = response.headers['authorization']?.split(' ')[1];
+            sessionStorage.setItem('access', access);
+            // Axios 기본 헤더에 Access Token 설정
+            axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
 
-                    // 홈으로 이동
-                    this.$router.push('/')
-                    .then(() => {
-                        window.location.reload();
-                    });    
-                },
-                () =>{      // fail
-                    alert('로그인에 실패했습니다.');
-                }
-            )
+            // 토큰 재발급 예약
+            auth.scheduleTokenReissue();
+
+            // 홈으로 이동
+            this.$router.push('/');
+            // .then(() => {
+            //     window.location.reload();
+            // }); 
         },
 
         // 비밀번호 찾기 요청

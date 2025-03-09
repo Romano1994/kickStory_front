@@ -26,7 +26,7 @@ const menus = [
         name: "KicksProfile",//컴포넌트명
         componentPath:"KicksProfile",//실제 컴포넌트 경로
         depth:1,
-        meta: {requiresAuth:true}
+        meta: {requiresAuth:false}
     },
     {
         path: "/kc",

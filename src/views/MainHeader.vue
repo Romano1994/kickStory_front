@@ -29,33 +29,44 @@
 </div>
 </template>
 <script>
+import axios from "axios";
 export default {
-    props: {
-        isLoggedIn: {
-            type: String,
-            Required: false
-        }
+    data() {
+      return {
+        isLoggedIn : false,
+      }
     },
+    mounted() {
+      const access = sessionStorage.getItem("access");
 
+      if(!access) {
+        this.isLoggedIn = false;
+      } else {
+        this.isLoggedIn = true;
+      }
+    },
+      
     methods: {
         logOut() {
-            this.postApi(
-              '/logout',
-              {},       // param
-              () => {   // success
-                alert('로그아웃에 성공했습니다.');
-                // 홈으로 이동
-                this.$router.push('/')
-                // this.$router.replace({ path: '/', query: { refresh: Date.now() } })
-                .then(() => {
-                    window.location.reload();
-                });
-              },
-              () => {   //fail
-                alert('로그아웃에 실패했습니다.');
-              }
-            )
-        }
+          delete axios.defaults.headers.common['Authorization'];
+          sessionStorage.removeItem('access');
+          this.postApi(
+            '/logout',
+            {},       // param
+            () => {   // success
+              alert('로그아웃에 성공했습니다.');
+              // 홈으로 이동
+              this.$router.push('/')
+              // this.$router.replace({ path: '/', query: { refresh: Date.now() } })
+              .then(() => {
+                  window.location.reload();
+              });
+            },
+            () => {   //fail
+              alert('로그아웃에 실패했습니다.');
+            }
+          )
+        },
     }
 }
 </script>
