@@ -95,10 +95,10 @@ export default {
             auth.scheduleTokenReissue();
 
             // 홈으로 이동
-            this.$router.push('/');
-            // .then(() => {
-            //     window.location.reload();
-            // }); 
+            this.$router.push('/')
+            .then(() => {
+                window.location.reload();
+            }); 
         },
 
         // 비밀번호 찾기 요청

@@ -30,6 +30,7 @@
 </template>
 <script>
 import axios from "axios";
+import userUtils from "../js/userUtils"
 export default {
     data() {
       return {
@@ -37,13 +38,15 @@ export default {
       }
     },
     mounted() {
-      const access = sessionStorage.getItem("access");
 
-      if(!access) {
-        this.isLoggedIn = false;
-      } else {
-        this.isLoggedIn = true;
-      }
+      this.isLoggedIn = userUtils.isLoggedIn();
+      // const access = sessionStorage.getItem("access");
+
+      // if(!access) {
+      //   this.isLoggedIn = false;
+      // } else {
+      //   this.isLoggedIn = true;
+      // }
     },
       
     methods: {
