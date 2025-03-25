@@ -1,5 +1,7 @@
+const accessName = process.env.VUE_APP_JWT_ACCESSNAME;
+
 const isLoggedIn = () => {
-    const access = sessionStorage.getItem("access");
+    const access = sessionStorage.getItem(accessName);
 
     if(!access) {
         return false;

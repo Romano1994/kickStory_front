@@ -33,8 +33,11 @@
 </template>
 <script>
 import FindPwdModal from "./popup/FindPwdModal.vue";
-import auth from "../js/auth"
+import auth from "../js/auth";
 import axios from "axios";
+
+const accessName = auth.accessName;
+
 export default {
     components: {
         FindPwdModal,
@@ -87,18 +90,18 @@ export default {
             const response = await axios.post('/login', formData);
 
             const access = response.headers['authorization']?.split(' ')[1];
-            sessionStorage.setItem('access', access);
+            sessionStorage.setItem(accessName, access);
             // Axios 기본 헤더에 Access Token 설정
             axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
-
-            // 토큰 재발급 예약
-            auth.scheduleTokenReissue();
 
             // 홈으로 이동
             this.$router.push('/')
             .then(() => {
                 window.location.reload();
             }); 
+            
+            // 토큰 재발급 예약
+            auth.scheduleTokenReissue();
         },
 
         // 비밀번호 찾기 요청

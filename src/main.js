@@ -25,7 +25,7 @@ function loadComponents(){
 
 // 새로고침 설정
 window.onload = () => {
-  const access = sessionStorage.getItem("access");
+  const access = sessionStorage.getItem(auth.accessName);
     
   if(access) {
       auth.scheduleTokenReissue();

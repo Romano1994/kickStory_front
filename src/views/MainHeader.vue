@@ -31,6 +31,8 @@
 <script>
 import axios from "axios";
 import userUtils from "../js/userUtils"
+import auth from "../js/auth";
+
 export default {
     data() {
       return {
@@ -40,19 +42,12 @@ export default {
     mounted() {
 
       this.isLoggedIn = userUtils.isLoggedIn();
-      // const access = sessionStorage.getItem("access");
-
-      // if(!access) {
-      //   this.isLoggedIn = false;
-      // } else {
-      //   this.isLoggedIn = true;
-      // }
     },
       
     methods: {
         logOut() {
           delete axios.defaults.headers.common['Authorization'];
-          sessionStorage.removeItem('access');
+          sessionStorage.removeItem(auth.accessName);
           this.postApi(
             '/logout',
             {},       // param
@@ -60,7 +55,6 @@ export default {
               alert('로그아웃에 성공했습니다.');
               // 홈으로 이동
               this.$router.push('/')
-              // this.$router.replace({ path: '/', query: { refresh: Date.now() } })
               .then(() => {
                   window.location.reload();
               });

@@ -6,13 +6,14 @@ axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL;
 axios.defaults.paramsSerializer = function(paramObj) {
   const params = new URLSearchParams()
   for (const key in paramObj) {
-      params.append(key, paramObj[key])
+    params.append(key, paramObj[key])
   }
-
+  
   return params.toString()
 }
 
-const access = sessionStorage.getItem("access");
+const accessName = process.env.VUE_APP_JWT_ACCESSNAME;
+const access = sessionStorage.getItem(accessName);
     
 if(access) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;

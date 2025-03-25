@@ -1,8 +1,10 @@
 import axios from "axios";
 
+const accessName = process.env.VUE_APP_JWT_ACCESSNAME;
+
 // 토큰 만료 시간 확인
 const getExpTime = () => {
-    const access = sessionStorage.getItem("access");
+    const access = sessionStorage.getItem(accessName);
 
     if(!access) {
         return null;
@@ -29,12 +31,11 @@ const getExpTime = () => {
 
 // 토큰 재발급 axios
 const reissue = async() => {
-    
     try {
         const response = await axios.post("/auth/reissue", {});
 
         const access = response.headers['authorization']?.split(' ')[1];
-        sessionStorage.setItem('access', access);
+        sessionStorage.setItem(accessName, access);
         // Axios 기본 헤더에 Access Token 설정
         axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
         
@@ -56,12 +57,15 @@ const scheduleTokenReissue = () => {
     const exptime = Number(getExpTime());
     const oneMinBefore = exptime - (Date.now()) - 60000;
 
+    const parseSecond = Math.max(oneMinBefore / 1000, 0);
+    console.log("토큰 재발급 예정:", parseSecond.toFixed(2));
+
     setTimeout(reissue, oneMinBefore > 0 ? oneMinBefore : 0);
 }
 
 // 로그인 여부 확인
 const getLoginStatus = async () => {
-    const access = sessionStorage.getItem("access");
+    const access = sessionStorage.getItem(accessName);
     
     if(access) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
@@ -75,4 +79,4 @@ const getLoginStatus = async () => {
     }
 }
 
-export default {scheduleTokenReissue, getLoginStatus};
+export default {scheduleTokenReissue, getLoginStatus, accessName};
