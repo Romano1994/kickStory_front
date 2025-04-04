@@ -91,7 +91,7 @@ export default {
         }
       }//for
 
-      this.postApi('/kcksHstryMdfctn', {
+      this.postApi('/kcks-hstry-mdfctn', {
         mbrNo: 1,
         commCdDtl: this.commCdDtl,
         mdfctnCntnt: JSON.stringify(operations),

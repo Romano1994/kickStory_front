@@ -56,16 +56,20 @@ export default {
       this.dmp.diff_cleanupSemantic(diff);
       return diff;
     },
-    saveRating(){
+    saveRating() {
       // this.putApi('/rating',{commCdDtl:this.commCdDtl,rating:this.rating,mbrNo:this.mbrNo},this.succRating,this.ratingFail)
-      this.putApi('/rating',{commCdDtl:this.commCdDtl,rating:this.rating,mbrNo:1},this.succRating,this.ratingFail)
+      this.putApi('/rating', {
+        commCdDtl: this.commCdDtl,
+        rating: this.rating,
+        mbrNo: 1
+      }, this.succRating, this.ratingFail)
       // this.patch('/rating',{commCdDtl:this.commCdDtl,rating:this.rating,mbrNo:1},this.succRating,this.fail)
     },
-    succRating(res){
+    succRating(res) {
       alert(res.data);
-      this.isRating=false;
+      this.isRating = false;
     },
-    ratingFail(err){
+    ratingFail(err) {
       alert(err);
     }
 
@@ -111,7 +115,8 @@ export default {
             {{ avgRating + "/" + nop }} 명 참여중
             </span>
         </h4>
-        <button type="button" class="btn btn-outline-secondary" v-if="!isRating" @click="isRating=!isRating">평가하기</button>
+        <button type="button" class="btn btn-outline-secondary" v-if="!isRating"
+                @click="isRating=!isRating">평가하기</button>
         <button type="button" class="btn btn-outline-secondary" v-else-if="isRating" @click="saveRating">저장하기</button>
         <div v-if="isRating">
           <span v-for="(item,idx) in starArr" :key="(idx+1)">
@@ -153,7 +158,7 @@ export default {
       <h2>About</h2>
       <span>ai가 작성한 내용입니다.</span>
       <hr>
-      <div>
+      <div class="slide-ai-content">
         {{ aiContent }}
       </div>
     </span>
@@ -163,7 +168,7 @@ export default {
       <h2>About</h2>
       <span>ai가 작성한 내용입니다.</span>
       <hr>
-      <div>
+      <div class="slide-ai-content">
         {{ aiContent }}
       </div>
       <br><br>
