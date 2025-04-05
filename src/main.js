@@ -2,6 +2,7 @@ import { createApp, defineAsyncComponent } from 'vue'
 import App from './App.vue'
 import router from '@/js/router'
 import "bootstrap/dist/css/bootstrap.min.css"
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import "bootstrap"
 import './js/total-css';
 import apiCall from './js/menu/mixins/api/api-call';

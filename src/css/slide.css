@@ -20,3 +20,10 @@
     display:inline-flex;
     margin-right:1rem;
 }
+
+.slide-ai-content{
+    white-space: pre-wrap;;
+    word-wrap: break-word;
+    word-break: break-all;
+    font: bold 1rem/1.5 Helvetica, sans-serif;
+}

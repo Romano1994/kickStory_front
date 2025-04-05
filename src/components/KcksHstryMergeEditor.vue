@@ -9,10 +9,13 @@ export default {
     currCard: String,
     orgMdfctnCntnt: String,
     mdfctnCntnt: String,
+    mergeCntnt: String,
     commCdDtl: String,
     kcksHstryMdfctnVer: Number,
     kcksHstryMdfctnNo: Number,
+    isMerge: Boolean,
     kcksHstryMdfctnYn: String,
+    diffCntnt: String,
   },
   emits: ['update:mdfctnCntnt', 'closeEditor'],
   components: {
@@ -21,6 +24,11 @@ export default {
   mounted() {
   },
   watch: {
+    orgMdfctnCntnt(newVal) {
+      if (this.isMerge) {
+        this.updateContent(newVal);
+      }
+    }
   },
   data() {
     return {
@@ -91,7 +99,7 @@ export default {
         }
       }//for
 
-      this.postApi('/kcks-hstry-mdfctn', {
+      this.postApi('/kcksHstryMdfctn', {
         mbrNo: 1,
         commCdDtl: this.commCdDtl,
         mdfctnCntnt: JSON.stringify(operations),
@@ -120,13 +128,37 @@ export default {
 </script>
 
 <template>
-  <div class="editor-wrapper">
+  <div class="merge-editor-wrapper">
     <button type="button" class="close  ms-auto" aria-label="Close" @click="$emit('closeEditor')">
       <span aria-hidden="true">&times;</span>
     </button>
     <h1>JORDAN 1</h1>
     <br><br>
-    <h2 class="slide-title">About</h2>
+
+    <div>
+      <h2 class="slide-title">충돌 부분</h2>
+      <hr>
+      <div v-html="diffCntnt" style="background-color: darkgrey;height:25rem; overflow-y:auto"></div>
+    </div>
+    <br><br>
+
+    <!--    <div v-if="isMerge">-->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); width: 100%; column-gap: 20px; ">
+      <div style="  word-break: break-word;">
+        <h2 class="slide-title">작성중인 내용</h2>
+        <hr>
+        <div>
+            <div  style="background-color:darkgrey;height:25rem; overflow-y:auto;" v-html="mergeCntnt"></div>
+        </div>
+      </div>
+      <div style="  word-break: break-word;">
+        <h2 class="slide-title">현재 내용</h2>
+        <hr>
+        <div style="background-color:darkgrey;height:25rem; overflow-y:auto;" v-html="orgMdfctnCntnt"></div>
+      </div>
+    </div>
+    <br><br>
+    <h2 class="slide-title">충돌 내용 편집</h2>
     <hr>
     <QuillEditor ref="quill" :content="mdfctnCntnt" content-type="html" :options="options"
                  @update:content="updateContent">

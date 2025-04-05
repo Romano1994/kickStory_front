@@ -32,9 +32,12 @@
                 </div>
                 </span>
                 <span v-else-if="currIndex===index">
-                  <div class="card-text" v-if="kcksHstryMdfctnYn==='Y'" v-html="mdfctnCntnt">
+<!--                  <div class="card-text" v-if="kcksHstryMdfctnYn==='Y'" v-html="mdfctnCntnt">
                   </div>
                   <div class="card-text" v-else>
+                        {{ kcksHstry }}
+                  </div>-->
+                  <div class="card-text">
                         {{ kcksHstry }}
                   </div>
                 <div class="more-btn" v-if="!isShowSlide" @click="e=>openSlide(e,item.commCdDtl)">더보기</div>
@@ -53,8 +56,9 @@
     </div>
   </div>
   <KcksHstrySlide v-if="isShowSlide" ref="slide" :orgMdfctnCntnt="mdfctnCntnt" :aiContent="kcksHstry"
-                  :avg-rating="avgRating" :nop="nop" :release-year="releaseYear" :currCard="currCard"
-                  :kcksHstryMdfctnVer="kcksHstryMdfctnVer" @get-hstry="getHstry"
+                  :avg-rating="avgRating" :nop="nop" :release-year="releaseYear" :commCdDtl="currCard"
+                  :kcksHstryMdfctnYn="kcksHstryMdfctnYn" :commCdDtlNm="commCdDtlNm"
+                  :kcksHstryMdfctnVer="kcksHstryMdfctnVer" :kcksHstryMdfctnNo="kcksHstryMdfctnNo" @get-hstry="getHstry"
                   @closeSlide="closeSlide"></KcksHstrySlide>
   <!--  <KcksHstrySlide ref="slide" :orgHstryContent="hstryContent" :aiContent="aiContent" @closeSlide="closeSlide" :currCard="currCard"></KcksHstrySlide>-->
 </template>
@@ -74,7 +78,7 @@ export default {
       isEnter: false,
       isShowSlide: false,
       currCard: -1,
-      hstryContent: '안녕여기 데이터는\n 이렇게',
+      hstryContent: '',
       aiContent: '',
       kcksHstryMdfctnYn: "N",
       mdfctnCntnt: '',
@@ -83,6 +87,8 @@ export default {
       releaseYear: '',
       avgRating: '',
       nop: '',
+      kcksHstryMdfctnNo: -1,
+      commCdDtlNm: '',
     }
   },
   methods: {
@@ -93,7 +99,8 @@ export default {
       return require('@/assets' + src);
     },
     getSmmry() {
-      this.getApi('/smmryHstry', {commCd: '0001'}, this.setSmmry, this.fail);
+      // this.getApi('/smmryHstry', {commCd: '0001'}, this.setSmmry, this.fail);
+      this.getApi('/smmry-hstry/0001', {}, this.setSmmry, this.fail);
     },
     setSmmry(res) {
       this.cards = res.data;
@@ -107,11 +114,17 @@ export default {
         let jordan = this.$refs[`jordan${idx}`][0];
         let overlay = this.$refs[`overlay${idx}`][0];
         if (!flag) {
-          jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
-          overlay.style = 'filter:opacity(0)';
-          overlay.style = '';
+          requestAnimationFrame(() => {
+
+            jordan.style = `transform: rotateY(0deg) rotateX(0deg);`;
+            overlay.style = 'filter:opacity(0)';
+            overlay.style = '';
+
+          })
+
           return;
         }
+
         let offsetX = e.offsetX;
         let offsetY = e.offsetY;
 
@@ -121,9 +134,13 @@ export default {
         let yDegree = (offsetX - width / 2) / width * 50;
         let xDegree = (offsetY - height / 2) / height * 50;
 
-        jordan.style = `transform: rotateY(${yDegree}deg) rotateX(${xDegree}deg);`;
-        overlay.style = `background: radial-gradient(farthest-corner at ${offsetX}px ${offsetY}px, #ffffff, #000000); filter:brightness(1.3) opacity(0.7)`;
+        requestAnimationFrame(() => {
+          overlay.style = `background: radial-gradient(farthest-corner at ${offsetX}px ${offsetY}px, #ffffff, #000000); filter:brightness(1.3) opacity(0.7);`;
+          jordan.style = `transform: rotateY(${yDegree}deg) rotateX(${xDegree}deg);-webkit-transform: rotateY(${yDegree}deg) rotateX(${xDegree}deg);`;
+        });
+
       }
+
     },
     changeCardSize(idx, commCdDtl) {
 
@@ -147,6 +164,7 @@ export default {
         this.releaseYear = '';
         this.avgRating = '';
         this.nop = '';
+        this.kcksHstryMdfctnNo = -1;
       } else if (this.currIndex === -1 || this.currIndex !== idx) {
         this.currCard = commCdDtl;
         this.getHstry();
@@ -156,21 +174,24 @@ export default {
         wrapper.classList.toggle("big");
         let rect = wrapper.getBoundingClientRect();
 
+
         document.documentElement.style.setProperty('--left', `${rect.left}px`);
         document.documentElement.style.setProperty('--top', `${rect.top}px`);
         document.documentElement.style.setProperty('--scroll', `${window.scrollY}px`);
 
-        this.isEnter = true;
+        requestAnimationFrame(() => {
+          this.isEnter = true;
 
-        if ((idx + 1) % 3 !== 0) {
-          wrapper.style = `animation: bigger-left 3s forwards;-webkit-animation:bigger-left 3s forwards;`;
-          // wrapper.classList.add("bigger-left"); // 클래스 추가
-        } else {
-          wrapper.style = `animation: bigger-right 3s forwards;-webkit-animation:bigger-right 3s forwards;`;
-          // wrapper.classList.add("bigger-right");
-        }
-        jordan.style = 'animation: flip 3s';
-        // jordan.classList.add("flip");
+          if ((idx + 1) % 3 !== 0) {
+            wrapper.style = `animation: bigger-left 3s forwards;`;
+            // wrapper.classList.add("bigger-left"); // 클래스 추가
+          } else {
+            wrapper.style = `animation: bigger-right 3s forwards;`;
+            // wrapper.classList.add("bigger-right");
+          }
+          // jordan.style = '-webkit-animation: flip 3s;animation: flip 3s;';
+          jordan.classList.add("flip");
+        })
       }
 
     },
@@ -191,22 +212,22 @@ export default {
 
     },
     getHstry() {
-      this.getApi(`/kcksHstry/${this.currCard}`, null, this.setHstry, this.fail);
+      this.getApi(`/kcks-hstry/${this.currCard}`, null, this.setHstry, this.fail);
     },
     setHstry(res) {
       let list = res.data;
 
-      this.mdfctnCntnt='';
+      this.mdfctnCntnt = '';
 
       list.forEach((data, idx) => {
         if (idx === 0) {
+          this.commCdDtlNm = data.commCdDtlNm;
           this.kcksHstryMdfctnYn = data.kcksHstryMdfctnYn;
           this.releaseYear = data.releaseYear;
           this.avgRating = data.avgRating;
           this.nop = data.nop;
           this.kcksHstryMdfctnVer = data.kcksHstryMdfctnVer;
           this.kcksHstry = data.kcksHstry;
-
         }
         if (this.kcksHstryMdfctnYn !== 'N') {
           let cntntArr = JSON.parse(data.mdfctnCntnt);
@@ -215,18 +236,13 @@ export default {
             if (this.mdfctnCntnt.length === 0) {
               this.mdfctnCntnt = temp.str;
             } else if (temp.type === 'add') {
-
               this.mdfctnCntnt = this.mdfctnCntnt.slice(0, temp.position) + temp.str + this.mdfctnCntnt.slice(temp.position);
-              console.log("tempStr", temp.str);
-              console.log("mdfctnCntnt", this.mdfctnCntnt);
-
             } else if (temp.type === 'delete') {
               this.mdfctnCntnt = this.mdfctnCntnt.slice(0, temp.position) + this.mdfctnCntnt.slice(temp.position + temp.length);
-              console.log("delete tempStr", temp.str);
-              console.log("mdfctnCntnt", this.mdfctnCntnt);
             }
 
           }
+          this.kcksHstryMdfctnNo = data.kcksHstryMdfctnNo;
 
         }
       })

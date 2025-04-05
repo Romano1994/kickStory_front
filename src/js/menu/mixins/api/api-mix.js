@@ -12,6 +12,9 @@ export default{
         putApi(url,param,success,fail){
             this.$apiCall.put(url,param,success,fail);
         },
+        patchApi(url,param,success,fail){
+            this.$apiCall.patch(url,param,success,fail);
+        },
         deleteApi(url,param,success,fail){
             this.$apiCall.delete(url,param,success,fail);
         },
