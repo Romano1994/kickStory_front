@@ -1,4 +1,5 @@
 import axios from "axios";
+import router from './router';
 
 const accessName = process.env.VUE_APP_JWT_ACCESSNAME;
 
@@ -43,12 +44,19 @@ const reissue = async() => {
 
     } catch(error) {
         // 재발급 실패 시 로그아웃
-        axios.post('/logout', {}, () =>{
-            this.$router.push('/')
+        delete axios.defaults.headers.common['Authorization'];
+        sessionStorage.removeItem(accessName);
+        axios.post('/logout', {})
+        .then(() => {
+            // 홈으로 이동
+            router.push('/')
             .then(() => {
                 window.location.reload();
             });
         })
+        .catch(() => {
+            alert('시스템 에러가 발생했습니다. 관리자에게 문의바랍니다.');
+        });
     }
 }
 
@@ -56,9 +64,6 @@ const reissue = async() => {
 const scheduleTokenReissue = () => {
     const exptime = Number(getExpTime());
     const oneMinBefore = exptime - (Date.now()) - 60000;
-
-    const parseSecond = Math.max(oneMinBefore / 1000, 0);
-    console.log("토큰 재발급 예정:", parseSecond.toFixed(2));
 
     setTimeout(reissue, oneMinBefore > 0 ? oneMinBefore : 0);
 }

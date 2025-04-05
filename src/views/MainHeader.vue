@@ -29,9 +29,7 @@
 </div>
 </template>
 <script>
-import axios from "axios";
 import userUtils from "../js/userUtils"
-import auth from "../js/auth";
 
 export default {
     data() {
@@ -46,23 +44,7 @@ export default {
       
     methods: {
         logOut() {
-          delete axios.defaults.headers.common['Authorization'];
-          sessionStorage.removeItem(auth.accessName);
-          this.postApi(
-            '/logout',
-            {},       // param
-            () => {   // success
-              alert('로그아웃에 성공했습니다.');
-              // 홈으로 이동
-              this.$router.push('/')
-              .then(() => {
-                  window.location.reload();
-              });
-            },
-            () => {   //fail
-              alert('로그아웃에 실패했습니다.');
-            }
-          )
+          userUtils.logOut();
         },
     }
 }

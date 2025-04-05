@@ -36,8 +36,6 @@ import FindPwdModal from "./popup/FindPwdModal.vue";
 import auth from "../js/auth";
 import axios from "axios";
 
-const accessName = auth.accessName;
-
 export default {
     components: {
         FindPwdModal,
@@ -90,7 +88,7 @@ export default {
             const response = await axios.post('/login', formData);
 
             const access = response.headers['authorization']?.split(' ')[1];
-            sessionStorage.setItem(accessName, access);
+            sessionStorage.setItem(auth.accessName, access);
             // Axios 기본 헤더에 Access Token 설정
             axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
 

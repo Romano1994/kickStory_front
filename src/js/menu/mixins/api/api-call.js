@@ -1,4 +1,5 @@
 import axios from "axios";
+import auth from "../../../auth";
 // import { commSwitch } from "@/js/comm-switch";
 
 axios.defaults.withCredentials = true;
@@ -12,8 +13,7 @@ axios.defaults.paramsSerializer = function(paramObj) {
   return params.toString()
 }
 
-const accessName = process.env.VUE_APP_JWT_ACCESSNAME;
-const access = sessionStorage.getItem(accessName);
+const access = sessionStorage.getItem(auth.accessName);
     
 if(access) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;

@@ -1,7 +1,9 @@
-const accessName = process.env.VUE_APP_JWT_ACCESSNAME;
+import axios from "axios";
+import auth from "../js/auth";
+import router from './router';
 
 const isLoggedIn = () => {
-    const access = sessionStorage.getItem(accessName);
+    const access = sessionStorage.getItem(auth.accessName);
 
     if(!access) {
         return false;
@@ -23,4 +25,21 @@ const isLoggedIn = () => {
     }
 }
 
-export default {isLoggedIn};
+const logOut = () => {
+    delete axios.defaults.headers.common['Authorization'];
+    sessionStorage.removeItem(auth.accessName);
+    axios.post('/logout', {})
+        .then(() => {
+            alert('로그아웃에 성공했습니다.');
+            // 홈으로 이동
+            router.push('/')
+            .then(() => {
+                window.location.reload();
+            });
+        })
+        .catch(() => {
+            alert('로그아웃에 실패했습니다.');
+        });
+    
+}
+export default {isLoggedIn, logOut};
