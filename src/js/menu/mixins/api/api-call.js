@@ -64,8 +64,6 @@ export default{
   patch:async function patchApi(url,param,success,fail){
     // commSwitch.on('LoadingBar');
 
-    await checkExp();
-
     axios.patch(url,param)
       .then((data)=>response(data,success))
       .catch((error)=>onFail(error,fail));
