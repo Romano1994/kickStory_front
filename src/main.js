@@ -8,6 +8,10 @@ import './js/total-css';
 import apiCall from './js/menu/mixins/api/api-call';
 import apiMix from './js/menu/mixins/api/api-mix';
 import axios from 'axios';
+// import leaflet from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+
 
 const app = createApp(App);
 const COMMON_COMPONENTS=[];
@@ -31,5 +35,6 @@ app.mixin(apiMix);
 
 loadComponents();
 app.use(router);
+// app.use(leaflet);
 app.mount('#app')
 

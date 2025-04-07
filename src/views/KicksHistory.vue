@@ -100,7 +100,7 @@ export default {
     },
     getSmmry() {
       // this.getApi('/smmryHstry', {commCd: '0001'}, this.setSmmry, this.fail);
-      this.getApi('/smmry-hstry/0001', {}, this.setSmmry, this.fail);
+      this.getApi('/kcks/smmry-hstry/0001', {}, this.setSmmry, this.fail);
     },
     setSmmry(res) {
       this.cards = res.data;
@@ -212,7 +212,7 @@ export default {
 
     },
     getHstry() {
-      this.getApi(`/kcks-hstry/${this.currCard}`, null, this.setHstry, this.fail);
+      this.getApi(`/kcks/hstry/${this.currCard}`, null, this.setHstry, this.fail);
     },
     setHstry(res) {
       let list = res.data;

@@ -58,7 +58,7 @@ export default {
     },
     saveRating() {
       // this.putApi('/rating',{commCdDtl:this.commCdDtl,rating:this.rating,mbrNo:this.mbrNo},this.succRating,this.ratingFail)
-      this.putApi('/rating', {
+      this.putApi('/kcks/rating', {
         commCdDtl: this.commCdDtl,
         rating: this.rating,
         mbrNo: 1

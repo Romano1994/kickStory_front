@@ -30,10 +30,11 @@
     background-image: url(@/assets/wave_back.png);
     background-size: cover;
     align-items: center;
-    /*transform-style: preserve-3d;*/
+    transform-style: preserve-3d;
     /*-webkit-transform-style: flat;*/
     will-change: transform;
 }
+
 
 .big {
     position: fixed;
