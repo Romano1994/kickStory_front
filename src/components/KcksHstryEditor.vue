@@ -9,10 +9,11 @@ export default {
     currCard: String,
     orgMdfctnCntnt: String,
     mdfctnCntnt: String,
-    commCdDtl: String,
-    kcksHstryMdfctnVer: Number,
     kcksHstryMdfctnNo: Number,
+    itemCd: String,
+    content: String,
     kcksHstryMdfctnYn: String,
+    kcksHstryMdfctnVer: String
   },
   emits: ['update:mdfctnCntnt', 'closeEditor'],
   components: {
@@ -61,45 +62,13 @@ export default {
       return diff;
     },
     saveContent() {
-
-      let diff = this.getDiff(this.orgMdfctnCntnt, this.mdfctnCntnt);
-      let idx = 0;
-      let operations = [];
-      for (let arr of diff) {
-
-        let type = arr[0];
-        let str = arr[1];
-        let length = arr[1].length;
-        let obj = {};
-
-        if (type === 0) {
-          idx += length;
-        } else {
-          if (type === 1) {
-            obj.type = 'add';
-            obj.position = idx;
-            idx += length;
-          } else if (type === -1) {
-            obj.type = 'delete';
-            obj.position = idx;
-            // obj.oldStr = '';
-            obj.length = str.length;
-          }
-
-          obj.str = str;
-          operations.push(obj);
-        }
-      }//for
-
-      this.postApi('/kcks/hstry-mdfctn', {
-        mbrNo: 1,
-        commCdDtl: this.commCdDtl,
-        mdfctnCntnt: JSON.stringify(operations),
-        kcksHstryMdfctnVer: this.kcksHstryMdfctnVer,
-        kcksHstryMdfctnNo: this.kcksHstryMdfctnNo === "" ? null : this.kcksHstryMdfctnNo,
-        kcksHstryMdfctnYn: this.kcksHstryMdfctnYn
-      }, this.insertSuccess, this.insertFail);
-
+      this.putApi('/kcks/hstry', {
+        kcksHstryMdfctnNo: this.kcksHstryMdfctnNo,
+        itemCd: this.itemCd,
+        mdfctnCntnt: this.mdfctnCntnt,
+        kcksHstryMdfctnYn: this.kcksHstryMdfctnYn,
+        kcksHstryMdfctnVer: this.kcksHstryMdfctnVer
+      }, this.succSave, this.fail);
     },
     insertSuccess() {
       // console.log("insertSuccess");

@@ -55,8 +55,9 @@ export default {
         <div class="search-box">
           <div class="search-container">
             <select class="search-select">
+              <option>한정판 발매 브랜드별</option>
+              <option>상시 취급 브랜드별</option>
               <option>매장별</option>
-              <option>지역별</option>
             </select>
             <input type="text" class="search-input" placeholder="검색어를 입력하세요"/>
             <button class="search-btn">검색</button>
@@ -86,6 +87,39 @@ export default {
       </div>
     </div>
     <div id="map" class="map-container"></div>
+  </div>
+  <div class="register-modal">
+    <div>
+      <div>
+        <span>발매처명(한글)</span>
+        <input type="text"/>
+      </div>
+      <div>
+        <span>발매처명(영문)</span>
+        <input type="text"/>
+      </div>
+      <div>
+        <span>지점명</span>
+        <input type="text"/>
+      </div>
+      <div>
+        <span>주소검색</span>
+                <input type="text"/>
+      </div>
+        <div>
+        <span>한정판 발매 브랜드</span>
+        <input type="text"/>
+      </div>
+              <div>
+        <span>상시 취급 브랜드</span>
+        <input type="text"/>
+      </div>
+    </div>
+    
+    <div>
+      <button>취소</button>
+      <button>등록</button>
+    </div>
   </div>
 </template>
 
@@ -334,6 +368,126 @@ export default {
   .map-container {
     height: 400px;
     min-height: auto;
+  }
+}
+
+.register-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgb(204, 195, 163);
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 500px;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.register-modal > div:first-child {
+  background-color: var(--color2);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.register-modal > div:first-child > div {
+  margin-bottom: 1.2rem;
+}
+
+.register-modal > div:first-child > div:last-child {
+  margin-bottom: 0;
+}
+
+.register-modal span {
+  display: block;
+  font-family: var(--main-font);
+  font-size: 0.9rem;
+  color: var(--color1);
+  margin-bottom: 0.5rem;
+}
+
+.register-modal input {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--color1);
+  font-size: 0.9rem;
+  font-family: var(--main-font);
+  transition: all 0.2s ease;
+}
+
+.register-modal input:focus {
+  outline: none;
+  border-color: var(--color6);
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.register-modal input::placeholder {
+  color: rgba(255, 244, 204, 0.5);
+}
+
+.register-modal > div:last-child {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+}
+
+.register-modal button {
+  padding: 8px 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-family: var(--sub-font);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.register-modal button:first-child {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color1);
+}
+
+.register-modal button:first-child:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.register-modal button:last-child {
+  background-color: var(--color6);
+  color: white;
+}
+
+.register-modal button:last-child:hover {
+  background-color: #2a7a7f;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+}
+
+@media screen and (max-width: 720px) {
+  .register-modal {
+    width: 95%;
+    padding: 1rem;
+  }
+  
+  .register-modal > div:first-child {
+    padding: 1rem;
+  }
+  
+  .register-modal button {
+    padding: 8px 1rem;
   }
 }
 </style>
