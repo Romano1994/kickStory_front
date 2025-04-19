@@ -1,0 +1,37 @@
+.editor-wrapper {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 50%;
+    height: 100vh;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    font: 1rem Orbitron;
+    color: white;
+    padding: 1rem;
+    overflow-y: scroll;
+    z-index: 9999;
+}
+
+.merge-editor-wrapper {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    font: 1rem Orbitron;
+    color: white;
+    padding: 1rem;
+    overflow-y: scroll;
+    z-index: 9999;
+}
+.ql-editor  {
+    overflow-y: auto; /* 넘칠 경우 스크롤 */
+    height: 30rem;
+    word-wrap: break-word;
+    /*word-break: break-word;*/
+}

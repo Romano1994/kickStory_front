@@ -19,14 +19,14 @@ import MainHeader from "./MainHeader.vue"
 import MainFooter from "./MainFooter.vue"
 import MenuBar from "@/components/MenuBar.vue";
 export default {
-    methods: {
-    },
     components: {
         MainHeader,
         MainFooter,
         MenuBar
     },
- 
+    methods: {
+    }
+
 }
 </script>
 

@@ -1,6 +1,6 @@
 <template lang="">
     <div id="login-window">
-        <div id="login-text">
+        <div class="login-text">
             로그인
         </div>
         <div id="login-container">
@@ -8,7 +8,7 @@
                 이메일
             </div>
             <div class="input-div">
-                <input class="input-box" v-model="email">
+                <input class="input-box" v-model="email" @keyup.enter="fnConfirmLogin">
                 <div class="valid-div" v-show="valid.email">
                     이메일을 확인해주세요.
                 </div>
@@ -17,33 +17,43 @@
                 비밀번호
             </div>
             <div class="input-div">
-                <input type="password" class="input-box" v-model="mbrPwd">
+                <input type="password" class="input-box" v-model="mbrPwd" @keyup.enter="fnConfirmLogin">
             </div>
             <div class="button-div">
                 <button class="button-box" @click="fnConfirmLogin">
                     확인
                 </button>
-                <button class="button-box">
+                <button class="button-box" @click="fnFindPwdRequest" style="color: black;">
                     비밀번호 찾기
                 </button>
             </div>
         </div>
+        <FindPwdModal :visible="findPwdModalOpen" :email="email" @close="findPwdModalOpen=false"/>
     </div>
 </template>
 <script>
+import FindPwdModal from "./popup/FindPwdModal.vue";
+import auth from "../js/auth";
+import axios from "axios";
+
 export default {
+    components: {
+        FindPwdModal,
+    },
     data() {
         return {
             email:  "",
             mbrPwd: "",
             valid: {
                 email: false,
-            }
+            },
+            findPwdModalOpen: false,
         }
     },
 
     watch: {
         'email': function() {
+            // 이메일 형식 검증
             this.checkEamil();
         }
     },
@@ -65,7 +75,7 @@ export default {
         },
 
         //로그인
-        fnConfirmLogin() {
+        async fnConfirmLogin() {
             if(this.email == '' || this.valid.email) {
                 alert('이메일을 다시 입력해주세요.');
                 return;
@@ -75,21 +85,53 @@ export default {
             formData.append('username', this.email);
             formData.append('password', this.mbrPwd);
 
-            this.postApi('/login', formData, this.success, this.fail);
+            const response = await axios.post('/login', formData);
+
+            const access = response.headers['authorization']?.split(' ')[1];
+            sessionStorage.setItem(auth.accessName, access);
+            // Axios 기본 헤더에 Access Token 설정
+            axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+
+            // 홈으로 이동
+            this.$router.push('/')
+            .then(() => {
+                window.location.reload();
+            }); 
+            
+            // 토큰 재발급 예약
+            auth.scheduleTokenReissue();
         },
 
-        //회원가입 성공
-        success(result) {
-            console.log(result);
+        // 비밀번호 찾기 요청
+        fnFindPwdRequest() {
+            if(!confirm("입력하신 이메일로 인증번호를 전송하시겠습니까?")) {
+                return;
+            }
 
-            alert("로그인에 성공했습니다.");
-            // this.$router.push('/');
+            if(this.email == '' || this.valid.email) {
+                alert('이메일을 다시 입력해주세요.');
+                return;
+            }
+
+            this.findPwdModalOpen = true;
+            
+            let mbr = {"email": this.email};
+
+            this.postApi('/auth/findPwdRequest',
+                mbr,        // param
+                () => {     // success
+                    alert("인증번호가 발송됐습니다.");
+                },
+                (result) => {   //fail
+                    const message = result.response.data;
+                    if(message) {
+                        alert(message);
+                    } else {
+                        alert('비밀번호 찾기에 실패했습니다.');
+                    }
+                }
+            )
         },
-
-        //회원가입 실패
-        fail() {
-            alert("로그인에 실패했습니다.");
-        }
     }
 }
 </script>
@@ -98,7 +140,7 @@ export default {
         height: 30rem;
         align-content: center;
     }
-    #login-text {
+    .login-text {
         text-align: center;
         font-size: 2rem;
         margin-bottom: 1rem;
