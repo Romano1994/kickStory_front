@@ -8,6 +8,7 @@ import './js/total-css';
 import apiCall from './js/menu/mixins/api/api-call';
 import apiMix from './js/menu/mixins/api/api-mix';
 import axios from 'axios';
+import auth from './js/auth';
 // import leaflet from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -27,6 +28,16 @@ function loadComponents(){
     }
 }
 
+// 새로고침 설정
+window.onload = () => {
+  const access = sessionStorage.getItem(auth.accessName);
+
+  if(access) {
+      auth.scheduleTokenReissue();
+  }
+
+}
+
 //라이브러리 전역 변수 등록
 app.config.globalProperties.$apiCall=apiCall;
 app.config.globalProperties.$axios=axios;
@@ -35,6 +46,5 @@ app.mixin(apiMix);
 
 loadComponents();
 app.use(router);
-// app.use(leaflet);
 app.mount('#app')
 
