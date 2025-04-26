@@ -2,7 +2,16 @@
     <div class="page-container kp-container">
         <!-- 유저 정보 섹션-->
         <div class="info-div">
-
+            <div class="user-info">
+                <div class="info-row">
+                    <span class="info-label">이메일</span>
+                    <span class="info-value">email</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">아이디</span>
+                    <span class="info-value">{{mbrId}}</span>
+                </div>
+            </div>
         </div>
         <!-- 히스토리 수정 내역 섹션-->
         <div class="info-div">
@@ -15,14 +24,15 @@
     </div>
 </template>
 <script>
+import userUtils from "@/js/userUtils";
 export default {
     data() {
         return {
-            mbrNo: "",
+            mbrId: "",
         }
     },
     mounted() {
-        
+        this.mbrId = userUtils.getMbrId();
     },
     methods: {
         // 멤버별 히스토리 조회
@@ -79,5 +89,19 @@ export default {
         width: 40rem;
         height: 10rem;
         margin-top: 50px;
+    }
+    .info-label {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: black;
+        border: 1px solid black;
+    }
+    .info-value {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: black;
+        border: 1px solid black;
     }
 </style>

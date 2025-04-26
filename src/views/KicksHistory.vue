@@ -100,7 +100,7 @@ export default {
     },
     getSmmry() {
       // this.getApi('/smmryHstry', {commCd: '0001'}, this.setSmmry, this.fail);
-      this.getApi('/smmry-hstry/0001', {}, this.setSmmry, this.fail);
+      this.getApi('/smmryHstry/0001', {}, this.setSmmry, this.fail);
     },
     setSmmry(res) {
       this.cards = res.data;

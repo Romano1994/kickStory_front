@@ -85,21 +85,25 @@ export default {
             formData.append('username', this.email);
             formData.append('password', this.mbrPwd);
 
-            const response = await axios.post('/login', formData);
+            axios.post('/login',formData)
+                .then((response)=>{
+                    const access = response.headers['authorization']?.split(' ')[1];
+                    sessionStorage.setItem(auth.accessName, access);
+                    // Axios 기본 헤더에 Access Token 설정
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
 
-            const access = response.headers['authorization']?.split(' ')[1];
-            sessionStorage.setItem(auth.accessName, access);
-            // Axios 기본 헤더에 Access Token 설정
-            axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
-
-            // 홈으로 이동
-            this.$router.push('/')
-            .then(() => {
-                window.location.reload();
-            }); 
-            
-            // 토큰 재발급 예약
-            auth.scheduleTokenReissue();
+                    // 홈으로 이동
+                    this.$router.push('/')
+                    .then(() => {
+                        window.location.reload();
+                    }); 
+                    
+                    // 토큰 재발급 예약
+                    auth.scheduleTokenReissue();
+                })
+                .catch(()=> {
+                    alert("로그인에 실패했습니다.");
+                });
         },
 
         // 비밀번호 찾기 요청
