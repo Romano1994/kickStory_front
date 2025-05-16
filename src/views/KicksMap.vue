@@ -1,18 +1,31 @@
 <script>
 import L from 'leaflet'
+import RegisterModal from '@/components/RegisterModal.vue'
 
 export default {
   name: "KicksMap",
+  components: {
+    RegisterModal
+  },
   data() {
     return {
       map: null,
       marker: null,
       icon: null,
+      showRegisterModal: false,
       navList: [
         {itemNm: "발매처", imgSrc: "/assets/map/store.png", isActive: true},
         {itemNm: "쇼핑코스", imgSrc: "/assets/map/route.png", isActive: false},
         {itemNm: "즐겨찾기", imgSrc: "/assets/map/favorite.png", isActive: false},
       ]
+    }
+  },
+  methods: {
+    openRegisterModal() {
+      this.showRegisterModal = true
+    },
+    closeRegisterModal() {
+      this.showRegisterModal = false
     }
   },
   mounted() {
@@ -63,7 +76,7 @@ export default {
             <button class="search-btn">검색</button>
           </div>
           <div class="register-container">
-            <button class="register-btn">발매처 등록하기</button>
+            <button class="register-btn" @click="openRegisterModal">발매처 등록하기</button>
           </div>
         </div>
         <div class="location-list">
@@ -88,39 +101,7 @@ export default {
     </div>
     <div id="map" class="map-container"></div>
   </div>
-  <div class="register-modal">
-    <div>
-      <div>
-        <span>발매처명(한글)</span>
-        <input type="text"/>
-      </div>
-      <div>
-        <span>발매처명(영문)</span>
-        <input type="text"/>
-      </div>
-      <div>
-        <span>지점명</span>
-        <input type="text"/>
-      </div>
-      <div>
-        <span>주소검색</span>
-                <input type="text"/>
-      </div>
-        <div>
-        <span>한정판 발매 브랜드</span>
-        <input type="text"/>
-      </div>
-              <div>
-        <span>상시 취급 브랜드</span>
-        <input type="text"/>
-      </div>
-    </div>
-    
-    <div>
-      <button>취소</button>
-      <button>등록</button>
-    </div>
-  </div>
+  <RegisterModal v-if="showRegisterModal" @close="closeRegisterModal" />
 </template>
 
 <style scoped>
