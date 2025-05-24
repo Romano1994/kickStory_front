@@ -30,10 +30,11 @@
     background-image: url(@/assets/wave_back.png);
     background-size: cover;
     align-items: center;
-    /*transform-style: preserve-3d;*/
+    transform-style: preserve-3d;
     /*-webkit-transform-style: flat;*/
     will-change: transform;
 }
+
 
 .big {
     position: fixed;
@@ -107,13 +108,13 @@
     justify-content: center;
     align-items: center;
     border: 1mm ridge rgba(211, 220, 50, .6);
-    pointer-events: none;
+    /* pointer-events: none; */
 }
 
 .card-text-container {
     width: 103%;
     height: 10.5rem;
-    pointer-events: none;
+    /* pointer-events: none; */
     /*background-color: var(--color1);*/
     margin-top: 0.6rem;
     /*border:1px solid #37989e;*/
@@ -141,7 +142,7 @@
 .card-text {
     width: inherit;
     height: 4.8rem;
-    pointer-events: none;
+    /* pointer-events: none; */
     overflow-y: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -151,10 +152,10 @@
 
 .more-btn {
     color: blue;
-    cursor: pointer;
+    /* cursor: pointer; */
     font-size: 14px;
     text-decoration: underline;
-    pointer-events: all;
+    /* pointer-events: all; */
 }
 
 /*.card-text::-webkit-scrollbar {*/
@@ -167,7 +168,7 @@
     top: -13%;
     left: 46%;
     transform: translateX(-50%) rotate(-25deg);
-    pointer-events: none;
+    /* pointer-events: none; */
 }
 
 .front, .back {

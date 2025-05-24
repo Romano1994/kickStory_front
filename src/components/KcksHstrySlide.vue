@@ -7,7 +7,7 @@ export default {
   name: "KcksHstrySlide",
   components: {KcksHstryEditor, KcksHstryMergeEditor},
   emits: ['getHstry'],
-  props: ["orgMdfctnCntnt", "aiContent", "commCdDtl", "avgRating", "nop", "releaseYear", "kcksHstryMdfctnVer", 'kcksHstryMdfctnNo', 'kcksHstryMdfctnYn', 'commCdDtlNm'],
+  props: ["orgMdfctnCntnt", "aiContent", "itemCd", "avgRating", "nop", "releaseYear", "kcksHstryMdfctnVer", 'kcksHstryMdfctnNo', 'kcksHstryMdfctnYn', 'itemCdNm'],
   data() {
     return {
       mdfctnCntnt: '',
@@ -57,13 +57,13 @@ export default {
       return diff;
     },
     saveRating() {
-      // this.putApi('/rating',{commCdDtl:this.commCdDtl,rating:this.rating,mbrNo:this.mbrNo},this.succRating,this.ratingFail)
-      this.putApi('/rating', {
-        commCdDtl: this.commCdDtl,
+      // this.putApi('/rating',{itemCd:this.itemCd,rating:this.rating,mbrNo:this.mbrNo},this.succRating,this.ratingFail)
+      this.putApi('/kcks/rating', {
+        itemCd: this.itemCd,
         rating: this.rating,
         mbrNo: 1
       }, this.succRating, this.ratingFail)
-      // this.patch('/rating',{commCdDtl:this.commCdDtl,rating:this.rating,mbrNo:1},this.succRating,this.fail)
+      // this.patch('/rating',{itemCd:this.itemCd,rating:this.rating,mbrNo:1},this.succRating,this.fail)
     },
     succRating(res) {
       alert(res.data);
@@ -99,7 +99,7 @@ export default {
     <button type="button" class="close  ms-auto" aria-label="Close" @click="$emit('closeSlide')">
       <span aria-hidden="true">&times;</span>
     </button>
-    <h1>{{ commCdDtlNm }}</h1>
+    <h1>{{ itemCdNm }}</h1>
     <br><br>
     <span>
         <h4 class="slide-title">
@@ -205,7 +205,7 @@ export default {
   <KcksHstryEditor v-if=" isShowEditor && !isMerge" :orgMdfctnCntnt="orgMdfctnCntnt"
                    @update:mdfctnCntnt="updateContent"
                    :mdfctnCntnt="mdfctnCntnt" :kcksHstryMdfctnNo="kcksHstryMdfctnNo"
-                   :commCdDtl="commCdDtl" :content="content" @close-editor="closeEditor"
+                   :itemCd="itemCd" :content="content" @close-editor="closeEditor"
                    @update:changeStatus="changeStatus"
                    :kcksHstryMdfctnYn="kcksHstryMdfctnYn"
                    :kcksHstryMdfctnVer="kcksHstryMdfctnVer"></KcksHstryEditor>
@@ -213,7 +213,7 @@ export default {
                         @update:mdfctnCntnt="updateContent"
                         :diffCntnt="diffCntnt"
                         :mdfctnCntnt="mdfctnCntnt" :kcksHstryMdfctnNo="kcksHstryMdfctnNo"
-                        :commCdDtl="commCdDtl" :content="content" @close-editor="closeEditor"
+                        :itemCd="itemCd" :content="content" @close-editor="closeEditor"
                         @update:changeStatus="changeStatus" :mergeCntnt="mergeCntntnt"
                         :isMerge="isMerge" :kcksHstryMdfctnYn="kcksHstryMdfctnYn"
                         :kcksHstryMdfctnVer="kcksHstryMdfctnVer"></KcksHstryMergeEditor>

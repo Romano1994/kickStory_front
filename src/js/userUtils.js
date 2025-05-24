@@ -63,4 +63,16 @@ const getMbrId = () => {
     return payload.id;
 }
 
-export default {isLoggedIn, logOut, getMbrId};
+const getMbrNo = () => {
+    if(!isLoggedIn) {
+        return "";
+    }
+
+    const access = sessionStorage.getItem(auth.accessName);
+
+    const payload = parseAccess(access);
+
+    return payload.mbrNo;
+}
+
+export default {isLoggedIn, logOut, getMbrId, getMbrNo};

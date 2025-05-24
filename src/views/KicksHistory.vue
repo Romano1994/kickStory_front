@@ -4,7 +4,7 @@
       <div class="wrapper" :ref="`wrapper${index}`">
         <div class="outer card" :ref="`jordan${index}`"
              @mousemove="e=>moveCard(e,index,true)"
-             @mouseleave="e=>moveCard(e,index,false)" @click="()=> changeCardSize(index, item.commCdDtl)">
+             @mouseleave="e=>moveCard(e,index,false)" @click="()=> changeCardSize(index, item.itemCd)">
           <div class="overlay" :ref="`overlay${index}`"></div>
           <div class="holo-overlay" :class="{radial : index%2!==0}"></div>
           <!--Front Face-->
@@ -12,7 +12,7 @@
             <div class="inner p-3">
               <div class="card-title ">
                 <span class="badge bg-warning card-badge">Best</span>
-                <span>{{ item.commCdDtlNm }}</span>
+                <span>{{ item.itemCdNm }}</span>
               </div>
               <div class="card-background"></div>
               <div class="card-text-container">
@@ -40,7 +40,7 @@
                   <div class="card-text">
                         {{ kcksHstry }}
                   </div>
-                <div class="more-btn" v-if="!isShowSlide" @click="e=>openSlide(e,item.commCdDtl)">더보기</div>
+                <div class="more-btn" v-if="!isShowSlide" @click="e=>openSlide(e,item.itemCd)">더보기</div>
                 </span>
               </div>
             </div>
@@ -56,8 +56,8 @@
     </div>
   </div>
   <KcksHstrySlide v-if="isShowSlide" ref="slide" :orgMdfctnCntnt="mdfctnCntnt" :aiContent="kcksHstry"
-                  :avg-rating="avgRating" :nop="nop" :release-year="releaseYear" :commCdDtl="currCard"
-                  :kcksHstryMdfctnYn="kcksHstryMdfctnYn" :commCdDtlNm="commCdDtlNm"
+                  :avg-rating="avgRating" :nop="nop" :release-year="releaseYear" :itemCd="currCard"
+                  :kcksHstryMdfctnYn="kcksHstryMdfctnYn" :itemCdNm="itemCdNm"
                   :kcksHstryMdfctnVer="kcksHstryMdfctnVer" :kcksHstryMdfctnNo="kcksHstryMdfctnNo" @get-hstry="getHstry"
                   @closeSlide="closeSlide"></KcksHstrySlide>
   <!--  <KcksHstrySlide ref="slide" :orgHstryContent="hstryContent" :aiContent="aiContent" @closeSlide="closeSlide" :currCard="currCard"></KcksHstrySlide>-->
@@ -88,7 +88,7 @@ export default {
       avgRating: '',
       nop: '',
       kcksHstryMdfctnNo: -1,
-      commCdDtlNm: '',
+      itemCdNm: '',
     }
   },
   methods: {
@@ -100,7 +100,7 @@ export default {
     },
     getSmmry() {
       // this.getApi('/smmryHstry', {commCd: '0001'}, this.setSmmry, this.fail);
-      this.getApi('/smmryHstry/0001', {}, this.setSmmry, this.fail);
+      this.getApi('/kcks/smmry-hstry/0001', {}, this.setSmmry, this.fail);
     },
     setSmmry(res) {
       this.cards = res.data;
@@ -142,7 +142,7 @@ export default {
       }
 
     },
-    changeCardSize(idx, commCdDtl) {
+    changeCardSize(idx, itemCd) {
 
       if (this.currIndex !== -1) {
         let currWrapper = document.getElementsByClassName('big')[0];
@@ -166,7 +166,7 @@ export default {
         this.nop = '';
         this.kcksHstryMdfctnNo = -1;
       } else if (this.currIndex === -1 || this.currIndex !== idx) {
-        this.currCard = commCdDtl;
+        this.currCard = itemCd;
         this.getHstry();
         this.currIndex = idx;
         let wrapper = this.$refs[`wrapper${idx}`][0];
@@ -198,8 +198,9 @@ export default {
     setAltImg(e) {
       e.target.src = "../assets/jordan1.webp";
     },
-    openSlide(e, commCdDtl) {
-      this.currCard = commCdDtl;
+    openSlide(e, itemCd) {
+      console.log("들어왓음");
+      this.currCard = itemCd;
       this.isShowSlide = true;
       e.stopPropagation();
       let wrapper = this.$refs[`wrapper${this.currIndex}`][0];
@@ -212,7 +213,7 @@ export default {
 
     },
     getHstry() {
-      this.getApi(`/kcks-hstry/${this.currCard}`, null, this.setHstry, this.fail);
+      this.getApi(`/kcks/hstry/${this.currCard}`, null, this.setHstry, this.fail);
     },
     setHstry(res) {
       let list = res.data;
@@ -221,7 +222,7 @@ export default {
 
       list.forEach((data, idx) => {
         if (idx === 0) {
-          this.commCdDtlNm = data.commCdDtlNm;
+          this.itemCdNm = data.itemCdNm;
           this.kcksHstryMdfctnYn = data.kcksHstryMdfctnYn;
           this.releaseYear = data.releaseYear;
           this.avgRating = data.avgRating;

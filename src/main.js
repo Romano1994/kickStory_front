@@ -9,6 +9,10 @@ import apiCall from './js/menu/mixins/api/api-call';
 import apiMix from './js/menu/mixins/api/api-mix';
 import axios from 'axios';
 import auth from './js/auth';
+// import leaflet from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+
 
 const app = createApp(App);
 const COMMON_COMPONENTS=[];
@@ -27,7 +31,7 @@ function loadComponents(){
 // 새로고침 설정
 window.onload = () => {
   const access = sessionStorage.getItem(auth.accessName);
-    
+
   if(access) {
       auth.scheduleTokenReissue();
   }

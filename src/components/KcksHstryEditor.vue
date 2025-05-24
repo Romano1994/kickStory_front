@@ -9,10 +9,11 @@ export default {
     currCard: String,
     orgMdfctnCntnt: String,
     mdfctnCntnt: String,
-    commCdDtl: String,
-    kcksHstryMdfctnVer: Number,
     kcksHstryMdfctnNo: Number,
+    itemCd: String,
+    content: String,
     kcksHstryMdfctnYn: String,
+    kcksHstryMdfctnVer: String
   },
   emits: ['update:mdfctnCntnt', 'closeEditor'],
   components: {
@@ -91,15 +92,14 @@ export default {
         }
       }//for
 
-      this.postApi('/kcks-hstry-mdfctn', {
-        mbrNo: 1,
-        commCdDtl: this.commCdDtl,
+      this.postApi('/kcks/hstry-mdfctn', {
+        mbrNo: 2,
+        itemCd: this.itemCd,
         mdfctnCntnt: JSON.stringify(operations),
         kcksHstryMdfctnVer: this.kcksHstryMdfctnVer,
         kcksHstryMdfctnNo: this.kcksHstryMdfctnNo === "" ? null : this.kcksHstryMdfctnNo,
         kcksHstryMdfctnYn: this.kcksHstryMdfctnYn
       }, this.insertSuccess, this.insertFail);
-
     },
     insertSuccess() {
       // console.log("insertSuccess");
