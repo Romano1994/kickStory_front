@@ -1,6 +1,11 @@
 <script>
+import AddressSearchModal from './AddressSearchModal.vue'
+
 export default {
   name: 'RegisterModal',
+  components: {
+    AddressSearchModal
+  },
   data() {
     return {
       storeKorNm: '',
@@ -15,6 +20,7 @@ export default {
       storeList: [],
       // Address search related
       addressList: [],
+      showAddressModal: false,
       selectedAddress: {
         storeName: '',
         roadAddress: '',
@@ -81,11 +87,7 @@ export default {
       this.storeList = [];
     },
     srchCntryList() {
-      if (this.cntry.trim()) {
         this.getApi('/place/country/names', {cntryKorNm : this.cntry}, this.srchCntrySucc, this.srchCntryFail);
-      } else {
-        this.countryList = [];
-      }
     },
     srchCntrySucc(res) {
       this.countryList = res.data;
@@ -96,7 +98,7 @@ export default {
     },
     selectCountry(country) {
       this.selectedCountry = country
-      this.cntry = country.countryKorNm
+      this.cntry = country.cntryKorNm
       this.countryList = []
     },
     srchBranchList() {
@@ -128,7 +130,7 @@ export default {
       
       this.addressSearchTimeout = setTimeout(() => {
         if (this.place.trim()) {
-          this.getApi(`/place/store/${this.place}`, null, this.searchAddressSuccess, this.searchAddressFail)
+          this.getApi(`/place/address/${this.place}`, null, this.searchAddressSuccess, this.searchAddressFail)
         } else {
           this.addressList = []
         }
@@ -140,15 +142,9 @@ export default {
     searchAddressFail(error) {
       console.error('Address search failed:', error)
     },
-    selectAddress(address) {
-      this.selectedAddress = {
-        storeName: address.storeName,
-        roadAddress: address.roadAddress,
-        lon: address.lon,
-        lat: address.lat
-      }
-      this.place = address.roadAddress
-      this.addressList = []
+    handleAddressSelect(address) {
+      this.selectedAddress = address;
+      this.place = address.roadAddress;
     },
     // Limited brands methods
     searchLimitedBrands() {
@@ -249,10 +245,10 @@ export default {
           <input type="text" v-model="cntry" @input="srchCntryList"/>
           <div v-if="countryList.length > 0" class="search-list">
             <div v-for="country in countryList" 
-                 :key="country.countryCd" 
+                 :key="country.cntryCd" 
                  @click="selectCountry(country)"
                  class="search-item">
-              {{ country.countryKorNm }}
+              {{ country.cntryKorNm }}
             </div>
           </div>
         </div>
@@ -270,15 +266,15 @@ export default {
         </div>
         <div v-if="storeTypeCd === '00030001'">
           <span>주소검색</span>
-          <input type="text" v-model="place" @input="searchAddress"/>
-          <div v-if="addressList.length > 0" class="search-list">
-            <div v-for="address in addressList" 
-                 :key="address.roadAddress" 
-                 @click="selectAddress(address)"
-                 class="search-item">
-              {{ address.storeName }} - {{ address.roadAddress }}
-            </div>
+          <div v-if="selectedAddress.roadAddress" class="selected-address">
+            {{ selectedAddress.roadAddress }}
           </div>
+          <button class="address-search-button" @click="showAddressModal = true">검색하기</button>
+          <AddressSearchModal 
+            v-if="showAddressModal"
+            @close="showAddressModal = false"
+            @select="handleAddressSelect"
+          />
         </div>
         <div v-else>
           <span>웹사이트 주소 입력</span>
@@ -511,5 +507,39 @@ export default {
 
 .remove-brand:hover {
   opacity: 0.8;
+}
+
+.address-search-button {
+  width: 100%;
+  padding: 8px;
+  background-color: var(--color6);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-family: var(--sub-font);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.address-search-button:hover {
+  background-color: #2a7a7f;
+}
+
+@media screen and (max-width: 720px) {
+  .address-search-button {
+    padding: 8px;
+  }
+}
+
+.selected-address {
+  margin: 8px 0;
+  padding: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--color1);
+  font-size: 0.9rem;
+  font-family: var(--main-font);
 }
 </style> 
