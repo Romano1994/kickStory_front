@@ -260,3 +260,37 @@ export default {
   },//methods
 }
 </script>
+
+<style>
+.page-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.card-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+@media screen and (max-width: 1400px) {
+    .page-container {
+        grid-template-columns: repeat(2, 1fr);
+        justify-content: center;
+    }
+}
+
+@media screen and (max-width: 960px) {
+    .page-container {
+        grid-template-columns: repeat(1, 1fr);
+        justify-content: center;
+    }
+}
+</style>
