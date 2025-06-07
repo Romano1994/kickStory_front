@@ -7,7 +7,8 @@ import './js/total-css';
 import apiCall from './js/menu/mixins/api/api-call';
 import apiMix from './js/menu/mixins/api/api-mix';
 import axios from 'axios';
-
+import VueAwesomePaginate from "vue-awesome-paginate";
+import "vue-awesome-paginate/dist/style.css";
 
 const app = createApp(App);
 const COMMON_COMPONENTS=[];
@@ -29,7 +30,7 @@ app.config.globalProperties.$axios=axios;
 
 app.mixin(apiMix);
 
-
+createApp(App).use(VueAwesomePaginate).mount("#app");
 
 loadComponents();
 app.use(router);
