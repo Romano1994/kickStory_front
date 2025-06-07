@@ -38,6 +38,12 @@ const menus = [
         depth:0
     },
     {
+        path: "/km",
+        name: "KicksMap",//컴포넌트명
+        componentPath:"KicksMap",//실제 컴포넌트 경로
+        depth:1
+    },
+    {
         path: "/login",
         name: "LogIn",
         componentPath:"LogIn",

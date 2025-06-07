@@ -29,7 +29,6 @@
 </div>
 </template>
 <script>
-import axios from "axios";
 export default {
     props: {
         isLoggedIn: {
@@ -40,17 +39,22 @@ export default {
 
     methods: {
         logOut() {
-            // 쿠키 저장을 위해서는 withCredentials 옵션을 활성화 해야됨
-            axios.post('/logout', {}, { withCredentials: true })
-            .then(() => {
+            this.postApi(
+              '/logout',
+              {},       // param
+              () => {   // success
                 alert('로그아웃에 성공했습니다.');
                 // 홈으로 이동
-                // this.$router.push('/');
-                this.$router.replace({ path: '/', query: { refresh: Date.now() } });
-            })
-            .catch(() => {
+                this.$router.push('/')
+                // this.$router.replace({ path: '/', query: { refresh: Date.now() } })
+                .then(() => {
+                    window.location.reload();
+                });
+              },
+              () => {   //fail
                 alert('로그아웃에 실패했습니다.');
-            });
+              }
+            )
         }
     }
 }
