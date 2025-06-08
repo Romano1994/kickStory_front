@@ -11,7 +11,7 @@ export default {
   methods: {
     searchAddress() {
       if (this.searchKeyword.trim()) {
-        this.getApi(`/place/address/${this.searchKeyword}`, null, this.searchAddressSuccess, this.searchAddressFail)
+        this.getApi(`/store/address/${this.searchKeyword}`, null, this.searchAddressSuccess, this.searchAddressFail)
       } else {
         this.addressList = []
       }

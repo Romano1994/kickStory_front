@@ -1,10 +1,12 @@
 <script>
 import AddressSearchModal from './AddressSearchModal.vue'
+import BrandRegistrationModal from './BrandRegistrationModal.vue'
 
 export default {
   name: 'RegisterModal',
   components: {
-    AddressSearchModal
+    AddressSearchModal,
+    BrandRegistrationModal
   },
   data() {
     return {
@@ -49,7 +51,17 @@ export default {
         { type: '온라인', typeCd: '00030002' }
       ],
       isStoreSelect: false,
-      lastSelectedStore: null
+      lastSelectedStore: null,
+      showBrandModal: false,
+      newBrand: {
+        brandNmKor: '',
+        brandNmEng: '',
+        brandTypeCd: ''
+      },
+      brandTypes: [
+        { type: '한정판', typeCd: '00010001' },
+        { type: '상시', typeCd: '00010002' }
+      ]
     }
   },
   methods: {
@@ -67,7 +79,7 @@ export default {
         
         if (this.storeKorNm.trim()) {
           this.storeEngNm = '';
-          this.getApi('/place/store', {name: this.storeKorNm}, this.storeSearchSuccess, this.storeSearchFail);
+          this.getApi('/store/name', {name: this.storeKorNm}, this.storeSearchSuccess, this.storeSearchFail);
         } else {
           this.storeList = [];
         }
@@ -87,7 +99,7 @@ export default {
       this.storeList = [];
     },
     srchCntryList() {
-        this.getApi('/place/country/names', {cntryKorNm : this.cntry}, this.srchCntrySucc, this.srchCntryFail);
+        this.getApi('/store/country/names', {cntryKorNm : this.cntry}, this.srchCntrySucc, this.srchCntryFail);
     },
     srchCntrySucc(res) {
       this.countryList = res.data;
@@ -130,7 +142,7 @@ export default {
       
       this.addressSearchTimeout = setTimeout(() => {
         if (this.place.trim()) {
-          this.getApi(`/place/address/${this.place}`, null, this.searchAddressSuccess, this.searchAddressFail)
+          this.getApi(`/store/address/${this.place}`, null, this.searchAddressSuccess, this.searchAddressFail)
         } else {
           this.addressList = []
         }
@@ -148,24 +160,38 @@ export default {
     },
     // Limited brands methods
     searchLimitedBrands() {
-      // Implement limited brands search logic
-      console.log('Limited brands search triggered with:', this.limitedBrandSearch)
+      if (this.limitedBrandSearch.trim()) {
+        this.getApi('/brand', { name: this.limitedBrandSearch }, this.searchLimitedBrandsSuccess, this.searchLimitedBrandsFail);
+      } else {
+        this.limitedBrandList = [];
+      }
     },
     searchLimitedBrandsSuccess(res) {
-      this.limitedBrandList = res
+      this.limitedBrandList = res.data;
     },
     searchLimitedBrandsFail(error) {
-      console.error('Limited brands search failed:', error)
+      console.error('Limited brands search failed:', error);
+      this.limitedBrandList = [];
     },
     addLimitedBrand(brand) {
-      if (!this.limitedBrands.some(b => b.brandName === brand.brandName)) {
-        this.limitedBrands.push(brand)
+      if (!this.limitedBrands.some(b => b.brandNo === brand.brandNo)) {
+        this.limitedBrands.push(brand);
       }
-      this.limitedBrandSearch = ''
-      this.limitedBrandList = []
+      this.limitedBrandSearch = '';
+      this.limitedBrandList = [];
     },
     removeLimitedBrand(brand) {
-      this.limitedBrands = this.limitedBrands.filter(b => b.brandName !== brand.brandName)
+      this.limitedBrands = this.limitedBrands.filter(b => b.brandNo !== brand.brandNo);
+    },
+    showBrandRegistrationModal() {
+      this.showBrandModal = true;
+    },
+    closeBrandModal() {
+      this.showBrandModal = false;
+    },
+    handleBrandRegistration(brand) {
+      // TODO: Implement brand registration API call
+      this.addLimitedBrand(brand);
     },
     // Usual brands methods
     searchUsualBrands() {
@@ -285,17 +311,22 @@ export default {
           <input type="text" v-model="limitedBrandSearch" @input="searchLimitedBrands"/>
           <div v-if="limitedBrandList.length > 0" class="search-list">
             <div v-for="brand in limitedBrandList" 
-                 :key="brand.brandName" 
+                 :key="brand.brandNo" 
                  @click="addLimitedBrand(brand)"
                  class="search-item">
-              {{ brand.brandName }}
+              {{ brand.brandNmKor }}
+            </div>
+          </div>
+          <div v-else-if="limitedBrandSearch.trim()" class="search-list">
+            <div class="search-item" @click="showBrandRegistrationModal">
+              등록하기
             </div>
           </div>
           <div class="selected-brands">
             <div v-for="brand in limitedBrands" 
-                 :key="brand.brandName" 
+                 :key="brand.brandNo" 
                  class="selected-brand">
-              {{ brand.brandName }}
+              {{ brand.brandNmKor }}
               <span class="remove-brand" @click="removeLimitedBrand(brand)">×</span>
             </div>
           </div>
@@ -328,6 +359,15 @@ export default {
       </div>
     </div>
   </div>
+
+  <!-- Brand Registration Modal -->
+  <BrandRegistrationModal 
+    v-if="showBrandModal"
+    :show="showBrandModal"
+    :searchText="limitedBrandSearch"
+    @close="closeBrandModal"
+    @register="handleBrandRegistration"
+  />
 </template>
 
 <style scoped>
