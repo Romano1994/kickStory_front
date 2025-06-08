@@ -10,8 +10,8 @@ export default {
     orgMdfctnCntnt: String,
     mdfctnCntnt: String,
     mergeCntnt: String,
-    commCdDtl: String,
-    kcksHstryMdfctnVer: Number,
+    itemCd: String,
+    kcksHstryMdfctnVer: String,
     kcksHstryMdfctnNo: Number,
     isMerge: Boolean,
     kcksHstryMdfctnYn: String,
@@ -99,15 +99,14 @@ export default {
         }
       }//for
 
-      this.postApi('/kcksHstryMdfctn', {
+      this.postApi('/kcks/hstry-mdfctn', {
         mbrNo: 1,
-        commCdDtl: this.commCdDtl,
+        itemCd: this.itemCd,
         mdfctnCntnt: JSON.stringify(operations),
         kcksHstryMdfctnVer: this.kcksHstryMdfctnVer,
         kcksHstryMdfctnNo: this.kcksHstryMdfctnNo === "" ? null : this.kcksHstryMdfctnNo,
         kcksHstryMdfctnYn: this.kcksHstryMdfctnYn
       }, this.insertSuccess, this.insertFail);
-
     },
     insertSuccess() {
       // console.log("insertSuccess");
@@ -148,7 +147,7 @@ export default {
         <h2 class="slide-title">작성중인 내용</h2>
         <hr>
         <div>
-            <div  style="background-color:darkgrey;height:25rem; overflow-y:auto;" v-html="mergeCntnt"></div>
+          <div style="background-color:darkgrey;height:25rem; overflow-y:auto;" v-html="mergeCntnt"></div>
         </div>
       </div>
       <div style="  word-break: break-word;">

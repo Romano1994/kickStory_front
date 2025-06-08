@@ -2,24 +2,21 @@
     display: flex;
     display: -webkit-flex;
     justify-content: center;
-    margin: 1.5rem;
     border: none;
-    /* padding: 1rem 1rem 0 0; */
+    width: 100%;
 }
 
 .wrapper {
     perspective: 1000px;
     will-change: transform;
-    /*transform-style: preserve-3d;*/
-
-    /*
-    transition: all 5s;
-    */
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
 .card {
-
-    width: 23rem;
+    width: 100%;
+    max-width: 23rem;
     height: 32rem;
     /*animation: flip 5s;*/
 }
@@ -30,10 +27,12 @@
     background-image: url(@/assets/wave_back.png);
     background-size: cover;
     align-items: center;
-    /*transform-style: preserve-3d;*/
+    transform-style: preserve-3d;
     /*-webkit-transform-style: flat;*/
     will-change: transform;
+    width: 100%;
 }
+
 
 .big {
     position: fixed;
@@ -107,13 +106,13 @@
     justify-content: center;
     align-items: center;
     border: 1mm ridge rgba(211, 220, 50, .6);
-    pointer-events: none;
+    /* pointer-events: none; */
 }
 
 .card-text-container {
     width: 103%;
     height: 10.5rem;
-    pointer-events: none;
+    /* pointer-events: none; */
     /*background-color: var(--color1);*/
     margin-top: 0.6rem;
     /*border:1px solid #37989e;*/
@@ -141,7 +140,7 @@
 .card-text {
     width: inherit;
     height: 4.8rem;
-    pointer-events: none;
+    /* pointer-events: none; */
     overflow-y: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -151,10 +150,10 @@
 
 .more-btn {
     color: blue;
-    cursor: pointer;
+    /* cursor: pointer; */
     font-size: 14px;
     text-decoration: underline;
-    pointer-events: all;
+    /* pointer-events: all; */
 }
 
 /*.card-text::-webkit-scrollbar {*/
@@ -163,11 +162,12 @@
 
 .card-img-top {
     position: absolute;
-    width: 26rem;
+    width: 100%;
+    max-width: 26rem;
     top: -13%;
     left: 46%;
     transform: translateX(-50%) rotate(-25deg);
-    pointer-events: none;
+    /* pointer-events: none; */
 }
 
 .front, .back {
@@ -329,5 +329,27 @@
         top: 0%;
         width: 50%;
         height: 100vh;
+    }
+}
+
+@media screen and (max-width: 1400px) {
+    .card {
+        max-width: 21rem;
+        height: 30rem;
+    }
+    
+    .card-img-top {
+        max-width: 24rem;
+    }
+}
+
+@media screen and (max-width: 960px) {
+    .card {
+        max-width: 23rem;
+        height: 32rem;
+    }
+    
+    .card-img-top {
+        max-width: 26rem;
     }
 }

@@ -29,33 +29,23 @@
 </div>
 </template>
 <script>
-export default {
-    props: {
-        isLoggedIn: {
-            type: String,
-            Required: false
-        }
-    },
+import userUtils from "../js/userUtils"
 
+export default {
+    data() {
+      return {
+        isLoggedIn : false,
+      }
+    },
+    mounted() {
+
+      this.isLoggedIn = userUtils.isLoggedIn();
+    },
+      
     methods: {
         logOut() {
-            this.postApi(
-              '/logout',
-              {},       // param
-              () => {   // success
-                alert('로그아웃에 성공했습니다.');
-                // 홈으로 이동
-                this.$router.push('/')
-                // this.$router.replace({ path: '/', query: { refresh: Date.now() } })
-                .then(() => {
-                    window.location.reload();
-                });
-              },
-              () => {   //fail
-                alert('로그아웃에 실패했습니다.');
-              }
-            )
-        }
+          userUtils.logOut();
+        },
     }
 }
 </script>

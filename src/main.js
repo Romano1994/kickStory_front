@@ -14,6 +14,11 @@ import "vue-awesome-paginate/dist/style.css";
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faComment, faEye, faFlag, faClock } from '@fortawesome/free-solid-svg-icons'
+import auth from './js/auth';
+// import leaflet from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+
 
 const app = createApp(App);
 const COMMON_COMPONENTS=[];
@@ -30,6 +35,16 @@ function loadComponents(){
           defineAsyncComponent(() => import(`@/components/${component}.vue`))
         );
     }
+}
+
+// 새로고침 설정
+window.onload = () => {
+  const access = sessionStorage.getItem(auth.accessName);
+
+  if(access) {
+      auth.scheduleTokenReissue();
+  }
+
 }
 
 //라이브러리 전역 변수 등록
