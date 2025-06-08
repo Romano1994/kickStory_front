@@ -1,14 +1,14 @@
 <template>
   <div>
-    <table style="width: 100%; table-layout: fixed;">
+    <table style="width: 100%; table-layout: fixed; font-size: 1.2rem;">
       <colgroup>
         <col style="width: auto;" />
-        <col style="width: 100px;" />
-        <col style="width: 50px;" />
-        <col style="width: 100px;" />
+        <col style="width: 120px;" />
+        <col style="width: 70px;" />
+        <col style="width: 120px;" />
       </colgroup>
       <thead>
-      <tr style="color: cornsilk; text-align: center;">
+      <tr style="color: cornsilk; text-align: center; border-bottom: 1px solid white;">
         <th>제목</th>
         <th>작성자</th>
         <th>조회수</th>
@@ -16,10 +16,10 @@
       </tr>
       </thead>
       <tbody style="color: white;">
-      <tr v-for="item in items" :key="item.id" style="border-top: 1px solid white;">
+      <tr v-for="item in items" :key="item.id" style="border-bottom: 1px solid white; padding: 5px 0 5px 0;">
         <td style="padding-left: 10px; cursor: pointer;" class="postTitle"
             @click="goToDetail(item.pstNo)"
-        >{{ item.pstTitl }}</td>
+        >{{ item.pstTitl }}&nbsp;&nbsp;<span v-if="item.cmtCnt > 0" style="color:grey"><font-awesome-icon :icon="['fas', 'comment']" size="xs" />{{ item.cmtCnt }}</span></td>
         <td style="text-align: center">{{ item.id }}</td>
         <td style="text-align: center">{{ item.pstHit }}</td>
         <td style="text-align: center">{{ formatDate(item.regDtt) }}</td>
@@ -45,10 +45,11 @@ import { ref, watch, onMounted } from 'vue'
 import axios from 'axios'
 import { VueAwesomePaginate } from 'vue-awesome-paginate'
 import { useRouter } from 'vue-router'
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const router = useRouter()
 const currentPage = ref(1)
-const itemsPerPage = 20
+const itemsPerPage = 40
 const items = ref([])
 const totalItems = ref(0)
 

@@ -8,19 +8,19 @@
       <div class="left-meta">
         <span class="writer">{{ post.id }}</span>
         <span class="divider">|</span>
-        <span>(말풍선이모티콘) {{ post.commentCnt }}</span>
+        <span><font-awesome-icon :icon="['fas', 'comment']" /> {{ post.cmtCnt }}</span>
         <span class="divider">|</span>
-        <span>(눈알모양이모티콘) {{ post.pstHit }}</span>
+        <span><font-awesome-icon :icon="['fas', 'eye']" /> {{ post.pstHit }}</span>
       </div>
       <div class="right-time">
-        🕒 {{ formatDate(post.regDtt) }}
+        <font-awesome-icon :icon="['fas', 'clock']" /> {{ formatDate(post.regDtt) }}
       </div>
     </div>
 
     <div class="content">{{ post.pstCntnt }}</div>
 
     <div class="actions">
-      <button class="report">⛔ 신고</button>
+      <button class="report"><font-awesome-icon :icon="['fas', 'flag']" /> 신고</button>
     </div>
   </div>
 
@@ -29,7 +29,7 @@
     <div v-for="comment in comments" :key="comment.id" class="comment">
       <div class="comment-meta">
         <span class="comment-writer">{{ comment.id }}</span>
-        <span class="comment-time">🕒 {{ formatDate(comment.regDtt) }}</span>
+        <span class="comment-time"><font-awesome-icon :icon="['fas', 'clock']" /> {{ formatDate(comment.regDtt) }}</span>
       </div>
       <div class="comment-body">{{ comment.cmtCntnt }}</div>
       <div class="comment-actions">
@@ -37,12 +37,21 @@
       </div>
     </div>
   </div>
+
+  <!-- 댓글 작성 -->
+  <div class="comment-form">
+    <textarea class="comment-textarea" v-model="newComment" placeholder="사이좋게 지내요. 서로를 배려하는 댓글을 남겨주세요."></textarea>
+    <div style="display: flex; justify-content: flex-end;">
+      <button class="comment-submit" @click="submitComment">등록</button>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const route = useRoute()
 const post = ref({})
@@ -71,6 +80,18 @@ onMounted(() => {
   fetchPost()
   fetchComments()
 })
+
+watch(
+    () => route.params.id,
+    (id) => {
+      if (id) {
+        fetchPost()
+        fetchComments()
+      }
+    },
+    { immediate: true }
+)
+
 </script>
 
 <style scoped>
@@ -84,14 +105,6 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
-}
-
-.number-box {
-  background: #bfae5c;
-  color: black;
-  font-weight: bold;
-  border-radius: 6px;
-  padding: 4px 10px;
 }
 
 .title {
@@ -110,6 +123,7 @@ onMounted(() => {
 }
 
 .divider {
+  margin: 0 8px;
   color: #aaa;
 }
 
@@ -117,7 +131,7 @@ onMounted(() => {
   white-space: pre-wrap;
   line-height: 1.7;
   margin-bottom: 32px;
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
 
 .actions {
@@ -127,32 +141,13 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 
-.report, .share, .scrap {
-  background: cornsilk;
+.report {
+  background: darkred;
   border: none;
-  color: black;
+  color: wheat;
   padding: 6px 12px;
   border-radius: 6px;
   cursor: pointer;
-}
-
-.recommend-box {
-  margin-left: auto;
-  background: #2e2e2e;
-  border-radius: 8px;
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.icon {
-  width: 20px;
-  height: 20px;
-}
-
-.spacer {
-  flex-grow: 1;
 }
 
 .comments {
@@ -160,7 +155,6 @@ onMounted(() => {
 }
 
 .comment {
-  padding-bottom: 16px;
   border-bottom: 1px solid #333;
   padding: 10px 24px 10px 24px;
 }
@@ -182,6 +176,7 @@ onMounted(() => {
 .comment-body {
   margin-top: 8px;
   line-height: 1.6;
+  font-size: 1.1rem;
   color: #eee;
 }
 
@@ -190,5 +185,24 @@ onMounted(() => {
   font-size: 0.8rem;
   color: #aaa;
   cursor: pointer;
+}
+
+.comment-form {
+  padding: 10px 24px 10px 24px;
+}
+.comment-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  margin-bottom: 1px;
+}
+
+.comment-submit {
+  background: cornsilk;
+  color: black;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
 }
 </style>
