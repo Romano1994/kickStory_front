@@ -38,7 +38,7 @@ export default {
       this.$emit('close');
     },
     registerBrand() {
-      this.postApi('/brand/register', this.brand, this.handleRegisterSuccess, this.handleRegisterFail);
+      this.postApi('/brand/registration', this.brand, this.handleRegisterSuccess, this.handleRegisterFail);
     },
     handleRegisterSuccess(res) {
       this.showSuccessModal = true;

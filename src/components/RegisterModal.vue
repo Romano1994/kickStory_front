@@ -1,21 +1,23 @@
 <script>
 import AddressSearchModal from './AddressSearchModal.vue'
 import BrandRegistrationModal from './BrandRegistrationModal.vue'
+import CommonModal from './CommonModal.vue'
 
 export default {
   name: 'RegisterModal',
   components: {
     AddressSearchModal,
-    BrandRegistrationModal
+    BrandRegistrationModal,
+    CommonModal
   },
   data() {
     return {
-      storeNo:'',
+      storeNo:0,
       storeKorNm: '',
       storeEngNm: '',
       cntry: '',
       branchNm: '',
-      storeTypeCd: '00030001', // Default to offline
+      branchTypeCd: '00030001', // Default to offline
       place: '',
       website: '',
       // Store search related
@@ -63,7 +65,10 @@ export default {
       brandTypes: [
         { type: '한정판', typeCd: '00010001' },
         { type: '상시', typeCd: '00010002' }
-      ]
+      ],
+      showCommonModal: false,
+      commonModalMessage: '',
+      commonModalType: 'confirm'
     }
   },
   methods: {
@@ -219,22 +224,27 @@ export default {
       this.usualBrands = this.usualBrands.filter(b => b.brandNo !== brand.brandNo);
     },
     register() {
-      if (this.storeTypeCd === '00030001') { // 오프라인 스토어
+      if (this.branchTypeCd === '00030001') { // 오프라인 스토어
         const storeData = {
-          storeTypeCd: this.storeTypeCd,
+          branchTypeCd: this.branchTypeCd,
           storeKorNm: this.storeKorNm,
           storeEngNm: this.storeEngNm,
           storeNo: this.storeNo,
           cntryNm: this.cntryNm,
+          branchNm: this.branchNm,
           branchRoadAddr: this.selectedAddress.branchRoadAddr,
           branchAddr: this.selectedAddress.branchAddr,
           lon: this.selectedAddress.lon,
           lat: this.selectedAddress.lat,
           limitedBrands: this.limitedBrands.map(brand => ({
+            branchTypeCd: this.branchTypeCd,
+            branchNo: null,
             brandNo: brand.brandNo,
             brandTypeCd: brand.brandTypeCd
           })),
           usualBrands: this.usualBrands.map(brand => ({
+            branchTypeCd: this.branchTypeCd,
+            branchNo: null,
             brandNo: brand.brandNo,
             brandTypeCd: brand.brandTypeCd
           }))
@@ -244,18 +254,26 @@ export default {
       }
     },
     registerSuccess(res) {
-      console.log(res);
-      // 등록 성공 처리
-      // this.$emit('close');
+      this.commonModalMessage = res.data;
+      this.commonModalType = 'alert';
+      this.showCommonModal = true;
     },
     registerFail(error) {
-      console.error('Store registration failed:', error);
+      // this.commonModalMessage = error.response?.data || '등록에 실패했습니다.';
+      this.commonModalMessage = error|| '등록에 실패했습니다.';
+
+      this.commonModalType = 'alert';
+      this.showCommonModal = true;
+    },
+    handleCommonModalConfirm() {
+      this.showCommonModal = false;
+      if (this.commonModalMessage.includes('성공')) {
+        this.closeModal();
+      }
     }
   },
   watch: {
-    storeTypeCd() {
-      this.resetBranch()
-    },
+
     // storeKorNm() {
     //   this.storeEngNm = '';
     //   // this.isStoreSelect = false;
@@ -279,7 +297,7 @@ export default {
       <div>
         <div>
           <span>유형</span>
-          <select v-model="storeTypeCd">
+          <select v-model="branchTypeCd">
             <option v-for="type in storeTypeList" 
                     :key="type.typeCd" 
                     :value="type.typeCd">
@@ -303,7 +321,7 @@ export default {
           <span>스토어명(영문)</span>
           <input type="text" v-model="storeEngNm"/>
         </div>
-        <div>
+        <div v-if="branchTypeCd === '00030001'">
           <span>국가명</span>
           <input type="text" v-model="cntry" @input="srchCntryList"/>
           <div v-if="countryList.length > 0" class="search-list">
@@ -315,14 +333,14 @@ export default {
             </div>
           </div>
         </div>
-        <div>
+        <div v-if="branchTypeCd === '00030001'">
           <span>지점명</span>
           <input type="text" v-model="branchNm" />
         </div>
-        <div v-if="storeTypeCd === '00030001'">
+        <div v-if="branchTypeCd === '00030001'">
           <span>주소검색</span>
-          <div v-if="selectedAddress.roadAddress" class="selected-address">
-            {{ selectedAddress.roadAddress }}
+          <div v-if="selectedAddress.branchRoadAddr" class="selected-address">
+            {{ selectedAddress.branchRoadAddr }}
           </div>
           <button class="address-search-button" @click="showAddressModal = true">검색하기</button>
           <AddressSearchModal 
@@ -401,6 +419,15 @@ export default {
     :searchText="limitedBrandSearch"
     @close="closeBrandModal"
     @register="handleBrandRegistration"
+  />
+
+  <!-- Common Modal -->
+  <CommonModal
+    v-if="showCommonModal"
+    :show="showCommonModal"
+    :content="commonModalMessage"
+    :type="commonModalType"
+    @confirm="handleCommonModalConfirm"
   />
 </template>
 
