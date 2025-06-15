@@ -1,6 +1,13 @@
 <script>
+import AddressSearchModal from './AddressSearchModal.vue'
+import BrandRegistrationModal from './BrandRegistrationModal.vue'
+
 export default {
   name: 'RegisterModal',
+  components: {
+    AddressSearchModal,
+    BrandRegistrationModal
+  },
   data() {
     return {
       storeKorNm: '',
@@ -15,6 +22,7 @@ export default {
       storeList: [],
       // Address search related
       addressList: [],
+      showAddressModal: false,
       selectedAddress: {
         storeName: '',
         roadAddress: '',
@@ -43,7 +51,17 @@ export default {
         { type: '온라인', typeCd: '00030002' }
       ],
       isStoreSelect: false,
-      lastSelectedStore: null
+      lastSelectedStore: null,
+      showBrandModal: false,
+      newBrand: {
+        brandNmKor: '',
+        brandNmEng: '',
+        brandTypeCd: ''
+      },
+      brandTypes: [
+        { type: '한정판', typeCd: '00010001' },
+        { type: '상시', typeCd: '00010002' }
+      ]
     }
   },
   methods: {
@@ -61,7 +79,7 @@ export default {
         
         if (this.storeKorNm.trim()) {
           this.storeEngNm = '';
-          this.getApi('/place/store', {name: this.storeKorNm}, this.storeSearchSuccess, this.storeSearchFail);
+          this.getApi('/store/name', {name: this.storeKorNm}, this.storeSearchSuccess, this.storeSearchFail);
         } else {
           this.storeList = [];
         }
@@ -81,11 +99,7 @@ export default {
       this.storeList = [];
     },
     srchCntryList() {
-      if (this.cntry.trim()) {
-        this.getApi('/place/country/name', {cntryKorNm : this.cntry}, this.srchCntrySucc, this.srchCntryFail);
-      } else {
-        this.countryList = [];
-      }
+        this.getApi('/store/country/names', {cntryKorNm : this.cntry}, this.srchCntrySucc, this.srchCntryFail);
     },
     srchCntrySucc(res) {
       this.countryList = res.data;
@@ -128,7 +142,7 @@ export default {
       
       this.addressSearchTimeout = setTimeout(() => {
         if (this.place.trim()) {
-          this.getApi(`/place/store/${this.place}`, null, this.searchAddressSuccess, this.searchAddressFail)
+          this.getApi(`/store/address/${this.place}`, null, this.searchAddressSuccess, this.searchAddressFail)
         } else {
           this.addressList = []
         }
@@ -140,36 +154,44 @@ export default {
     searchAddressFail(error) {
       console.error('Address search failed:', error)
     },
-    selectAddress(address) {
-      this.selectedAddress = {
-        storeName: address.storeName,
-        roadAddress: address.roadAddress,
-        lon: address.lon,
-        lat: address.lat
-      }
-      this.place = address.roadAddress
-      this.addressList = []
+    handleAddressSelect(address) {
+      this.selectedAddress = address;
+      this.place = address.roadAddress;
     },
     // Limited brands methods
     searchLimitedBrands() {
-      // Implement limited brands search logic
-      console.log('Limited brands search triggered with:', this.limitedBrandSearch)
+      if (this.limitedBrandSearch.trim()) {
+        this.getApi('/brand', { name: this.limitedBrandSearch }, this.searchLimitedBrandsSuccess, this.searchLimitedBrandsFail);
+      } else {
+        this.limitedBrandList = [];
+      }
     },
     searchLimitedBrandsSuccess(res) {
-      this.limitedBrandList = res
+      this.limitedBrandList = res.data;
     },
     searchLimitedBrandsFail(error) {
-      console.error('Limited brands search failed:', error)
+      console.error('Limited brands search failed:', error);
+      this.limitedBrandList = [];
     },
     addLimitedBrand(brand) {
-      if (!this.limitedBrands.some(b => b.brandName === brand.brandName)) {
-        this.limitedBrands.push(brand)
+      if (!this.limitedBrands.some(b => b.brandNo === brand.brandNo)) {
+        this.limitedBrands.push(brand);
       }
-      this.limitedBrandSearch = ''
-      this.limitedBrandList = []
+      this.limitedBrandSearch = '';
+      this.limitedBrandList = [];
     },
     removeLimitedBrand(brand) {
-      this.limitedBrands = this.limitedBrands.filter(b => b.brandName !== brand.brandName)
+      this.limitedBrands = this.limitedBrands.filter(b => b.brandNo !== brand.brandNo);
+    },
+    showBrandRegistrationModal() {
+      this.showBrandModal = true;
+    },
+    closeBrandModal() {
+      this.showBrandModal = false;
+    },
+    handleBrandRegistration(brand) {
+      // TODO: Implement brand registration API call
+      this.addLimitedBrand(brand);
     },
     // Usual brands methods
     searchUsualBrands() {
@@ -197,12 +219,10 @@ export default {
     storeTypeCd() {
       this.resetBranch()
     },
-    storeKorNm() {
-      if (this.lastSelectedStore && this.lastSelectedStore.storeKorNm !== this.storeKorNm) {
-        this.lastSelectedStore = null;
-        this.storeEngNm = '';
-      }
-    }
+    // storeKorNm() {
+    //   this.storeEngNm = '';
+    //   // this.isStoreSelect = false;
+    // }
   },
   beforeUnmount() {
     // 컴포넌트가 제거될 때 타이머 정리
@@ -244,14 +264,14 @@ export default {
         </div>
         <div>
           <span>스토어명(영문)</span>
-          <input type="text" v-model="storeEngNm" :disabled="lastSelectedStore !== null"/>
+          <input type="text" v-model="storeEngNm"/>
         </div>
         <div>
           <span>국가명</span>
           <input type="text" v-model="cntry" @input="srchCntryList"/>
           <div v-if="countryList.length > 0" class="search-list">
             <div v-for="country in countryList" 
-                 :key="country.cntryCd" 
+                 :key="country.cntryCd"
                  @click="selectCountry(country)"
                  class="search-item">
               {{ country.cntryKorNm }}
@@ -272,15 +292,15 @@ export default {
         </div>
         <div v-if="storeTypeCd === '00030001'">
           <span>주소검색</span>
-          <input type="text" v-model="place" @input="searchAddress"/>
-          <div v-if="addressList.length > 0" class="search-list">
-            <div v-for="address in addressList" 
-                 :key="address.roadAddress" 
-                 @click="selectAddress(address)"
-                 class="search-item">
-              {{ address.storeName }} - {{ address.roadAddress }}
-            </div>
+          <div v-if="selectedAddress.roadAddress" class="selected-address">
+            {{ selectedAddress.roadAddress }}
           </div>
+          <button class="address-search-button" @click="showAddressModal = true">검색하기</button>
+          <AddressSearchModal
+            v-if="showAddressModal"
+            @close="showAddressModal = false"
+            @select="handleAddressSelect"
+          />
         </div>
         <div v-else>
           <span>웹사이트 주소 입력</span>
@@ -291,17 +311,22 @@ export default {
           <input type="text" v-model="limitedBrandSearch" @input="searchLimitedBrands"/>
           <div v-if="limitedBrandList.length > 0" class="search-list">
             <div v-for="brand in limitedBrandList" 
-                 :key="brand.brandName" 
+                 :key="brand.brandNo"
                  @click="addLimitedBrand(brand)"
                  class="search-item">
-              {{ brand.brandName }}
+              {{ brand.brandNmKor }}
+            </div>
+          </div>
+          <div v-else-if="limitedBrandSearch.trim()" class="search-list">
+            <div class="search-item" @click="showBrandRegistrationModal">
+              등록하기
             </div>
           </div>
           <div class="selected-brands">
             <div v-for="brand in limitedBrands" 
-                 :key="brand.brandName" 
+                 :key="brand.brandNo"
                  class="selected-brand">
-              {{ brand.brandName }}
+              {{ brand.brandNmKor }}
               <span class="remove-brand" @click="removeLimitedBrand(brand)">×</span>
             </div>
           </div>
@@ -334,6 +359,15 @@ export default {
       </div>
     </div>
   </div>
+
+  <!-- Brand Registration Modal -->
+  <BrandRegistrationModal
+    v-if="showBrandModal"
+    :show="showBrandModal"
+    :searchText="limitedBrandSearch"
+    @close="closeBrandModal"
+    @register="handleBrandRegistration"
+  />
 </template>
 
 <style scoped>
@@ -514,4 +548,38 @@ export default {
 .remove-brand:hover {
   opacity: 0.8;
 }
-</style> 
+
+.address-search-button {
+  width: 100%;
+  padding: 8px;
+  background-color: var(--color6);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-family: var(--sub-font);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.address-search-button:hover {
+  background-color: #2a7a7f;
+}
+
+@media screen and (max-width: 720px) {
+  .address-search-button {
+    padding: 8px;
+  }
+}
+
+.selected-address {
+  margin: 8px 0;
+  padding: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--color1);
+  font-size: 0.9rem;
+  font-family: var(--main-font);
+}
+</style>
