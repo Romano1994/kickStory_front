@@ -259,15 +259,14 @@ export default {
       this.showCommonModal = true;
     },
     registerFail(error) {
-      // this.commonModalMessage = error.response?.data || '등록에 실패했습니다.';
       this.commonModalMessage = error|| '등록에 실패했습니다.';
-
       this.commonModalType = 'alert';
       this.showCommonModal = true;
     },
     handleCommonModalConfirm() {
       this.showCommonModal = false;
-      if (this.commonModalMessage.includes('성공')) {
+      // registerSuccess에서 호출된 경우에만 RegisterModal을 닫음
+      if (this.commonModalType === 'alert' && !this.commonModalMessage.includes('실패')) {
         this.closeModal();
       }
     }
