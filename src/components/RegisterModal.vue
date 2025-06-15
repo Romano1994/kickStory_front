@@ -82,7 +82,7 @@ export default {
     },
     srchCntryList() {
       if (this.cntry.trim()) {
-        this.getApi('/place/country/names', {cntryKorNm : this.cntry}, this.srchCntrySucc, this.srchCntryFail);
+        this.getApi('/place/country/name', {cntryKorNm : this.cntry}, this.srchCntrySucc, this.srchCntryFail);
       } else {
         this.countryList = [];
       }
@@ -96,7 +96,7 @@ export default {
     },
     selectCountry(country) {
       this.selectedCountry = country
-      this.cntry = country.countryKorNm
+      this.cntry = country.cntryKorNm
       this.countryList = []
     },
     srchBranchList() {
@@ -197,10 +197,12 @@ export default {
     storeTypeCd() {
       this.resetBranch()
     },
-    // storeKorNm() {
-    //   this.storeEngNm = '';
-    //   // this.isStoreSelect = false;
-    // }
+    storeKorNm() {
+      if (this.lastSelectedStore && this.lastSelectedStore.storeKorNm !== this.storeKorNm) {
+        this.lastSelectedStore = null;
+        this.storeEngNm = '';
+      }
+    }
   },
   beforeUnmount() {
     // 컴포넌트가 제거될 때 타이머 정리
@@ -242,17 +244,17 @@ export default {
         </div>
         <div>
           <span>스토어명(영문)</span>
-          <input type="text" v-model="storeEngNm"/>
+          <input type="text" v-model="storeEngNm" :disabled="lastSelectedStore !== null"/>
         </div>
         <div>
           <span>국가명</span>
           <input type="text" v-model="cntry" @input="srchCntryList"/>
           <div v-if="countryList.length > 0" class="search-list">
             <div v-for="country in countryList" 
-                 :key="country.countryCd" 
+                 :key="country.cntryCd" 
                  @click="selectCountry(country)"
                  class="search-item">
-              {{ country.countryKorNm }}
+              {{ country.cntryKorNm }}
             </div>
           </div>
         </div>
