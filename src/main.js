@@ -8,6 +8,12 @@ import './js/total-css';
 import apiCall from './js/menu/mixins/api/api-call';
 import apiMix from './js/menu/mixins/api/api-mix';
 import axios from 'axios';
+import VueAwesomePaginate from "vue-awesome-paginate";
+import "vue-awesome-paginate/dist/style.css";
+//fontawesome
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faComment, faEye, faFlag, faClock } from '@fortawesome/free-solid-svg-icons'
 import auth from './js/auth';
 // import leaflet from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -16,6 +22,9 @@ import 'leaflet/dist/leaflet.css';
 
 const app = createApp(App);
 const COMMON_COMPONENTS=[];
+
+app.component('font-awesome-icon', FontAwesomeIcon)
+library.add(faComment, faEye, faFlag, faClock);
 
 function loadComponents(){
 
@@ -43,6 +52,8 @@ app.config.globalProperties.$apiCall=apiCall;
 app.config.globalProperties.$axios=axios;
 
 app.mixin(apiMix);
+
+createApp(App).use(VueAwesomePaginate).mount("#app");
 
 loadComponents();
 app.use(router);
