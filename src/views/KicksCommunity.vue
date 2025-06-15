@@ -1,6 +1,13 @@
 <template>
-  <div>
-    <table style="width: 100%; table-layout: fixed; font-size: 1.2rem;">
+  <div style="display: flex; justify-content: center; flex-direction: column; justify-items: center; align-items: center; margin-top:5rem">
+    <div style="display: flex; justify-content: flex-end; width: 70%;">
+      <select v-model="itemsPerPage" style="width: 50px; padding: 2px; border: none; background-color: white; border-radius: 4px; font-size: 1rem; font-family: var(--main-font);">
+        <option :value="10">10</option>
+        <option :value="20">20</option>
+        <option :value="30">30</option>
+      </select>
+    </div>
+    <table style="width: 70%; table-layout: fixed; font-size: 1.2rem; margin-top: 0.3rem;">
       <colgroup>
         <col style="width: auto;" />
         <col style="width: 120px;" />
@@ -8,7 +15,7 @@
         <col style="width: 120px;" />
       </colgroup>
       <thead>
-      <tr style="color: cornsilk; text-align: center; border-bottom: 1px solid white;">
+      <tr style="color: cornsilk; text-align: center; border-bottom: 1px solid white; border-top: 1px solid cornsilk;">
         <th>제목</th>
         <th>작성자</th>
         <th>조회수</th>
@@ -28,7 +35,8 @@
     </table>
 
     <!-- paging -->
-    <div style="display: flex; justify-content: center;">
+    <div style="display: flex; justify-content: space-between; width: 70%; align-items: center;">
+      <div></div>
       <vue-awesome-paginate
           v-model="currentPage"
           :total-items="totalItems"
@@ -36,6 +44,7 @@
           :max-pages-shown="5"
           :show-breakpoint-buttons="false"
       />
+      <button @click="createPst" class="write-button">글쓰기</button>
     </div>
   </div>
 </template>
@@ -49,7 +58,7 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const router = useRouter()
 const currentPage = ref(1)
-const itemsPerPage = 40
+const itemsPerPage = ref(Number(localStorage.getItem('itemsPerPage'))||20)
 const items = ref([])
 const totalItems = ref(0)
 
@@ -62,7 +71,7 @@ const fetchData = async () => {
     const response = await axios.get('/psts', {
       params: {
         page: currentPage.value,
-        pageSize: itemsPerPage,
+        pageSize: itemsPerPage.value,
       },
     })
     items.value = response.data.list
@@ -71,8 +80,10 @@ const fetchData = async () => {
     console.error('데이터 로딩 실패:', err)
   }
 }
-
-watch(currentPage, fetchData)
+watch(itemsPerPage, (newVal) => {
+  localStorage.setItem('itemsPerPage', newVal)
+})
+watch([currentPage, itemsPerPage], fetchData)
 onMounted(fetchData)
 
 const formatDate = (utcString) => {
@@ -96,6 +107,10 @@ const formatDate = (utcString) => {
     const dd = String(kstDate.getDate()).padStart(2, '0')
     return `${yyyy}.${mm}.${dd}`
   }
+}
+
+function createPst() {
+  router.push('/');
 }
 </script>
 
@@ -165,5 +180,18 @@ const formatDate = (utcString) => {
 
 .postTitle:hover {
   color: cornsilk;
+}
+
+.write-button {
+  width: 4rem;
+  height: 2rem;
+  padding: 8px;
+  background-color: var(--color6);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: var(--sub-font);
 }
 </style>
