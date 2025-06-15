@@ -43,6 +43,13 @@ const menus = [
         meta: {requiresAuth:true}
     },
     {
+        path: "/kc/:id",
+        name: "KicksCommunityDetail",//컴포넌트명
+        componentPath:"KicksCommunityDetail",//실제 컴포넌트 경로
+        depth:0,
+        meta: {requiresAuth:true}
+    },
+    {
         path: "/km",
         name: "KicksMap",//컴포넌트명
         componentPath:"KicksMap",//실제 컴포넌트 경로

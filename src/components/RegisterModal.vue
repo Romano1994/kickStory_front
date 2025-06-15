@@ -1,20 +1,23 @@
 <script>
 import AddressSearchModal from './AddressSearchModal.vue'
 import BrandRegistrationModal from './BrandRegistrationModal.vue'
+import CommonModal from './CommonModal.vue'
 
 export default {
   name: 'RegisterModal',
   components: {
     AddressSearchModal,
-    BrandRegistrationModal
+    BrandRegistrationModal,
+    CommonModal
   },
   data() {
     return {
+      storeNo:0,
       storeKorNm: '',
       storeEngNm: '',
       cntry: '',
       branchNm: '',
-      storeTypeCd: '00030001', // Default to offline
+      branchTypeCd: '00030001', // Default to offline
       place: '',
       website: '',
       // Store search related
@@ -25,7 +28,8 @@ export default {
       showAddressModal: false,
       selectedAddress: {
         storeName: '',
-        roadAddress: '',
+        branchRoadAddr: '',
+        branchAddr: '',
         lon: '',
         lat: ''
       },
@@ -39,7 +43,7 @@ export default {
       usualBrandList: [],
       // Country search related
       countryList: [],
-      selectedCountry: {
+      cntryNm: {
         isoCntryNm: '',
         countryCd: '',
         countryKorNm: ''
@@ -61,7 +65,10 @@ export default {
       brandTypes: [
         { type: '한정판', typeCd: '00010001' },
         { type: '상시', typeCd: '00010002' }
-      ]
+      ],
+      showCommonModal: false,
+      commonModalMessage: '',
+      commonModalType: 'confirm'
     }
   },
   methods: {
@@ -94,6 +101,7 @@ export default {
     },
     selectStore(store) {
       this.lastSelectedStore = store;
+      this.storeNo = store.storeNo;
       this.storeKorNm = store.storeKorNm;
       this.storeEngNm = store.storeEngNm;
       this.storeList = [];
@@ -109,27 +117,9 @@ export default {
       this.countryList = [];
     },
     selectCountry(country) {
-      this.selectedCountry = country
-      this.cntry = country.cntryKorNm
-      this.countryList = []
-    },
-    srchBranchList() {
-      // Implement branch search logic
-      console.log('Branch search triggered')
-    },
-    srchBranchSucc(res) {
-      this.branchList = res
-    },
-    srchBranchFail(error) {
-      console.error('Branch search failed:', error)
-    },
-    selectBranch(branch) {
-      this.branchNm = branch.branchNm
-      this.branchList = []
-    },
-    resetBranch() {
-      this.branchNm = ''
-      this.branchList = []
+      this.cntryNm = country.isoCntryNm;
+      this.cntry = country.cntryKorNm;
+      this.countryList = [];
     },
     closeModal() {
       this.$emit('close')
@@ -155,7 +145,11 @@ export default {
       console.error('Address search failed:', error)
     },
     handleAddressSelect(address) {
-      this.selectedAddress = address;
+      this.selectedAddress.storeName= address.storeName;
+      this.selectedAddress.branchAddr = address.address;
+      this.selectedAddress.branchRoadAddr = address.roadAddress;
+      this.selectedAddress.lon = address.lon;
+      this.selectedAddress.lat = address.lat;
       this.place = address.roadAddress;
     },
     // Limited brands methods
@@ -174,8 +168,14 @@ export default {
       this.limitedBrandList = [];
     },
     addLimitedBrand(brand) {
-      if (!this.limitedBrands.some(b => b.brandNo === brand.brandNo)) {
-        this.limitedBrands.push(brand);
+   
+      if (!this.limitedBrands.some(b => b.brandNo === brand.brandNo && b.brandTypeCd===brand.brandTypeCd)) {
+        this.limitedBrands.push({
+          brandNo: brand.brandNo,
+          brandNmKor: brand.brandNmKor,
+          brandNmEng: brand.brandNmEng,
+          brandTypeCd: brand.brandTypeCd
+        });
       }
       this.limitedBrandSearch = '';
       this.limitedBrandList = [];
@@ -195,30 +195,85 @@ export default {
     },
     // Usual brands methods
     searchUsualBrands() {
-      // Implement usual brands search logic
-      console.log('Usual brands search triggered with:', this.usualBrandSearch)
+      if (this.usualBrandSearch.trim()) {
+        this.getApi('/brand', { name: this.usualBrandSearch }, this.searchUsualBrandsSuccess, this.searchUsualBrandsFail);
+      } else {
+        this.usualBrandList = [];
+      }
     },
     searchUsualBrandsSuccess(res) {
-      this.usualBrandList = res
+      this.usualBrandList = res.data;
     },
     searchUsualBrandsFail(error) {
-      console.error('Usual brands search failed:', error)
+      console.error('Usual brands search failed:', error);
+      this.usualBrandList = [];
     },
     addUsualBrand(brand) {
-      if (!this.usualBrands.some(b => b.brandName === brand.brandName)) {
-        this.usualBrands.push(brand)
+      if (!this.usualBrands.some(b => b.brandNo === brand.brandNo && b.brandTypeCd === brand.brandTypeCd)) {
+        this.usualBrands.push({
+          brandNo: brand.brandNo,
+          brandNmKor: brand.brandNmKor,
+          brandNmEng: brand.brandNmEng,
+          brandTypeCd: brand.brandTypeCd
+        });
       }
-      this.usualBrandSearch = ''
-      this.usualBrandList = []
+      this.usualBrandSearch = '';
+      this.usualBrandList = [];
     },
     removeUsualBrand(brand) {
-      this.usualBrands = this.usualBrands.filter(b => b.brandName !== brand.brandName)
+      this.usualBrands = this.usualBrands.filter(b => b.brandNo !== brand.brandNo);
+    },
+    register() {
+      if (this.branchTypeCd === '00030001') { // 오프라인 스토어
+        const storeData = {
+          branchTypeCd: this.branchTypeCd,
+          storeKorNm: this.storeKorNm,
+          storeEngNm: this.storeEngNm,
+          storeNo: this.storeNo,
+          cntryNm: this.cntryNm,
+          branchNm: this.branchNm,
+          branchRoadAddr: this.selectedAddress.branchRoadAddr,
+          branchAddr: this.selectedAddress.branchAddr,
+          lon: this.selectedAddress.lon,
+          lat: this.selectedAddress.lat,
+          limitedBrands: this.limitedBrands.map(brand => ({
+            branchTypeCd: this.branchTypeCd,
+            branchNo: null,
+            brandNo: brand.brandNo,
+            brandTypeCd: brand.brandTypeCd
+          })),
+          usualBrands: this.usualBrands.map(brand => ({
+            branchTypeCd: this.branchTypeCd,
+            branchNo: null,
+            brandNo: brand.brandNo,
+            brandTypeCd: brand.brandTypeCd
+          }))
+        };
+
+        this.postApi('/store/registration', storeData, this.registerSuccess, this.registerFail);
+      }
+    },
+    registerSuccess(res) {
+      this.commonModalMessage = res.data;
+      this.commonModalType = 'alert';
+      this.showCommonModal = true;
+    },
+    registerFail(error) {
+      // this.commonModalMessage = error.response?.data || '등록에 실패했습니다.';
+      this.commonModalMessage = error|| '등록에 실패했습니다.';
+
+      this.commonModalType = 'alert';
+      this.showCommonModal = true;
+    },
+    handleCommonModalConfirm() {
+      this.showCommonModal = false;
+      if (this.commonModalMessage.includes('성공')) {
+        this.closeModal();
+      }
     }
   },
   watch: {
-    storeTypeCd() {
-      this.resetBranch()
-    },
+
     // storeKorNm() {
     //   this.storeEngNm = '';
     //   // this.isStoreSelect = false;
@@ -242,7 +297,7 @@ export default {
       <div>
         <div>
           <span>유형</span>
-          <select v-model="storeTypeCd">
+          <select v-model="branchTypeCd">
             <option v-for="type in storeTypeList" 
                     :key="type.typeCd" 
                     :value="type.typeCd">
@@ -266,7 +321,7 @@ export default {
           <span>스토어명(영문)</span>
           <input type="text" v-model="storeEngNm"/>
         </div>
-        <div>
+        <div v-if="branchTypeCd === '00030001'">
           <span>국가명</span>
           <input type="text" v-model="cntry" @input="srchCntryList"/>
           <div v-if="countryList.length > 0" class="search-list">
@@ -278,22 +333,14 @@ export default {
             </div>
           </div>
         </div>
-        <div>
+        <div v-if="branchTypeCd === '00030001'">
           <span>지점명</span>
-          <input type="text" v-model="branchNm" @input="srchBranchList"/>
-          <div v-if="branchList.length > 0" class="search-list">
-            <div v-for="branch in branchList" 
-                 :key="branch.branchNm" 
-                 @click="selectBranch(branch)"
-                 class="search-item">
-              {{ branch.branchNm }}
-            </div>
-          </div>
+          <input type="text" v-model="branchNm" />
         </div>
-        <div v-if="storeTypeCd === '00030001'">
+        <div v-if="branchTypeCd === '00030001'">
           <span>주소검색</span>
-          <div v-if="selectedAddress.roadAddress" class="selected-address">
-            {{ selectedAddress.roadAddress }}
+          <div v-if="selectedAddress.branchRoadAddr" class="selected-address">
+            {{ selectedAddress.branchRoadAddr }}
           </div>
           <button class="address-search-button" @click="showAddressModal = true">검색하기</button>
           <AddressSearchModal
@@ -336,17 +383,22 @@ export default {
           <input type="text" v-model="usualBrandSearch" @input="searchUsualBrands"/>
           <div v-if="usualBrandList.length > 0" class="search-list">
             <div v-for="brand in usualBrandList" 
-                 :key="brand.brandName" 
+                 :key="brand.brandNo" 
                  @click="addUsualBrand(brand)"
                  class="search-item">
-              {{ brand.brandName }}
+              {{ brand.brandNmKor }}
+            </div>
+          </div>
+          <div v-else-if="usualBrandSearch.trim()" class="search-list">
+            <div class="search-item" @click="showBrandRegistrationModal">
+              등록하기
             </div>
           </div>
           <div class="selected-brands">
             <div v-for="brand in usualBrands" 
-                 :key="brand.brandName" 
+                 :key="brand.brandNo" 
                  class="selected-brand">
-              {{ brand.brandName }}
+              {{ brand.brandNmKor }}
               <span class="remove-brand" @click="removeUsualBrand(brand)">×</span>
             </div>
           </div>
@@ -355,7 +407,7 @@ export default {
       
       <div>
         <button @click="closeModal">취소</button>
-        <button>등록</button>
+        <button @click="register">등록</button>
       </div>
     </div>
   </div>
@@ -367,6 +419,15 @@ export default {
     :searchText="limitedBrandSearch"
     @close="closeBrandModal"
     @register="handleBrandRegistration"
+  />
+
+  <!-- Common Modal -->
+  <CommonModal
+    v-if="showCommonModal"
+    :show="showCommonModal"
+    :content="commonModalMessage"
+    :type="commonModalType"
+    @confirm="handleCommonModalConfirm"
   />
 </template>
 
@@ -394,14 +455,19 @@ export default {
   padding: 1.5rem;
   width: 90%;
   max-width: 500px;
+  max-height: 90vh;
   z-index: 1000;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
 }
 
 .register-modal > div:first-child {
   background-color: var(--color2);
   border-radius: 8px;
   padding: 1.5rem;
+  overflow-y: auto;
+  max-height: calc(90vh - 120px);
 }
 
 .register-modal > div:first-child > div {
@@ -451,6 +517,7 @@ export default {
   justify-content: flex-end;
   gap: 0.8rem;
   margin-top: 1.5rem;
+  flex-shrink: 0;
 }
 
 .register-modal button {
@@ -541,12 +608,17 @@ export default {
 
 .remove-brand {
   cursor: pointer;
-  font-size: 1.2rem;
   line-height: 1;
+  padding: 0 6px;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-left: 8px;
 }
 
 .remove-brand:hover {
   opacity: 0.8;
+  transform: scale(1.1);
 }
 
 .address-search-button {

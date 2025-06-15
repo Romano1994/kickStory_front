@@ -23,7 +23,10 @@ export default {
         brandNmEng: '',
         brandTypeCd: ''
       },
-      brandTypes: []
+      brandTypes: [],
+      showSuccessModal: false,
+      message: '',
+      isSuccess: false
     }
   },
   mounted() {
@@ -35,8 +38,24 @@ export default {
       this.$emit('close');
     },
     registerBrand() {
-      this.$emit('register', this.brand);
-      this.closeModal();
+      this.postApi('/brand/registration', this.brand, this.handleRegisterSuccess, this.handleRegisterFail);
+    },
+    handleRegisterSuccess(res) {
+      this.showSuccessModal = true;
+      this.message = res.data;
+      this.isSuccess = true;
+    },
+    handleRegisterFail(error) {
+      this.showSuccessModal = true;
+      this.message = error;
+      this.isSuccess = false;
+      console.error('Failed to register brand:', error);
+    },
+    closeSuccessModal() {
+      this.showSuccessModal = false;
+      if (this.isSuccess) {
+        this.closeModal();
+      }
     },
     fetchBrandTypes() {
       this.getApi('/comm-cd/detail', { commCd: '0002' }, this.handleBrandTypesSuccess, this.handleBrandTypesFail);
@@ -94,6 +113,13 @@ export default {
       <button @click="registerBrand">등록</button>
     </template>
   </CommonModal>
+  <CommonModal
+    :show="showSuccessModal"
+    :content="message"
+    type="alert"
+    @close="closeSuccessModal"
+    @confirm="closeSuccessModal"
+  />
 </template>
 
 <style scoped>
