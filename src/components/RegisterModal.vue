@@ -35,11 +35,8 @@ export default {
       },
       addressSearchTimeout: null,
       // Brand related
-      limitedBrands: [],
       usualBrands: [],
-      limitedBrandSearch: '',
       usualBrandSearch: '',
-      limitedBrandList: [],
       usualBrandList: [],
       // Country search related
       countryList: [],
@@ -68,7 +65,8 @@ export default {
       ],
       showCommonModal: false,
       commonModalMessage: '',
-      commonModalType: 'confirm'
+      commonModalType: 'confirm',
+      showTypeDropdown: false
     }
   },
   methods: {
@@ -153,36 +151,35 @@ export default {
       this.place = address.roadAddress;
     },
     // Limited brands methods
-    searchLimitedBrands() {
-      if (this.limitedBrandSearch.trim()) {
-        this.getApi('/brand', { name: this.limitedBrandSearch }, this.searchLimitedBrandsSuccess, this.searchLimitedBrandsFail);
-      } else {
-        this.limitedBrandList = [];
-      }
-    },
-    searchLimitedBrandsSuccess(res) {
-      this.limitedBrandList = res.data;
-    },
-    searchLimitedBrandsFail(error) {
-      console.error('Limited brands search failed:', error);
-      this.limitedBrandList = [];
-    },
-    addLimitedBrand(brand) {
-   
-      if (!this.limitedBrands.some(b => b.brandNo === brand.brandNo && b.brandTypeCd===brand.brandTypeCd)) {
-        this.limitedBrands.push({
-          brandNo: brand.brandNo,
-          brandNmKor: brand.brandNmKor,
-          brandNmEng: brand.brandNmEng,
-          brandTypeCd: brand.brandTypeCd
-        });
-      }
-      this.limitedBrandSearch = '';
-      this.limitedBrandList = [];
-    },
-    removeLimitedBrand(brand) {
-      this.limitedBrands = this.limitedBrands.filter(b => b.brandNo !== brand.brandNo);
-    },
+    // searchLimitedBrands() {
+    //   if (this.limitedBrandSearch.trim()) {
+    //     this.getApi('/brand', { name: this.limitedBrandSearch }, this.searchLimitedBrandsSuccess, this.searchLimitedBrandsFail);
+    //   } else {
+    //     this.limitedBrandList = [];
+    //   }
+    // },
+    // searchLimitedBrandsSuccess(res) {
+    //   this.limitedBrandList = res.data;
+    // },
+    // searchLimitedBrandsFail(error) {
+    //   console.error('Limited brands search failed:', error);
+    //   this.limitedBrandList = [];
+    // },
+    // addLimitedBrand(brand) {
+    //   if (!this.limitedBrands.some(b => b.brandNo === brand.brandNo && b.brandTypeCd===brand.brandTypeCd)) {
+    //     this.limitedBrands.push({
+    //       brandNo: brand.brandNo,
+    //       brandNmKor: brand.brandNmKor,
+    //       brandNmEng: brand.brandNmEng,
+    //       brandTypeCd: brand.brandTypeCd
+    //     });
+    //   }
+    //   this.limitedBrandSearch = '';
+    //   this.limitedBrandList = [];
+    // },
+    // removeLimitedBrand(brand) {
+    //   this.limitedBrands = this.limitedBrands.filter(b => b.brandNo !== brand.brandNo);
+    // },
     showBrandRegistrationModal() {
       this.showBrandModal = true;
     },
@@ -236,12 +233,12 @@ export default {
           branchAddr: this.selectedAddress.branchAddr,
           lon: this.selectedAddress.lon,
           lat: this.selectedAddress.lat,
-          limitedBrands: this.limitedBrands.map(brand => ({
-            branchTypeCd: this.branchTypeCd,
-            branchNo: null,
-            brandNo: brand.brandNo,
-            brandTypeCd: brand.brandTypeCd
-          })),
+          // limitedBrands: this.limitedBrands.map(brand => ({
+          //   branchTypeCd: this.branchTypeCd,
+          //   branchNo: null,
+          //   brandNo: brand.brandNo,
+          //   brandTypeCd: brand.brandTypeCd
+          // })),
           usualBrands: this.usualBrands.map(brand => ({
             branchTypeCd: this.branchTypeCd,
             branchNo: null,
@@ -269,6 +266,19 @@ export default {
       if (this.commonModalType === 'alert' && !this.commonModalMessage.includes('실패')) {
         this.closeModal();
       }
+    },
+    toggleTypeDropdown() {
+      this.showTypeDropdown = !this.showTypeDropdown;
+    },
+    selectType(type) {
+      this.branchTypeCd = type.typeCd;
+      this.showTypeDropdown = false;
+    },
+    handleTypeDropdownBlur(e) {
+      console.log(e);
+      
+      // 드롭다운 외부 클릭 시 닫기
+      setTimeout(() => { this.showTypeDropdown = false }, 100);
     }
   },
   watch: {
@@ -296,13 +306,20 @@ export default {
       <div>
         <div>
           <span>유형</span>
-          <select v-model="branchTypeCd">
-            <option v-for="type in storeTypeList" 
-                    :key="type.typeCd" 
-                    :value="type.typeCd">
-              {{ type.type }}
-            </option>
-          </select>
+          <div class="custom-select-wrapper" tabindex="0" @blur="handleTypeDropdownBlur">
+            <div class="custom-select-selected" @click="toggleTypeDropdown">
+              {{ storeTypeList.find(t => t.typeCd === branchTypeCd)?.type || '선택' }}
+              <span class="custom-select-arrow">▼</span>
+            </div>
+            <ul v-if="showTypeDropdown" class="custom-select-options">
+              <li v-for="type in storeTypeList"
+                  :key="type.typeCd"
+                  :class="{selected: type.typeCd === branchTypeCd}"
+                  @click="selectType(type)">
+                {{ type.type }}
+              </li>
+            </ul>
+          </div>
         </div>
         <div>
           <span>스토어명(한글)</span>
@@ -330,7 +347,7 @@ export default {
                  class="search-item">
               {{ country.cntryKorNm }}
             </div>
-          </div>
+          </div> 
         </div>
         <div v-if="branchTypeCd === '00030001'">
           <span>지점명</span>
@@ -352,7 +369,7 @@ export default {
           <span>웹사이트 주소 입력</span>
           <input type="text" v-model="website"/>
         </div>
-        <div>
+        <!-- <div>
           <span>한정판 발매 브랜드</span>
           <input type="text" v-model="limitedBrandSearch" @input="searchLimitedBrands"/>
           <div v-if="limitedBrandList.length > 0" class="search-list">
@@ -376,9 +393,9 @@ export default {
               <span class="remove-brand" @click="removeLimitedBrand(brand)">×</span>
             </div>
           </div>
-        </div>
+        </div> -->
         <div>
-          <span>상시 취급 브랜드</span>
+          <span>취급 브랜드</span>
           <input type="text" v-model="usualBrandSearch" @input="searchUsualBrands"/>
           <div v-if="usualBrandList.length > 0" class="search-list">
             <div v-for="brand in usualBrandList" 
@@ -415,7 +432,7 @@ export default {
   <BrandRegistrationModal
     v-if="showBrandModal"
     :show="showBrandModal"
-    :searchText="limitedBrandSearch"
+    :searchText="usualBrandSearch"
     @close="closeBrandModal"
     @register="handleBrandRegistration"
   />
@@ -652,5 +669,62 @@ export default {
   color: var(--color1);
   font-size: 0.9rem;
   font-family: var(--main-font);
+}
+
+.register-modal select option {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color1);
+  font-family: var(--main-font);
+}
+
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
+  outline: none;
+}
+.custom-select-selected {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color1);
+  font-size: 0.9rem;
+  font-family: var(--main-font);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+.custom-select-arrow {
+  margin-left: 8px;
+  font-size: 0.8em;
+}
+.custom-select-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  z-index: 1002;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.custom-select-options li {
+  padding: 8px;
+  color: var(--color1);
+  font-family: var(--main-font);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.custom-select-options li:hover {
+  background-color: var(--color6);
+  color: #fff;
 }
 </style>
