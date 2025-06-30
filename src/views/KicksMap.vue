@@ -1,11 +1,17 @@
 <script>
 import L from 'leaflet'
 import RegisterModal from '@/components/RegisterModal.vue'
+import KicksMapStore from '@/components/KicksMapStore.vue'
+import KicksMapRoute from '@/components/KicksMapRoute.vue'
+import KicksMapFavorite from '@/components/KicksMapFavorite.vue'
 
 export default {
   name: "KicksMap",
   components: {
-    RegisterModal
+    RegisterModal,
+    KicksMapStore,
+    KicksMapRoute,
+    KicksMapFavorite
   },
   data() {
     return {
@@ -19,15 +25,25 @@ export default {
       countryList: [], // 국가별 갯수 리스트
       selectedCountry: '', // 선택된 국가
       regionList: [], // 지역별 매장 수 리스트
+      activeNavIndex: 0,
       navList: [
-        {itemNm: "발매처", imgSrc: "/assets/map/store.png", isActive: true},
-        {itemNm: "쇼핑코스", imgSrc: "/assets/map/route.png", isActive: false},
-        {itemNm: "즐겨찾기", imgSrc: "/assets/map/favorite.png", isActive: false},
+        {itemNm: "발매처", imgSrc: "/assets/map/store.png"},
+        {itemNm: "쇼핑코스", imgSrc: "/assets/map/route.png"},
+        {itemNm: "즐겨찾기", imgSrc: "/assets/map/favorite.png"},
       ],
       expandedCities: {},
       expandedDistricts: {},
       activeStore: null,
       storeMarkers: []
+    }
+  },
+  computed: {
+    currentContentComponent() {
+      return [
+        'KicksMapStore',
+        'KicksMapRoute',
+        'KicksMapFavorite'
+      ][this.activeNavIndex]
     }
   },
   watch: {
@@ -84,7 +100,7 @@ export default {
     onStoreClick(store) {
       this.activeStore = store.branchNm;
       if (store.lat && store.lon && this.map) {
-        this.map.setView([store.lat, store.lon], 16);
+        this.map.setView([store.lat, store.lon]);
       }
       this.addStoreMarkers(); // 마커 리프레시
     },
@@ -114,8 +130,8 @@ export default {
       });
     },
     onStoreMarkerClick(store, district, city) {
-      this.expandedCities[city.admSidoNm] = true;
-      this.expandedDistricts[district.admRginCd] = true;
+      this.expandedCities = { ...this.expandedCities, [city.admSidoNm]: true };
+      this.expandedDistricts = { ...this.expandedDistricts, [district.admRginCd]: true };
       this.activeStore = store.branchNm;
       this.map.setView([store.lat, store.lon], 16);
       this.addStoreMarkers();
@@ -230,7 +246,7 @@ export default {
   <div class="map-wrapper">
     <div class="navbar">
       <ul class="navbar-list">
-        <li class="navbar-item" v-for="item in navList" :class="item.isActive?'active':''" :key="item.itemNm">
+        <li class="navbar-item" v-for="(item, idx) in navList" :class="idx === activeNavIndex ? 'active' : ''" :key="item.itemNm" @click="activeNavIndex = idx">
           <div class="nav-icon">
             <img :src="item.imgSrc" :alt="item.itemNm"/>
             <span>{{ item.itemNm }}</span>
@@ -238,81 +254,21 @@ export default {
         </li>
       </ul>
       <div class="content">
-        <div class="search-box">
-          <div class="search-container">
-            <select class="search-select">
-              <option>한정판 발매 브랜드별</option>
-              <option>상시 취급 브랜드별</option>
-              <option>매장별</option>
-            </select>
-            <input type="text" class="search-input" placeholder="검색어를 입력하세요"/>
-            <button class="search-btn">검색</button>
-          </div>
-          <div class="register-container">
-            <button class="register-btn" @click="openRegisterModal">발매처 등록하기</button>
-          </div>
-        </div>
-        <div class="tab-container">
-          <div class="tab-list">
-            <button 
-              class="tab-item" 
-              :class="{ active: branchType === '00030001' }"
-              @click="changeTab('00030001')"
-            >
-              오프라인
-            </button>
-            <button 
-              class="tab-item" 
-              :class="{ active: branchType === '00030002' }"
-              @click="changeTab('00030002')"
-            >
-              온라인
-            </button>
-          </div>
-        </div>
-        <div class="location-list" v-if="branchType === '00030001'">
-          <div class="country-select-container">
-            <select class="country-select" v-model="selectedCountry" >
-              <option 
-                v-for="country in countryList" 
-                :key="country.cntryCd" 
-                :value="country.cntryCd"
-              >
-                {{ country.cntryKorNm }}({{ country.cntryCnt }})
-              </option>
-            </select>
-          </div>
-          <div class="location-item" v-for="city in regionList" :key="city.admSidoNm">
-            <div class="city-header" @click="toggleCity(city.admSidoNm)">
-              <span>{{ city.admSidoNm }}</span>
-              <span class="arrow" :class="{ expanded: expandedCities[city.admSidoNm] }">></span>
-            </div>
-            <div v-show="expandedCities[city.admSidoNm]" class="district-list">
-              <div class="district-item" v-for="district in city.admSggList" :key="district.admRginCd">
-                <div class="district-header" @click="toggleDistrict(district.admRginCd)">
-                  <span>{{ district.admSggNm }}({{ district.cnt }})</span>
-                  <span class="arrow" :class="{ expanded: expandedDistricts[district.admRginCd] }">></span>
-                </div>
-                <ul class="store-list" v-show="expandedDistricts[district.admRginCd]">
-                  <li class="store-item" v-for="store in district.offlineBranchList" :key="store.branchNm" @click="onStoreClick(store)" :class="{ active: activeStore === store.branchNm }">
-                    <span>{{ store.storeKorNm }} {{ store.branchNm }}</span>
-                    <button class="store-more-btn" @click.stop="onStoreMore(store)">더보기</button>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="online-content" v-if="branchType === '00030002'">
-          <div class="online-placeholder">
-            <p>온라인 발매처 목록이 여기에 표시됩니다.</p>
-          </div>
-        </div>
+        <KicksMapStore
+          v-if="activeNavIndex === 0"
+          :active-store="activeStore"
+          v-model:expandedCities="expandedCities"
+          v-model:expandedDistricts="expandedDistricts"
+          @store-click="onStoreClick"
+          @open-register-modal="openRegisterModal"
+        />
+        <KicksMapRoute v-if="activeNavIndex === 1" />
+        <KicksMapFavorite v-if="activeNavIndex === 2" />
       </div>
     </div>
     <div id="map" class="map-container"></div>
+    <RegisterModal v-if="showRegisterModal" @close="closeRegisterModal" />
   </div>
-  <RegisterModal v-if="showRegisterModal" @close="closeRegisterModal" />
 </template>
 
 <style scoped>
