@@ -27,14 +27,15 @@ export default {
       regionList: [], // 지역별 매장 수 리스트
       activeNavIndex: 0,
       navList: [
-        {itemNm: "발매처", imgSrc: "/assets/map/store.png"},
         {itemNm: "쇼핑코스", imgSrc: "/assets/map/route.png"},
+        {itemNm: "발매처", imgSrc: "/assets/map/store.png"},
         {itemNm: "즐겨찾기", imgSrc: "/assets/map/favorite.png"},
       ],
       expandedCities: {},
       expandedDistricts: {},
       activeStore: null,
-      storeMarkers: []
+      storeMarkers: [],
+      routePolyline: null // 경로 폴리라인
     }
   },
   computed: {
@@ -135,6 +136,21 @@ export default {
       this.activeStore = store.branchNm;
       this.map.setView([store.lat, store.lon], 16);
       this.addStoreMarkers();
+    },
+    onDrawRoute(coordsArr) {
+      // coordsArr: [[lat, lng], ...]
+      if (this.routePolyline) {
+        this.map.removeLayer(this.routePolyline);
+        this.routePolyline = null;
+      }
+      // Leaflet은 [lat, lng] 순서 필요
+      this.routePolyline = L.polyline(coordsArr, {
+        color: '#2a7a7f', // 진한 청록
+        weight: 6,
+        opacity: 0.85
+      }).addTo(this.map);
+      // 경로가 보이도록 지도 영역 fit
+      this.map.fitBounds(this.routePolyline.getBounds(), { padding: [30, 30] });
     },
     // onStoreMore(store) {
     //   // TODO: 더보기 버튼 클릭 시 동작 구현
@@ -254,15 +270,15 @@ export default {
         </li>
       </ul>
       <div class="content">
+        <KicksMapRoute v-if="activeNavIndex === 0" @draw-route="onDrawRoute" />
         <KicksMapStore
-          v-if="activeNavIndex === 0"
+          v-if="activeNavIndex === 1"
           :active-store="activeStore"
           v-model:expandedCities="expandedCities"
           v-model:expandedDistricts="expandedDistricts"
           @store-click="onStoreClick"
           @open-register-modal="openRegisterModal"
         />
-        <KicksMapRoute v-if="activeNavIndex === 1" />
         <KicksMapFavorite v-if="activeNavIndex === 2" />
       </div>
     </div>
@@ -314,6 +330,8 @@ export default {
   border-top-right-radius: 8px;
   border-bottom-right-radius: 8px;
   width: calc(100% - 60px);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .navbar-item {
