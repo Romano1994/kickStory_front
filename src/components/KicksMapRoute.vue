@@ -16,12 +16,8 @@
     </div>
     <div class="location-list">
       <div class="country-select-container">
-        <select class="country-select" v-model="selectedCountry">
-          <option 
-            v-for="country in countryList" 
-            :key="country.cntryCd" 
-            :value="country.cntryCd"
-          >
+        <select class="country-select" :value="selectedCountry" @change="handleCountryChange">
+          <option v-for="country in countryList" :key="country.cntryCd" :value="country.cntryCd">
             {{ country.cntryKorNm }}({{ country.cntryCnt }})
           </option>
         </select>
@@ -72,14 +68,22 @@ import CommonModal from './CommonModal.vue';
 export default {
   name: 'KicksMapRoute',
   components: { CommonModal },
+  props: {
+    regionList: Array,
+    countryList: Array,
+    selectedCountry: String,
+    expandedCities: Object,
+    expandedDistricts: Object
+  },
+  emits: [
+    'update:selectedCountry',
+    'update:expandedCities',
+    'update:expandedDistricts',
+    'draw-route'
+  ],
   data() {
     return {
       selectedType: 'optimal',
-      countryList: [],
-      selectedCountry: '',
-      regionList: [],
-      expandedCities: {},
-      expandedDistricts: {},
       selectedStores: [],
       currentLocation: null, // { lat, lon }
       showRouteModal: false,
@@ -91,34 +95,16 @@ export default {
       this.selectedType = type;
       this.$emit('route-type-change', type);
     },
-    getCountryCount() {
-      this.getApi('/store/offline/countries/count', null, this.getCountryCountSuccess, this.getCountryCountFail)
-    },
-    getCountryCountSuccess(res) {
-      this.countryList = res.data
-      if (this.countryList.length > 0) {
-        this.selectedCountry = this.countryList[0].cntryCd
-      }
-    },
-    getCountryCountFail(error) {
-      console.error('Country count fetch failed:', error)
-      this.countryList = []
-    },
-    getRegionCount(cntryCd) {
-      this.getApi('/store/offline/country/regions/count', { cntryCd }, this.getRegionCountSuccess, this.getRegionCountFail)
-    },
-    getRegionCountSuccess(res) {
-      this.regionList = res.data
-    },
-    getRegionCountFail(error) {
-      console.error('Region count fetch failed:', error)
-      this.regionList = []
+    handleCountryChange(e) {
+      this.$emit('update:selectedCountry', e.target.value);
     },
     toggleCity(city) {
-      this.expandedCities = { ...this.expandedCities, [city]: !this.expandedCities[city] }
+      const updated = { ...this.expandedCities, [city]: !this.expandedCities[city] }
+      this.$emit('update:expandedCities', updated)
     },
     toggleDistrict(district) {
-      this.expandedDistricts = { ...this.expandedDistricts, [district]: !this.expandedDistricts[district] }
+      const updated = { ...this.expandedDistricts, [district]: !this.expandedDistricts[district] }
+      this.$emit('update:expandedDistricts', updated)
     },
     handleStoreClick(store) {
       if (!this.selectedStores.find(s => s.branchNm === store.branchNm)) {
@@ -129,7 +115,6 @@ export default {
       this.selectedStores = this.selectedStores.filter(s => s.branchNm !== store.branchNm);
     },
     async findRoute() {
-      //https://github.com/Project-OSRM/osrm-backend/blob/master/docs/http.md#trip-service
       if (!this.currentLocation) {
         alert('현재 위치 정보를 가져올 수 없습니다.');
         return;
@@ -138,9 +123,7 @@ export default {
         alert('경로에 추가된 매장이 없습니다.');
         return;
       }
-      // 1. 좌표 문자열 생성 (선택 매장들만)
       const coords = this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
-      // 2. OSRM Trip API 호출 (데모 서버, polyline)
       const url = `https://router.project-osrm.org/trip/v1/foot/${coords}?roundtrip=false&source=first&destination=any&overview=full&geometries=polyline`;
       try {
         const res = await fetch(url);
@@ -151,7 +134,6 @@ export default {
           const durationMin = (trip.duration / 60).toFixed(1);
           this.routeModalContent = `경로 총 거리: ${distKm}km, 예상 소요: ${durationMin}분`;
           this.showRouteModal = true;
-          // polyline 디코딩 후 emit
           const coordsArr = this.decodePolyline(trip.geometry);
           this.$emit('draw-route', coordsArr);
         } else {
@@ -162,7 +144,6 @@ export default {
         console.error(e);
       }
     },
-    // Polyline 디코더 (Google polyline algorithm, Leaflet와 호환)
     decodePolyline(str, precision = 5) {
       let index = 0, lat = 0, lng = 0, coordinates = [], shift = 0, result = 0, byte = null;
       const factor = Math.pow(10, precision);
@@ -183,7 +164,6 @@ export default {
         } while (byte >= 0x20);
         const deltaLng = ((result & 1) ? ~(result >> 1) : (result >> 1));
         lng += deltaLng;
-        // Leaflet expects [lat, lng]
         coordinates.push([lat / factor, lng / factor]);
       }
       return coordinates;
@@ -192,16 +172,7 @@ export default {
       this.showRouteModal = false;
     },
   },
-  watch: {
-    selectedCountry(newCountry) {
-      if (newCountry) {
-        this.getRegionCount(newCountry)
-      }
-    }
-  },
   mounted() {
-    this.getCountryCount()
-    // Get current location for routing
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {

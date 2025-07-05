@@ -35,12 +35,8 @@
     </div>
     <div class="location-list" v-if="branchType === '00030001'">
       <div class="country-select-container">
-        <select class="country-select" v-model="selectedCountry" >
-          <option 
-            v-for="country in countryList" 
-            :key="country.cntryCd" 
-            :value="country.cntryCd"
-          >
+        <select class="country-select" :value="selectedCountry" @change="handleCountryChange" >
+          <option v-for="country in countryList" :key="country.cntryCd" :value="country.cntryCd">
             {{ country.cntryKorNm }}({{ country.cntryCnt }})
           </option>
         </select>
@@ -80,48 +76,29 @@ export default {
   props: {
     activeStore: String,
     expandedCities: Object,
-    expandedDistricts: Object
+    expandedDistricts: Object,
+    regionList: Array,
+    countryList: Array,
+    selectedCountry: String
   },
   emits: [
     'update:expandedCities',
     'update:expandedDistricts',
     'store-click',
-    'open-register-modal'
+    'open-register-modal',
+    'update:selectedCountry'
   ],
   data() {
     return {
       branchType: '00030001',
-      countryList: [],
-      selectedCountry: '',
-      regionList: [],
     }
   },
   methods: {
     changeTab(type) {
-      this.branchType = type
+      this.$emit('change-tab', type)
     },
-    getCountryCount() {
-      this.getApi('/store/offline/countries/count', null, this.getCountryCountSuccess, this.getCountryCountFail)
-    },
-    getCountryCountSuccess(res) {
-      this.countryList = res.data
-      if (this.countryList.length > 0) {
-        this.selectedCountry = this.countryList[0].cntryCd
-      }
-    },
-    getCountryCountFail(error) {
-      console.error('Country count fetch failed:', error)
-      this.countryList = []
-    },
-    getRegionCount(cntryCd) {
-      this.getApi('/store/offline/country/regions/count', { cntryCd }, this.getRegionCountSuccess, this.getRegionCountFail)
-    },
-    getRegionCountSuccess(res) {
-      this.regionList = res.data
-    },
-    getRegionCountFail(error) {
-      console.error('Region count fetch failed:', error)
-      this.regionList = []
+    handleCountryChange(e) {
+      this.$emit('update:selectedCountry', e.target.value);
     },
     toggleCity(city) {
       const updated = { ...this.expandedCities, [city]: !this.expandedCities[city] }
@@ -143,7 +120,7 @@ export default {
     }
   },
   mounted() {
-    this.getCountryCount()
+    // this.getCountryCount()
   }
 }
 </script>

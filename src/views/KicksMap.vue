@@ -83,7 +83,7 @@ export default {
     },
     // 추가: 지역별 매장 수 조회 메서드
     getRegionCount(cntryCd) {
-      this.getApi('/store/offline/country/regions/count', { cntryCd }, this.getRegionCountSuccess, this.getRegionCountFail)
+      this.getApi('/store/offline/country/regions', { cntryCd }, this.getRegionCountSuccess, this.getRegionCountFail)
     },
     getRegionCountSuccess(res) {
       this.regionList = res.data
@@ -152,13 +152,21 @@ export default {
       // 경로가 보이도록 지도 영역 fit
       this.map.fitBounds(this.routePolyline.getBounds(), { padding: [30, 30] });
     },
+    onTabChange(idx) {
+      this.activeNavIndex = idx;
+      // 탭이 바뀔 때마다 국가/지역 리스트 새로 불러오기
+      this.getCountryCount();
+    },
+    onSelectedCountryChange(newCountry) {
+      this.selectedCountry = newCountry;
+      this.getRegionCount(newCountry);
+    },
     // onStoreMore(store) {
     //   // TODO: 더보기 버튼 클릭 시 동작 구현
     // }
   },
   mounted() {
-    // 국가별 갯수 조회
-    this.getCountryCount()
+    this.getCountryCount();
     
     //map 객체 반환
     //[coordinate],zoom level
@@ -262,7 +270,7 @@ export default {
   <div class="map-wrapper">
     <div class="navbar">
       <ul class="navbar-list">
-        <li class="navbar-item" v-for="(item, idx) in navList" :class="idx === activeNavIndex ? 'active' : ''" :key="item.itemNm" @click="activeNavIndex = idx">
+        <li class="navbar-item" v-for="(item, idx) in navList" :class="idx === activeNavIndex ? 'active' : ''" :key="item.itemNm" @click="onTabChange(idx)">
           <div class="nav-icon">
             <img :src="item.imgSrc" :alt="item.itemNm"/>
             <span>{{ item.itemNm }}</span>
@@ -270,12 +278,29 @@ export default {
         </li>
       </ul>
       <div class="content">
-        <KicksMapRoute v-if="activeNavIndex === 0" @draw-route="onDrawRoute" />
+        <KicksMapRoute
+          v-if="activeNavIndex === 0"
+          :region-list="regionList"
+          :country-list="countryList"
+          :selected-country="selectedCountry"
+          :expanded-cities="expandedCities"
+          :expanded-districts="expandedDistricts"
+          @update:selectedCountry="onSelectedCountryChange"
+          @update:expandedCities="val => expandedCities = val"
+          @update:expandedDistricts="val => expandedDistricts = val"
+          @draw-route="onDrawRoute"
+        />
         <KicksMapStore
           v-if="activeNavIndex === 1"
           :active-store="activeStore"
-          v-model:expandedCities="expandedCities"
-          v-model:expandedDistricts="expandedDistricts"
+          :region-list="regionList"
+          :country-list="countryList"
+          :selected-country="selectedCountry"
+          :expanded-cities="expandedCities"
+          :expanded-districts="expandedDistricts"
+          @update:selectedCountry="onSelectedCountryChange"
+          @update:expandedCities="val => expandedCities = val"
+          @update:expandedDistricts="val => expandedDistricts = val"
           @store-click="onStoreClick"
           @open-register-modal="openRegisterModal"
         />

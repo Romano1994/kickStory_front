@@ -17,7 +17,7 @@ export default {
       storeEngNm: '',
       cntry: '',
       branchNm: '',
-      branchTypeCd: '00030001', // Default to offline
+      offlineStoreCd: '00030001', // Default to offline
       place: '',
       website: '',
       // Store search related
@@ -48,8 +48,9 @@ export default {
       // Branch search related
       branchList: [],
       storeTypeList: [
-        { type: '오프라인', typeCd: '00030001' },
-        { type: '온라인', typeCd: '00030002' }
+        { type: '편집샵', typeCd: '00030001' },
+        { type: '브랜드샵', typeCd: '00030002' },
+        { type: '팝업샵', typeCd: '00030003' }
       ],
       isStoreSelect: false,
       lastSelectedStore: null,
@@ -221,9 +222,9 @@ export default {
       this.usualBrands = this.usualBrands.filter(b => b.brandNo !== brand.brandNo);
     },
     register() {
-      if (this.branchTypeCd === '00030001') { // 오프라인 스토어
+      if (this.offlineStoreCd === '00030001') { // 오프라인 스토어
         const storeData = {
-          branchTypeCd: this.branchTypeCd,
+          branchTypeCd: this.offlineStoreCd,
           storeKorNm: this.storeKorNm,
           storeEngNm: this.storeEngNm,
           storeNo: this.storeNo,
@@ -240,7 +241,7 @@ export default {
           //   brandTypeCd: brand.brandTypeCd
           // })),
           usualBrands: this.usualBrands.map(brand => ({
-            branchTypeCd: this.branchTypeCd,
+            branchTypeCd: this.offlineStoreCd,
             branchNo: null,
             brandNo: brand.brandNo,
             brandTypeCd: brand.brandTypeCd
@@ -271,7 +272,7 @@ export default {
       this.showTypeDropdown = !this.showTypeDropdown;
     },
     selectType(type) {
-      this.branchTypeCd = type.typeCd;
+      this.offlineStoreCd = type.typeCd;
       this.showTypeDropdown = false;
     },
     handleTypeDropdownBlur(e) {
@@ -308,13 +309,13 @@ export default {
           <span>유형</span>
           <div class="custom-select-wrapper" tabindex="0" @blur="handleTypeDropdownBlur">
             <div class="custom-select-selected" @click="toggleTypeDropdown">
-              {{ storeTypeList.find(t => t.typeCd === branchTypeCd)?.type || '선택' }}
+              {{ storeTypeList.find(t => t.typeCd === offlineStoreCd)?.type || '선택' }}
               <span class="custom-select-arrow">▼</span>
             </div>
             <ul v-if="showTypeDropdown" class="custom-select-options">
               <li v-for="type in storeTypeList"
                   :key="type.typeCd"
-                  :class="{selected: type.typeCd === branchTypeCd}"
+                  :class="{selected: type.typeCd === offlineStoreCd}"
                   @click="selectType(type)">
                 {{ type.type }}
               </li>
@@ -329,7 +330,7 @@ export default {
                  :key="store.storeId" 
                  @click="selectStore(store)"
                  class="search-item">
-              {{ store.storeKorNm }}
+              {{ store.storeKorNm }}({{ store.cntryNm }})
             </div>
           </div>
         </div>
@@ -337,7 +338,7 @@ export default {
           <span>스토어명(영문)</span>
           <input type="text" v-model="storeEngNm"/>
         </div>
-        <div v-if="branchTypeCd === '00030001'">
+        <div v-if="offlineStoreCd === '00030001'">
           <span>국가명</span>
           <input type="text" v-model="cntry" @input="srchCntryList"/>
           <div v-if="countryList.length > 0" class="search-list">
@@ -349,11 +350,11 @@ export default {
             </div>
           </div> 
         </div>
-        <div v-if="branchTypeCd === '00030001'">
+        <div v-if="offlineStoreCd === '00030001'">
           <span>지점명</span>
           <input type="text" v-model="branchNm" />
         </div>
-        <div v-if="branchTypeCd === '00030001'">
+        <div v-if="offlineStoreCd === '00030001'">
           <span>주소검색</span>
           <div v-if="selectedAddress.branchRoadAddr" class="selected-address">
             {{ selectedAddress.branchRoadAddr }}
@@ -706,7 +707,7 @@ export default {
   top: 100%;
   left: 0;
   right: 0;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: #222;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   z-index: 1002;
