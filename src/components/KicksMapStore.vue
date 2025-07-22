@@ -15,7 +15,7 @@
         <button class="register-btn" @click="$emit('open-register-modal')">발매처 등록하기</button>
       </div>
     </div>
-    <div class="tab-container">
+    <!-- <div class="tab-container">
       <div class="tab-list">
         <button 
           class="tab-item" 
@@ -32,8 +32,21 @@
           온라인
         </button>
       </div>
+    </div> -->
+    <div class="tab-container" v-if="branchTypeList.length">
+      <div class="tab-list">
+        <button
+          v-for="type in branchTypeList"
+          :key="type.commCdDtl"
+          class="tab-item"
+          :class="{ active: branchType === type.commCdDtl }"
+          @click="changeBranchType(type.commCdDtl)"
+        >
+          {{ type.commCdDtlNm }}
+        </button>
+      </div>
     </div>
-    <div class="location-list" v-if="branchType === '00030001'">
+    <div class="location-list" v-if="storeType === '00050001' && (branchType === '00030001' || branchType === '00030002')">
       <div class="country-select-container">
         <select class="country-select" :value="selectedCountry" @change="handleCountryChange" >
           <option v-for="country in countryList" :key="country.cntryCd" :value="country.cntryCd">
@@ -62,65 +75,110 @@
         </div>
       </div>
     </div>
-    <div class="online-content" v-if="branchType === '00030002'">
+    <!-- <div class="online-content" v-if="branchType === '00030002'">
       <div class="online-placeholder">
         <p>온라인 발매처 목록이 여기에 표시됩니다.</p>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script>
+import api from '@/js/menu/mixins/api/api-call';
+
 export default {
   name: 'KicksMapStore',
-  props: {
-    activeStore: String,
-    expandedCities: Object,
-    expandedDistricts: Object,
-    regionList: Array,
-    countryList: Array,
-    selectedCountry: String
-  },
-  emits: [
-    'update:expandedCities',
-    'update:expandedDistricts',
-    'store-click',
-    'open-register-modal',
-    'update:selectedCountry'
-  ],
+  // props, emits 모두 삭제
   data() {
     return {
+      branchTypeList: [], // 지점 타입 리스트로 명칭 변경
       branchType: '00030001',
+      storeType: '00050001',
+      selectedCountry: 'KR',
+      countryList: [],
+      regionList: [],
+      expandedCities: {},
+      expandedDistricts: {},
+      activeStore: null,
     }
   },
   methods: {
-    changeTab(type) {
-      this.$emit('change-tab', type)
+    changeBranchType(type) {
+      this.branchType = type;
     },
     handleCountryChange(e) {
-      this.$emit('update:selectedCountry', e.target.value);
+      this.selectedCountry = e.target.value;
+      this.getRegionCount(this.selectedCountry);
     },
     toggleCity(city) {
-      const updated = { ...this.expandedCities, [city]: !this.expandedCities[city] }
-      this.$emit('update:expandedCities', updated)
+      this.expandedCities = {
+        ...this.expandedCities,
+        [city]: !this.expandedCities[city]
+      };
     },
     toggleDistrict(district) {
-      const updated = { ...this.expandedDistricts, [district]: !this.expandedDistricts[district] }
-      this.$emit('update:expandedDistricts', updated)
+      this.expandedDistricts = {
+        ...this.expandedDistricts,
+        [district]: !this.expandedDistricts[district]
+      };
     },
     handleStoreClick(store) {
-      this.$emit('store-click', store)
-    }
+      this.activeStore = store.branchNm;
+    },
+    fetchBranchTypeList() {
+      api.get(
+        '/comm-cd/detail',
+        { commCd: '0003' },
+        this.handleBranchTypeListSuccess,
+        this.handleBranchTypeListFail
+      );
+    },
+    handleBranchTypeListSuccess(res) {
+      this.branchTypeList = res.data; // 응답 구조에 따라 필요시 수정
+    },
+    handleBranchTypeListFail(err) {
+      console.error('지점 타입 목록 불러오기 실패', err);
+    },
+    getCountryCount() {
+      this.getApi('/store/offline/countries/count',{branchType: this.branchType}, this.getCountryCountSuccess, this.getCountryCountFail)
+    },
+    getCountryCountSuccess(res) {
+      this.countryList = res.data;
+      if (this.countryList.length > 0) {
+        this.selectedCountry = this.countryList[0].cntryCd;
+        this.getRegionCount(this.selectedCountry);
+      }
+    },
+    getCountryCountFail(error) {
+      console.error('국가별 카운트 조회 실패:', error);
+      this.countryList = [];
+    },
+    getRegionCount(cntryCd) {
+      this.getApi('/store/offline/country/regions', { cntryCd }, this.getRegionCountSuccess, this.getRegionCountFail)
+    },
+    getRegionCountSuccess(res) {
+      this.regionList = res.data;
+    },
+    getRegionCountFail(error) {
+      console.error('지역별 매장 수 조회 실패:', error);
+      this.regionList = [];
+    },
   },
   watch: {
     selectedCountry(newCountry) {
       if (newCountry) {
-        this.getRegionCount(newCountry)
+        this.getRegionCount(newCountry);
       }
-    }
+    },
+    branchType(newType) {
+      if (newType) {
+        this.getCountryCount();
+      }
+    },
   },
   mounted() {
-    // this.getCountryCount()
+    this.fetchBranchTypeList();
+    this.getCountryCount();
   }
 }
 </script>

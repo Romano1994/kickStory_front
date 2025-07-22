@@ -28,7 +28,7 @@ export default {
       activeNavIndex: 0,
       navList: [
         {itemNm: "쇼핑코스", imgSrc: "/assets/map/route.png"},
-        {itemNm: "발매처", imgSrc: "/assets/map/store.png"},
+        {itemNm: "스토어", imgSrc: "/assets/map/store.png"},
         {itemNm: "즐겨찾기", imgSrc: "/assets/map/favorite.png"},
       ],
       expandedCities: {},
@@ -61,10 +61,6 @@ export default {
     },
     closeRegisterModal() {
       this.showRegisterModal = false
-    },
-    // 추가: 탭 변경 메서드
-    changeTab(type) {
-      this.branchType = type
     },
     // 추가: 국가별 갯수 조회 메서드
     getCountryCount() {
@@ -292,17 +288,6 @@ export default {
         />
         <KicksMapStore
           v-if="activeNavIndex === 1"
-          :active-store="activeStore"
-          :region-list="regionList"
-          :country-list="countryList"
-          :selected-country="selectedCountry"
-          :expanded-cities="expandedCities"
-          :expanded-districts="expandedDistricts"
-          @update:selectedCountry="onSelectedCountryChange"
-          @update:expandedCities="val => expandedCities = val"
-          @update:expandedDistricts="val => expandedDistricts = val"
-          @store-click="onStoreClick"
-          @open-register-modal="openRegisterModal"
         />
         <KicksMapFavorite v-if="activeNavIndex === 2" />
       </div>
