@@ -12,14 +12,16 @@ export default {
   },
   data() {
     return {
-      storeNo:0,
+      storeCd: '',
       storeKorNm: '',
       storeEngNm: '',
       cntry: '',
       branchNm: '',
-      offlineStoreCd: '00030001', // Default to offline
+      offlineStoreTypeCd: '00030001', // Default to offline
       place: '',
       website: '',
+      shopDescription: '',
+      contactInfo: '',
       // Store search related
       storeSearchTimeout: null,
       storeList: [],
@@ -40,18 +42,9 @@ export default {
       usualBrandList: [],
       // Country search related
       countryList: [],
-      cntryNm: {
-        isoCntryNm: '',
-        countryCd: '',
-        countryKorNm: ''
-      },
+      cntryCd: '',
       // Branch search related
-      branchList: [],
-      storeTypeList: [
-        { type: '편집샵', typeCd: '00030001' },
-        { type: '브랜드샵', typeCd: '00030002' },
-        { type: '팝업샵', typeCd: '00030003' }
-      ],
+      offlineStoreTypeList: [],
       isStoreSelect: false,
       lastSelectedStore: null,
       showBrandModal: false,
@@ -67,7 +60,8 @@ export default {
       showCommonModal: false,
       commonModalMessage: '',
       commonModalType: 'confirm',
-      showTypeDropdown: false
+      showTypeDropdown: false,
+      branchTypeCd: '00050001'
     }
   },
   methods: {
@@ -100,7 +94,7 @@ export default {
     },
     selectStore(store) {
       this.lastSelectedStore = store;
-      this.storeNo = store.storeNo;
+      this.storeCd = store.storeCd;
       this.storeKorNm = store.storeKorNm;
       this.storeEngNm = store.storeEngNm;
       this.storeList = [];
@@ -116,7 +110,7 @@ export default {
       this.countryList = [];
     },
     selectCountry(country) {
-      this.cntryNm = country.isoCntryNm;
+      this.cntryCd = country.isoCntryCd;
       this.cntry = country.cntryKorNm;
       this.countryList = [];
     },
@@ -222,33 +216,27 @@ export default {
       this.usualBrands = this.usualBrands.filter(b => b.brandNo !== brand.brandNo);
     },
     register() {
-      if (this.offlineStoreCd === '00030001') { // 오프라인 스토어
-        const storeData = {
-          branchTypeCd: this.offlineStoreCd,
-          storeKorNm: this.storeKorNm,
-          storeEngNm: this.storeEngNm,
-          storeNo: this.storeNo,
-          cntryNm: this.cntryNm,
+      if (this.offlineStoreTypeCd === '00030001') { // 오프라인 스토어
+        const branchData = {
+          storeCd:this.storeCd,
+          storeEngNm:this.storeEngNm,
+          storeKorNm:this.storeKorNm,
+          branchTypeCd:this.branchTypeCd,
+          offlineStoreTypeCd: this.offlineStoreTypeCd,
+          branchKorNm: this.branchKorNm,
+          branchEngNm: this.branchEngNm,
+          branchCd: this.branchCd,
+          cntryCd: this.cntryCd,
           branchNm: this.branchNm,
           branchRoadAddr: this.selectedAddress.branchRoadAddr,
           branchAddr: this.selectedAddress.branchAddr,
           lon: this.selectedAddress.lon,
           lat: this.selectedAddress.lat,
-          // limitedBrands: this.limitedBrands.map(brand => ({
-          //   branchTypeCd: this.branchTypeCd,
-          //   branchNo: null,
-          //   brandNo: brand.brandNo,
-          //   brandTypeCd: brand.brandTypeCd
-          // })),
-          usualBrands: this.usualBrands.map(brand => ({
-            branchTypeCd: this.offlineStoreCd,
-            branchNo: null,
-            brandNo: brand.brandNo,
-            brandTypeCd: brand.brandTypeCd
-          }))
+          shopDescription: this.shopDescription,
+          contactInfo: this.contactInfo,
         };
 
-        this.postApi('/store/registration', storeData, this.registerSuccess, this.registerFail);
+        this.postApi('/store/offline-branch/registration', branchData, this.registerSuccess, this.registerFail);
       }
     },
     registerSuccess(res) {
@@ -264,7 +252,12 @@ export default {
     handleCommonModalConfirm() {
       this.showCommonModal = false;
       // registerSuccess에서 호출된 경우에만 RegisterModal을 닫음
-      if (this.commonModalType === 'alert' && !this.commonModalMessage.includes('실패')) {
+      if (
+        this.commonModalType === 'alert' &&
+        this.commonModalMessage &&
+        !this.commonModalMessage.includes('실패') &&
+        !this.commonModalMessage.toLowerCase().includes('fail')
+      ) {
         this.closeModal();
       }
     },
@@ -272,7 +265,7 @@ export default {
       this.showTypeDropdown = !this.showTypeDropdown;
     },
     selectType(type) {
-      this.offlineStoreCd = type.typeCd;
+      this.offlineStoreTypeCd = type.commCdDtl;
       this.showTypeDropdown = false;
     },
     handleTypeDropdownBlur(e) {
@@ -280,7 +273,26 @@ export default {
       
       // 드롭다운 외부 클릭 시 닫기
       setTimeout(() => { this.showTypeDropdown = false }, 100);
+    },
+    fetchOfflineStoreTypeList() {
+      // KicksMapStore의 fetchBranchTypeList 참고
+      this.getApi(
+        '/comm-cd/detail',
+        { commCd: '0003' },
+        this.handleOfflineStoreTypeListSuccess,
+        this.handleOfflineStoreTypeListFail
+      );
+    },
+    handleOfflineStoreTypeListSuccess(res) {
+      this.offlineStoreTypeList = res.data;
+    },
+    handleOfflineStoreTypeListFail(err) {
+      console.error('오프라인 스토어 타입 목록 불러오기 실패', err);
+      this.offlineStoreTypeList = [];
     }
+  },
+  mounted() {
+    this.fetchOfflineStoreTypeList();
   },
   watch: {
 
@@ -309,37 +321,48 @@ export default {
           <span>유형</span>
           <div class="custom-select-wrapper" tabindex="0" @blur="handleTypeDropdownBlur">
             <div class="custom-select-selected" @click="toggleTypeDropdown">
-              {{ storeTypeList.find(t => t.typeCd === offlineStoreCd)?.type || '선택' }}
+              {{ offlineStoreTypeList.find(t => t.commCdDtl === offlineStoreTypeCd)?.commCdDtlNm || '선택' }}
               <span class="custom-select-arrow">▼</span>
             </div>
             <ul v-if="showTypeDropdown" class="custom-select-options">
-              <li v-for="type in storeTypeList"
-                  :key="type.typeCd"
-                  :class="{selected: type.typeCd === offlineStoreCd}"
+              <li v-for="type in offlineStoreTypeList"
+                  :key="type.commCdDtl"
+                  :class="{selected: type.commCdDtl === offlineStoreTypeCd}"
                   @click="selectType(type)">
-                {{ type.type }}
+                {{ type.commCdDtlNm }}
               </li>
             </ul>
           </div>
         </div>
         <div>
-          <span>스토어명(한글)</span>
+          <label style="white-space:nowrap; display:inline-flex; align-items:center; font-family:var(--main-font); font-size:0.9rem; font-weight:normal; margin-bottom:0.2em; color:var(--color1);">
+            스토어명(한글)<span style="color:#b85c3b;margin-left:2px;font-size:1em;">*</span>
+          </label>
           <input type="text" v-model="storeKorNm" @input="storeSearch"/>
           <div v-if="storeList.length > 0" class="search-list">
             <div v-for="store in storeList" 
                  :key="store.storeId" 
                  @click="selectStore(store)"
                  class="search-item">
-              {{ store.storeKorNm }}({{ store.cntryNm }})
+              {{ store.storeKorNm }}({{ store.storeEngNm }})
             </div>
           </div>
         </div>
         <div>
-          <span>스토어명(영문)</span>
+          <label style="white-space:nowrap; display:inline-flex; align-items:center; font-family:var(--main-font); font-size:0.9rem; font-weight:normal; margin-bottom:0.2em; color:var(--color1);">
+            스토어명(영문)<span style="color:#b85c3b;margin-left:2px;font-size:1em;">*</span>
+          </label>
           <input type="text" v-model="storeEngNm"/>
         </div>
-        <div v-if="offlineStoreCd === '00030001'">
-          <span>국가명</span>
+
+        <div v-if="offlineStoreTypeCd === '00030001'">
+          <label v-if="offlineStoreTypeCd === '00030001'" style="white-space:nowrap; display:inline-flex; align-items:center; font-family:var(--main-font); font-size:0.9rem; font-weight:normal; margin-bottom:0.2em; color:var(--color1);">
+            지점명<span style="color:#b85c3b;margin-left:2px;font-size:1em;">*</span>
+          </label>
+          <input v-if="offlineStoreTypeCd === '00030001'" type="text" v-model="branchNm" />
+        </div>
+        <div v-if="offlineStoreTypeCd === '00030001'">
+          <label style="white-space:nowrap; display:inline-flex; align-items:center; font-family:var(--main-font); font-size:0.9rem; font-weight:normal; margin-bottom:0.2em; color:var(--color1);">국가</label>
           <input type="text" v-model="cntry" @input="srchCntryList"/>
           <div v-if="countryList.length > 0" class="search-list">
             <div v-for="country in countryList" 
@@ -350,12 +373,10 @@ export default {
             </div>
           </div> 
         </div>
-        <div v-if="offlineStoreCd === '00030001'">
-          <span>지점명</span>
-          <input type="text" v-model="branchNm" />
-        </div>
-        <div v-if="offlineStoreCd === '00030001'">
-          <span>주소검색</span>
+        <div v-if="offlineStoreTypeCd === '00030001'">
+          <label v-if="offlineStoreTypeCd === '00030001'" style="white-space:nowrap; display:inline-flex; align-items:center; font-family:var(--main-font); font-size:0.9rem; font-weight:normal; margin-bottom:0.2em; color:var(--color1);">
+            주소검색<span style="color:#b85c3b;margin-left:2px;font-size:1em;">*</span>
+          </label>
           <div v-if="selectedAddress.branchRoadAddr" class="selected-address">
             {{ selectedAddress.branchRoadAddr }}
           </div>
@@ -366,10 +387,43 @@ export default {
             @select="handleAddressSelect"
           />
         </div>
-        <div v-else>
+               <div>
+          <label style="white-space:nowrap; display:inline-flex; align-items:center; font-family:var(--main-font); font-size:0.9rem; font-weight:normal; margin-bottom:0.2em; color:var(--color1);">취급 브랜드</label>
+          <input type="text" v-model="usualBrandSearch" @input="searchUsualBrands"/>
+          <div v-if="usualBrandList.length > 0" class="search-list">
+            <div v-for="brand in usualBrandList" 
+                 :key="brand.brandNo" 
+                 @click="addUsualBrand(brand)"
+                 class="search-item">
+              {{ brand.brandNmKor }}
+            </div>
+          </div>
+          <div v-else-if="usualBrandSearch.trim()" class="search-list">
+            <div class="search-item" @click="showBrandRegistrationModal">
+              등록하기
+            </div>
+          </div>
+          <div class="selected-brands">
+            <div v-for="brand in usualBrands" 
+                 :key="brand.brandNo" 
+                 class="selected-brand">
+              {{ brand.brandNmKor }}
+              <span class="remove-brand" @click="removeUsualBrand(brand)">×</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label style="white-space:nowrap; display:inline-flex; align-items:center; font-family:var(--main-font); font-size:0.9rem; font-weight:normal; margin-bottom:0.2em; color:var(--color1);">연락처</label>
+          <input type="text" v-model="contactInfo" placeholder="연락처를 입력하세요" />
+        </div>
+        <div>
+          <label style="white-space:nowrap; display:inline-flex; align-items:center; font-family:var(--main-font); font-size:0.9rem; font-weight:normal; margin-bottom:0.2em; color:var(--color1);">비고</label>
+          <input type="text" v-model="shopDescription" placeholder="비고를 입력하세요" />
+        </div>
+        <!-- <div v-if="branchTypeCd !== '00030001'">
           <span>웹사이트 주소 입력</span>
           <input type="text" v-model="website"/>
-        </div>
+        </div> -->
         <!-- <div>
           <span>한정판 발매 브랜드</span>
           <input type="text" v-model="limitedBrandSearch" @input="searchLimitedBrands"/>
@@ -395,32 +449,9 @@ export default {
             </div>
           </div>
         </div> -->
-        <div>
-          <span>취급 브랜드</span>
-          <input type="text" v-model="usualBrandSearch" @input="searchUsualBrands"/>
-          <div v-if="usualBrandList.length > 0" class="search-list">
-            <div v-for="brand in usualBrandList" 
-                 :key="brand.brandNo" 
-                 @click="addUsualBrand(brand)"
-                 class="search-item">
-              {{ brand.brandNmKor }}
-            </div>
-          </div>
-          <div v-else-if="usualBrandSearch.trim()" class="search-list">
-            <div class="search-item" @click="showBrandRegistrationModal">
-              등록하기
-            </div>
-          </div>
-          <div class="selected-brands">
-            <div v-for="brand in usualBrands" 
-                 :key="brand.brandNo" 
-                 class="selected-brand">
-              {{ brand.brandNmKor }}
-              <span class="remove-brand" @click="removeUsualBrand(brand)">×</span>
-            </div>
-          </div>
-        </div>
+ 
       </div>
+      <div class="required-guide">*은 <b>필수 입력값</b>입니다.</div>
       
       <div>
         <button @click="closeModal">취소</button>
@@ -727,5 +758,12 @@ export default {
 .custom-select-options li:hover {
   background-color: var(--color6);
   color: #fff;
+}
+.required-guide {
+  color: #b85c3b;
+  font-size: 0.92rem;
+  font-weight: 500;
+  margin: 1.2rem 0 0.2rem 0;
+  text-align: left;
 }
 </style>

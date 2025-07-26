@@ -51,7 +51,7 @@ export default {
     // selectedCountry가 변경될 때 지역별 매장 수 조회
     selectedCountry(newCountry) {
       if (newCountry) {
-        this.getRegionCount(newCountry)
+        this.getBranches(newCountry)
       }
     }
   },
@@ -78,13 +78,13 @@ export default {
       this.countryList = []
     },
     // 추가: 지역별 매장 수 조회 메서드
-    getRegionCount(cntryCd) {
-      this.getApi('/store/offline/country/regions', { cntryCd }, this.getRegionCountSuccess, this.getRegionCountFail)
+    getBranches(cntryCd) {
+      this.getApi('/store/offline', { cntryCd }, this.getBranchesSuccess, this.getBranchesFail)
     },
-    getRegionCountSuccess(res) {
+    getBranchesSuccess(res) {
       this.regionList = res.data
     },
-    getRegionCountFail(error) {
+    getBranchesFail(error) {
       console.error('Region count fetch failed:', error)
       this.regionList = []
     },
@@ -155,7 +155,7 @@ export default {
     },
     onSelectedCountryChange(newCountry) {
       this.selectedCountry = newCountry;
-      this.getRegionCount(newCountry);
+      this.getBranches(newCountry);
     },
     // onStoreMore(store) {
     //   // TODO: 더보기 버튼 클릭 시 동작 구현
@@ -288,6 +288,7 @@ export default {
         />
         <KicksMapStore
           v-if="activeNavIndex === 1"
+          @open-register-modal="openRegisterModal"
         />
         <KicksMapFavorite v-if="activeNavIndex === 2" />
       </div>

@@ -46,33 +46,46 @@
         </button>
       </div>
     </div>
-    <div class="location-list" v-if="storeType === '00050001' && (branchType === '00030001' || branchType === '00030002')">
-      <div class="country-select-container">
-        <select class="country-select" :value="selectedCountry" @change="handleCountryChange" >
-          <option v-for="country in countryList" :key="country.cntryCd" :value="country.cntryCd">
-            {{ country.cntryKorNm }}({{ country.cntryCnt }})
-          </option>
-        </select>
-      </div>
-      <div class="location-item" v-for="city in regionList" :key="city.admSidoNm">
-        <div class="city-header" @click="toggleCity(city.admSidoNm)">
-          <span>{{ city.admSidoNm }}</span>
-          <span class="arrow" :class="{ expanded: expandedCities[city.admSidoNm] }">&gt;</span>
-        </div>
-        <div v-show="expandedCities[city.admSidoNm]" class="district-list">
-          <div class="district-item" v-for="district in city.admSggList" :key="district.admRginCd">
-            <div class="district-header" @click="toggleDistrict(district.admRginCd)">
-              <span>{{ district.admSggNm }}({{ district.cnt }})</span>
-              <span class="arrow" :class="{ expanded: expandedDistricts[district.admRginCd] }">&gt;</span>
+    <div v-if="storeType === '00050001'">
+      <div v-if="branchType === '00030001' || branchType === '00030002'">
+        <div v-if="regionList.length" class="location-list">
+          <div class="country-select-container">
+            <select class="country-select" :value="selectedCountry" @change="handleCountryChange" >
+              <option v-for="country in countryList" :key="country.cntryCd" :value="country.cntryCd">
+                {{ country.cntryKorNm }}({{ country.cntryCnt }})
+              </option>
+            </select>
+          </div>
+          <div class="location-item" v-for="city in regionList" :key="city.admSidoNm">
+            <div class="city-header" @click="toggleCity(city.admSidoNm)">
+              <span>{{ city.admSidoNm }}</span>
+              <span class="arrow" :class="{ expanded: expandedCities[city.admSidoNm] }">&gt;</span>
             </div>
-            <ul class="store-list" v-show="expandedDistricts[district.admRginCd]">
-              <li class="store-item" v-for="store in district.offlineBranchList" :key="store.branchNm" @click="handleStoreClick(store)" :class="{ active: activeStore === store.branchNm }">
-                <span>{{ store.storeKorNm }} {{ store.branchNm }}</span>
-                <button class="store-more-btn" @click.stop="$emit('store-more', store)">더보기</button>
-              </li>
-            </ul>
+            <div v-show="expandedCities[city.admSidoNm]" class="district-list">
+              <div class="district-item" v-for="district in city.admSggList" :key="district.admRginCd">
+                <div class="district-header" @click="toggleDistrict(district.admRginCd)">
+                  <span>{{ district.admSggNm }}({{ district.cnt }})</span>
+                  <span class="arrow" :class="{ expanded: expandedDistricts[district.admRginCd] }">&gt;</span>
+                </div>
+                <ul class="store-list" v-show="expandedDistricts[district.admRginCd]">
+                  <li class="store-item" v-for="store in district.offlineBranchList" :key="store.branchNm" @click="handleStoreClick(store)" :class="{ active: activeStore === store.branchNm }">
+                    <span>{{ store.storeKorNm }} {{ store.branchNm }}</span>
+                    <button class="store-more-btn" @click.stop="$emit('store-more', store)">더보기</button>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
+        <div v-else>
+          <div class="no-store-box">
+            <img src="@/assets/map/location-pin.png" alt="No Store" class="no-store-icon" />
+            <div class="no-store-text">등록된 스토어 정보가 없습니다</div>
+          </div>
+        </div>
+      </div>
+      <div v-else-if="branchType === '00030003'">
+        팝업샵 목록이 나올 자리
       </div>
     </div>
     <!-- <div class="online-content" v-if="branchType === '00030002'">
@@ -108,7 +121,7 @@ export default {
     },
     handleCountryChange(e) {
       this.selectedCountry = e.target.value;
-      this.getRegionCount(this.selectedCountry);
+      this.getBranches(this.selectedCountry);
     },
     toggleCity(city) {
       this.expandedCities = {
@@ -146,20 +159,20 @@ export default {
       this.countryList = res.data;
       if (this.countryList.length > 0) {
         this.selectedCountry = this.countryList[0].cntryCd;
-        this.getRegionCount(this.selectedCountry);
+        this.getBranches(this.selectedCountry);
       }
     },
     getCountryCountFail(error) {
       console.error('국가별 카운트 조회 실패:', error);
       this.countryList = [];
     },
-    getRegionCount(cntryCd) {
-      this.getApi('/store/offline/country/regions', { cntryCd }, this.getRegionCountSuccess, this.getRegionCountFail)
+    getBranches(cntryCd) {
+      this.getApi('/store/offline', { cntryCd:cntryCd, branchType: this.branchType }, this.getBranchesSuccess, this.getBranchesFail)
     },
-    getRegionCountSuccess(res) {
+    getBranchesSuccess(res) {
       this.regionList = res.data;
     },
-    getRegionCountFail(error) {
+    getBranchesFail(error) {
       console.error('지역별 매장 수 조회 실패:', error);
       this.regionList = [];
     },
@@ -167,12 +180,13 @@ export default {
   watch: {
     selectedCountry(newCountry) {
       if (newCountry) {
-        this.getRegionCount(newCountry);
+        this.getBranches();
       }
     },
     branchType(newType) {
       if (newType) {
         this.getCountryCount();
+        this.getBranches();
       }
     },
   },
@@ -405,6 +419,31 @@ export default {
   margin-right: 0;
 }
 
+.no-store-box {
+  background-color: var(--color2);
+  border-radius: 8px;
+  padding: 3rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  margin: 1rem 0;
+}
+.no-store-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+.no-store-text {
+  color: var(--color1);
+  font-family: var(--sub-font);
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-align: center;
+}
+
 @media screen and (max-width: 1024px) {
   .search-container {
     gap: 4px;
@@ -428,6 +467,17 @@ export default {
   }
   .register-modal button {
     padding: 8px 1rem;
+  }
+  .no-store-box {
+    padding: 2rem 0.5rem;
+    min-height: 120px;
+  }
+  .no-store-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .no-store-text {
+    font-size: 1rem;
   }
 }
 </style> 
