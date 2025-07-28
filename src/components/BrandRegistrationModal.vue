@@ -41,8 +41,9 @@ export default {
       this.postApi('/brand/registration', this.brand, this.handleRegisterSuccess, this.handleRegisterFail);
     },
     handleRegisterSuccess(res) {
+      console.log(res.data);
       this.showSuccessModal = true;
-      this.message = res.data;
+      this.message = res.data.message;
       this.isSuccess = true;
     },
     handleRegisterFail(error) {
