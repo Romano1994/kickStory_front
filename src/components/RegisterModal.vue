@@ -1,25 +1,27 @@
 <script>
-import AddressSearchModal from './AddressSearchModal.vue'
-import BrandRegistrationModal from './BrandRegistrationModal.vue'
-import CommonModal from './CommonModal.vue'
+import AddressSearchModal from "./AddressSearchModal.vue";
+import BrandRegistrationModal from "./BrandRegistrationModal.vue";
+import CommonModal from "./CommonModal.vue";
 
 export default {
-  name: 'RegisterModal',
+  name: "RegisterModal",
   components: {
     AddressSearchModal,
     BrandRegistrationModal,
-    CommonModal
+    CommonModal,
   },
   data() {
     return {
-      storeNo:0,
-      storeKorNm: '',
-      storeEngNm: '',
-      cntry: '',
-      branchNm: '',
-      branchTypeCd: '00030001', // Default to offline
-      place: '',
-      website: '',
+      storeCd: "",
+      storeKorNm: "",
+      storeEngNm: "",
+      cntry: "",
+      branchNm: "",
+      offlineStoreTypeCd: "00030001", // Default to offline
+      place: "",
+      website: "",
+      shopDescription: "",
+      contactInfo: "",
       // Store search related
       storeSearchTimeout: null,
       storeList: [],
@@ -27,125 +29,139 @@ export default {
       addressList: [],
       showAddressModal: false,
       selectedAddress: {
-        storeName: '',
-        branchRoadAddr: '',
-        branchAddr: '',
-        lon: '',
-        lat: ''
+        storeName: "",
+        branchRoadAddr: "",
+        branchAddr: "",
+        lon: "",
+        lat: "",
       },
       addressSearchTimeout: null,
       // Brand related
-      limitedBrands: [],
       usualBrands: [],
-      limitedBrandSearch: '',
-      usualBrandSearch: '',
-      limitedBrandList: [],
+      usualBrandSearch: "",
       usualBrandList: [],
       // Country search related
       countryList: [],
-      cntryNm: {
-        isoCntryNm: '',
-        countryCd: '',
-        countryKorNm: ''
-      },
+      cntryCd: "",
       // Branch search related
-      branchList: [],
-      storeTypeList: [
-        { type: '오프라인', typeCd: '00030001' },
-        { type: '온라인', typeCd: '00030002' }
-      ],
+      offlineStoreTypeList: [],
       isStoreSelect: false,
       lastSelectedStore: null,
       showBrandModal: false,
       newBrand: {
-        brandNmKor: '',
-        brandNmEng: '',
-        brandTypeCd: ''
+        brandNmKor: "",
+        brandNmEng: "",
+        brandTypeCd: "",
       },
       brandTypes: [
-        { type: '한정판', typeCd: '00010001' },
-        { type: '상시', typeCd: '00010002' }
+        { type: "한정판", typeCd: "00010001" },
+        { type: "상시", typeCd: "00010002" },
       ],
       showCommonModal: false,
-      commonModalMessage: '',
-      commonModalType: 'confirm'
-    }
+      commonModalMessage: "",
+      commonModalType: "confirm",
+      showTypeDropdown: false,
+      branchTypeCd: "00050001",
+      // 00030002(온라인)일 때 단일 브랜드 저장
+      selectedBrand: null,
+      selectedBrandCd: "",
+      selectedBrandNmEng: "",
+      selectedBrandNmKor: "",
+    };
   },
   methods: {
     storeSearch() {
       if (this.storeSearchTimeout) {
-        clearTimeout(this.storeSearchTimeout)
+        clearTimeout(this.storeSearchTimeout);
       }
-      
+
       this.storeSearchTimeout = setTimeout(() => {
         // 선택된 스토어와 현재 입력값이 같으면 검색하지 않음
-        if (this.lastSelectedStore && this.lastSelectedStore.storeKorNm === this.storeKorNm) {
+        if (
+          this.lastSelectedStore &&
+          this.lastSelectedStore.storeKorNm === this.storeKorNm
+        ) {
           this.storeList = [];
           return;
         }
-        
+
         if (this.storeKorNm.trim()) {
-          this.storeEngNm = '';
-          this.getApi('/store/name', {name: this.storeKorNm}, this.storeSearchSuccess, this.storeSearchFail);
+          this.storeEngNm = "";
+          this.getApi(
+            "/store/name",
+            { name: this.storeKorNm },
+            this.storeSearchSuccess,
+            this.storeSearchFail
+          );
         } else {
           this.storeList = [];
         }
-      }, 500)
+      }, 500);
     },
     storeSearchSuccess(res) {
-      this.storeList = res.data
+      this.storeList = res.data;
     },
     storeSearchFail() {
       // console.error('Store search failed:', error)
-      this.storeList = []
+      this.storeList = [];
     },
     selectStore(store) {
       this.lastSelectedStore = store;
-      this.storeNo = store.storeNo;
+      this.storeCd = store.storeCd;
       this.storeKorNm = store.storeKorNm;
       this.storeEngNm = store.storeEngNm;
       this.storeList = [];
     },
     srchCntryList() {
-        this.getApi('/store/country/names', {cntryKorNm : this.cntry}, this.srchCntrySucc, this.srchCntryFail);
+      this.getApi(
+        "/store/country/names",
+        { cntryKorNm: this.cntry },
+        this.srchCntrySucc,
+        this.srchCntryFail
+      );
     },
     srchCntrySucc(res) {
       this.countryList = res.data;
     },
     srchCntryFail(error) {
-      console.error('Country search failed:', error);
+      console.error("Country search failed:", error);
       this.countryList = [];
     },
     selectCountry(country) {
-      this.cntryNm = country.isoCntryNm;
+      this.cntryCd = country.isoCntryCd;
       this.cntry = country.cntryKorNm;
       this.countryList = [];
     },
     closeModal() {
-      this.$emit('close')
+      this.$emit("close");
     },
     // Address search methods
     searchAddress() {
       if (this.addressSearchTimeout) {
-        clearTimeout(this.addressSearchTimeout)
+        clearTimeout(this.addressSearchTimeout);
       }
-      
+
       this.addressSearchTimeout = setTimeout(() => {
         if (this.place.trim()) {
-          this.getApi(`/store/address/${this.place}`, null, this.searchAddressSuccess, this.searchAddressFail)
+          this.getApi(
+            `/store/address/${this.place}`,
+            null,
+            this.searchAddressSuccess,
+            this.searchAddressFail
+          );
         } else {
-          this.addressList = []
+          this.addressList = [];
         }
-      }, 500) // 500ms 대기
+      }, 500); // 500ms 대기
     },
     searchAddressSuccess(res) {
-      this.addressList = res.data
+      this.addressList = res.data;
     },
     searchAddressFail(error) {
-      console.error('Address search failed:', error)
+      console.error("Address search failed:", error);
     },
     handleAddressSelect(address) {
-      this.selectedAddress.storeName= address.storeName;
+      this.selectedAddress.storeName = address.storeName;
       this.selectedAddress.branchAddr = address.address;
       this.selectedAddress.branchRoadAddr = address.roadAddress;
       this.selectedAddress.lon = address.lon;
@@ -153,36 +169,35 @@ export default {
       this.place = address.roadAddress;
     },
     // Limited brands methods
-    searchLimitedBrands() {
-      if (this.limitedBrandSearch.trim()) {
-        this.getApi('/brand', { name: this.limitedBrandSearch }, this.searchLimitedBrandsSuccess, this.searchLimitedBrandsFail);
-      } else {
-        this.limitedBrandList = [];
-      }
-    },
-    searchLimitedBrandsSuccess(res) {
-      this.limitedBrandList = res.data;
-    },
-    searchLimitedBrandsFail(error) {
-      console.error('Limited brands search failed:', error);
-      this.limitedBrandList = [];
-    },
-    addLimitedBrand(brand) {
-   
-      if (!this.limitedBrands.some(b => b.brandNo === brand.brandNo && b.brandTypeCd===brand.brandTypeCd)) {
-        this.limitedBrands.push({
-          brandNo: brand.brandNo,
-          brandNmKor: brand.brandNmKor,
-          brandNmEng: brand.brandNmEng,
-          brandTypeCd: brand.brandTypeCd
-        });
-      }
-      this.limitedBrandSearch = '';
-      this.limitedBrandList = [];
-    },
-    removeLimitedBrand(brand) {
-      this.limitedBrands = this.limitedBrands.filter(b => b.brandNo !== brand.brandNo);
-    },
+    // searchLimitedBrands() {
+    //   if (this.limitedBrandSearch.trim()) {
+    //     this.getApi('/brand', { name: this.limitedBrandSearch }, this.searchLimitedBrandsSuccess, this.searchLimitedBrandsFail);
+    //   } else {
+    //     this.limitedBrandList = [];
+    //   }
+    // },
+    // searchLimitedBrandsSuccess(res) {
+    //   this.limitedBrandList = res.data;
+    // },
+    // searchLimitedBrandsFail(error) {
+    //   console.error('Limited brands search failed:', error);
+    //   this.limitedBrandList = [];
+    // },
+    // addLimitedBrand(brand) {
+    //   if (!this.limitedBrands.some(b => b.brandNo === brand.brandNo && b.brandTypeCd===brand.brandTypeCd)) {
+    //     this.limitedBrands.push({
+    //       brandNo: brand.brandNo,
+    //       brandNmKor: brand.brandNmKor,
+    //       brandNmEng: brand.brandNmEng,
+    //       brandTypeCd: brand.brandTypeCd
+    //     });
+    //   }
+    //   this.limitedBrandSearch = '';
+    //   this.limitedBrandList = [];
+    // },
+    // removeLimitedBrand(brand) {
+    //   this.limitedBrands = this.limitedBrands.filter(b => b.brandNo !== brand.brandNo);
+    // },
     showBrandRegistrationModal() {
       this.showBrandModal = true;
     },
@@ -196,7 +211,12 @@ export default {
     // Usual brands methods
     searchUsualBrands() {
       if (this.usualBrandSearch.trim()) {
-        this.getApi('/brand', { name: this.usualBrandSearch }, this.searchUsualBrandsSuccess, this.searchUsualBrandsFail);
+        this.getApi(
+          "/brand",
+          { name: this.usualBrandSearch },
+          this.searchUsualBrandsSuccess,
+          this.searchUsualBrandsFail
+        );
       } else {
         this.usualBrandList = [];
       }
@@ -205,90 +225,184 @@ export default {
       this.usualBrandList = res.data;
     },
     searchUsualBrandsFail(error) {
-      console.error('Usual brands search failed:', error);
+      console.error("Usual brands search failed:", error);
       this.usualBrandList = [];
     },
     addUsualBrand(brand) {
-      if (!this.usualBrands.some(b => b.brandNo === brand.brandNo && b.brandTypeCd === brand.brandTypeCd)) {
+      if (
+        !this.usualBrands.some(
+          (b) =>
+            b.brandCd === brand.brandCd && b.brandTypeCd === brand.brandTypeCd
+        )
+      ) {
         this.usualBrands.push({
-          brandNo: brand.brandNo,
+          brandCd: brand.brandCd,
           brandNmKor: brand.brandNmKor,
           brandNmEng: brand.brandNmEng,
-          brandTypeCd: brand.brandTypeCd
+          brandTypeCd: brand.brandTypeCd,
         });
       }
-      this.usualBrandSearch = '';
+      this.usualBrandSearch = "";
       this.usualBrandList = [];
     },
     removeUsualBrand(brand) {
-      this.usualBrands = this.usualBrands.filter(b => b.brandNo !== brand.brandNo);
+      this.usualBrands = this.usualBrands.filter(
+        (b) => b.brandNo !== brand.brandNo
+      );
+    },
+    addSingleBrand(brand) {
+      this.selectedBrand = brand;
+      this.usualBrandSearch = '';
+      this.usualBrandList = [];
+    },
+    removeSingleBrand() {
+      this.selectedBrand = null;
+    },
+    // 브랜드 샵(00030002)용 메서드
+    selectBrandForShop(brand) {
+      this.selectedBrand = brand;
+      this.selectedBrandCd = brand.brandCd;
+      this.selectedBrandNmEng = brand.brandNmEng;
+      this.selectedBrandNmKor = brand.brandNmKor;
+      this.usualBrandList = [];
+    },
+    searchBrandsForShop() {
+      if (this.selectedBrandNmKor.trim()) {
+        this.getApi(
+          "/brand",
+          { name: this.selectedBrandNmKor },
+          this.searchUsualBrandsSuccess,
+          this.searchUsualBrandsFail
+        );
+      } else {
+        this.usualBrandList = [];
+      }
     },
     register() {
-      if (this.branchTypeCd === '00030001') { // 오프라인 스토어
-        const storeData = {
-          branchTypeCd: this.branchTypeCd,
-          storeKorNm: this.storeKorNm,
+      let branchData=null;
+      if (this.offlineStoreTypeCd === "00030001") {
+        // 오프라인 스토어
+        branchData = {
+          storeCd: this.storeCd,
           storeEngNm: this.storeEngNm,
-          storeNo: this.storeNo,
-          cntryNm: this.cntryNm,
+          storeKorNm: this.storeKorNm,
+          branchTypeCd: this.branchTypeCd,
+          offlineStoreTypeCd: this.offlineStoreTypeCd,
+          branchKorNm: this.branchKorNm,
+          branchEngNm: this.branchEngNm,
+          branchCd: this.branchCd,
+          cntryCd: this.cntryCd,
           branchNm: this.branchNm,
           branchRoadAddr: this.selectedAddress.branchRoadAddr,
           branchAddr: this.selectedAddress.branchAddr,
           lon: this.selectedAddress.lon,
           lat: this.selectedAddress.lat,
-          limitedBrands: this.limitedBrands.map(brand => ({
-            branchTypeCd: this.branchTypeCd,
-            branchNo: null,
-            brandNo: brand.brandNo,
-            brandTypeCd: brand.brandTypeCd
-          })),
-          usualBrands: this.usualBrands.map(brand => ({
-            branchTypeCd: this.branchTypeCd,
-            branchNo: null,
-            brandNo: brand.brandNo,
-            brandTypeCd: brand.brandTypeCd
-          }))
+          shopDescription: this.shopDescription,
+          contactInfo: this.contactInfo,
         };
 
-        this.postApi('/store/registration', storeData, this.registerSuccess, this.registerFail);
+      } else if (this.offlineStoreTypeCd === "00030002") {
+        // 오프라인 스토어 (브랜드 샵)
+       branchData = {
+          offlineStoreTypeCd: this.offlineStoreTypeCd,
+          branchNm: this.branchNm,
+          cntryCd: this.cntryCd,
+          branchRoadAddr: this.selectedAddress.branchRoadAddr,
+          branchAddr: this.selectedAddress.branchAddr,
+          lon: this.selectedAddress.lon,
+          lat: this.selectedAddress.lat,
+          shopDescription: this.shopDescription,
+          contactInfo: this.contactInfo,
+          brandCd: this.selectedBrandCd,
+        };
       }
+      
+      this.postApi(
+          "/store/offline-branch/registration",
+          branchData,
+          this.registerSuccess,
+          this.registerFail
+        );
     },
     registerSuccess(res) {
       this.commonModalMessage = res.data;
-      this.commonModalType = 'alert';
+      this.commonModalType = "alert";
       this.showCommonModal = true;
     },
     registerFail(error) {
-      // this.commonModalMessage = error.response?.data || '등록에 실패했습니다.';
-      this.commonModalMessage = error|| '등록에 실패했습니다.';
-
-      this.commonModalType = 'alert';
+      this.commonModalMessage = error || "등록에 실패했습니다.";
+      this.commonModalType = "alert";
       this.showCommonModal = true;
     },
     handleCommonModalConfirm() {
       this.showCommonModal = false;
-      if (this.commonModalMessage.includes('성공')) {
+      // registerSuccess에서 호출된 경우에만 RegisterModal을 닫음
+      if (
+        this.commonModalType === "alert" &&
+        this.commonModalMessage &&
+        !this.commonModalMessage.includes("실패") &&
+        !this.commonModalMessage.toLowerCase().includes("fail")
+      ) {
         this.closeModal();
       }
-    }
+    },
+    toggleTypeDropdown() {
+      this.showTypeDropdown = !this.showTypeDropdown;
+    },
+    selectType(type) {
+      this.offlineStoreTypeCd = type.commCdDtl;
+      this.showTypeDropdown = false;
+    },
+    handleTypeDropdownBlur(e) {
+      console.log(e);
+
+      // 드롭다운 외부 클릭 시 닫기
+      setTimeout(() => {
+        this.showTypeDropdown = false;
+      }, 100);
+    },
+    fetchOfflineStoreTypeList() {
+      // KicksMapStore의 fetchBranchTypeList 참고
+      this.getApi(
+        "/comm-cd/detail",
+        { commCd: "0003" },
+        this.handleOfflineStoreTypeListSuccess,
+        this.handleOfflineStoreTypeListFail
+      );
+    },
+    handleOfflineStoreTypeListSuccess(res) {
+      this.offlineStoreTypeList = res.data;
+    },
+    handleOfflineStoreTypeListFail(err) {
+      console.error("오프라인 스토어 타입 목록 불러오기 실패", err);
+      this.offlineStoreTypeList = [];
+    },
+  },
+  mounted() {
+    this.fetchOfflineStoreTypeList();
   },
   watch: {
-
     // storeKorNm() {
     //   this.storeEngNm = '';
     //   // this.isStoreSelect = false;
     // }
+    selectedBrandNmKor() {
+      // 브랜드명이 변경되면 선택된 브랜드 정보 초기화
+      this.selectedBrand = null;
+      this.selectedBrandCd = "";
+      this.selectedBrandNmEng = "";
+    }
   },
   beforeUnmount() {
     // 컴포넌트가 제거될 때 타이머 정리
     if (this.addressSearchTimeout) {
-      clearTimeout(this.addressSearchTimeout)
+      clearTimeout(this.addressSearchTimeout);
     }
     if (this.storeSearchTimeout) {
-      clearTimeout(this.storeSearchTimeout)
+      clearTimeout(this.storeSearchTimeout);
     }
-  }
-}
+  },
+};
 </script>
 
 <template>
@@ -297,68 +411,157 @@ export default {
       <div>
         <div>
           <span>유형</span>
-          <select v-model="branchTypeCd">
-            <option v-for="type in storeTypeList" 
-                    :key="type.typeCd" 
-                    :value="type.typeCd">
-              {{ type.type }}
-            </option>
-          </select>
+          <div class="custom-select-wrapper" tabindex="0" @blur="handleTypeDropdownBlur">
+            <div class="custom-select-selected" @click="toggleTypeDropdown">
+              {{
+                offlineStoreTypeList.find(
+                  (t) => t.commCdDtl === offlineStoreTypeCd
+                )?.commCdDtlNm || "선택"
+              }}
+              <span class="custom-select-arrow">▼</span>
+            </div>
+            <ul v-if="showTypeDropdown" class="custom-select-options">
+              <li
+                v-for="type in offlineStoreTypeList"
+                :key="type.commCdDtl"
+                :class="{ selected: type.commCdDtl === offlineStoreTypeCd }"
+                @click="selectType(type)"
+              >
+                {{ type.commCdDtlNm }}
+              </li>
+            </ul>
+          </div>
         </div>
         <div>
-          <span>스토어명(한글)</span>
-          <input type="text" v-model="storeKorNm" @input="storeSearch"/>
-          <div v-if="storeList.length > 0" class="search-list">
-            <div v-for="store in storeList" 
-                 :key="store.storeId" 
-                 @click="selectStore(store)"
-                 class="search-item">
-              {{ store.storeKorNm }}
+          <div v-if="['00030001'].includes(offlineStoreTypeCd)">
+            <label class="form-label">
+              스토어명(한글)<span class="required-star">*</span>
+            </label>
+            <input class="form-input" type="text" v-model="storeKorNm" @input="storeSearch" />
+            <div v-if="storeList.length > 0" class="search-list">
+              <div
+                v-for="store in storeList"
+                :key="store.storeId"
+                @click="selectStore(store)"
+                class="search-item"
+              >
+                {{ store.storeKorNm }}({{ store.storeEngNm }})
+              </div>
             </div>
           </div>
         </div>
         <div>
-          <span>스토어명(영문)</span>
-          <input type="text" v-model="storeEngNm"/>
+          <div v-if="['00030001'].includes(offlineStoreTypeCd)">
+            <label class="form-label">
+              스토어명(영문)<span class="required-star">*</span>
+            </label>
+            <input class="form-input" type="text" v-model="storeEngNm" />
+          </div>
         </div>
-        <div v-if="branchTypeCd === '00030001'">
-          <span>국가명</span>
-          <input type="text" v-model="cntry" @input="srchCntryList"/>
+        <div v-if="['00030002'].includes(offlineStoreTypeCd)"> 
+          <label class="form-label">브랜드명</label>
+          <span class="required-star">*</span>
+          <input class="form-input" type="text" v-model="selectedBrandNmKor" @input="searchBrandsForShop" />
+          <div v-if="usualBrandList.length > 0" class="search-list">
+            <div
+              v-for="brand in usualBrandList"
+              :key="brand.brandCd"
+              @click="selectBrandForShop(brand)"
+              class="search-item"
+            >
+              {{ brand.brandNmKor }}
+            </div>
+          </div>
+          <div v-else-if="selectedBrandNmKor.trim() && !selectedBrand" class="search-list">
+            <div class="search-item" @click="showBrandRegistrationModal">
+              등록하기
+            </div>
+          </div>
+        </div>
+        <div v-if="['00030001', '00030002'].includes(offlineStoreTypeCd)">
+          <label class="form-label">
+            지점명
+            <span class="required-star">*</span>
+          </label>
+          <input class="form-input" type="text" v-model="branchNm" />
+        </div>
+        <div v-if="['00030001', '00030002'].includes(offlineStoreTypeCd)">
+          <label class="form-label">국가</label>
+          <input class="form-input" type="text" v-model="cntry" @input="srchCntryList" />
           <div v-if="countryList.length > 0" class="search-list">
-            <div v-for="country in countryList" 
-                 :key="country.cntryCd" 
-                 @click="selectCountry(country)"
-                 class="search-item">
+            <div
+              v-for="country in countryList"
+              :key="country.cntryCd"
+              @click="selectCountry(country)"
+              class="search-item"
+            >
               {{ country.cntryKorNm }}
             </div>
           </div>
         </div>
-        <div v-if="branchTypeCd === '00030001'">
-          <span>지점명</span>
-          <input type="text" v-model="branchNm" />
-        </div>
-        <div v-if="branchTypeCd === '00030001'">
-          <span>주소검색</span>
+        <div v-if="['00030001', '00030002'].includes(offlineStoreTypeCd)">
+          <label class="form-label">
+            주소검색<span class="required-star">*</span>
+          </label>
           <div v-if="selectedAddress.branchRoadAddr" class="selected-address">
             {{ selectedAddress.branchRoadAddr }}
           </div>
-          <button class="address-search-button" @click="showAddressModal = true">검색하기</button>
-          <AddressSearchModal 
+          <button class="address-search-button" @click="showAddressModal = true">
+            검색하기
+          </button>
+          <AddressSearchModal
             v-if="showAddressModal"
             @close="showAddressModal = false"
             @select="handleAddressSelect"
           />
         </div>
-        <div v-else>
-          <span>웹사이트 주소 입력</span>
-          <input type="text" v-model="website"/>
+        <div v-if="['00030001'].includes(offlineStoreTypeCd)"> 
+          <label class="form-label">취급 브랜드</label>
+          <input class="form-input" type="text" v-model="usualBrandSearch" @input="searchUsualBrands" />
+          <div v-if="usualBrandList.length > 0" class="search-list">
+            <div
+              v-for="brand in usualBrandList"
+              :key="brand.brandCd"
+              @click="addUsualBrand(brand)"
+              class="search-item"
+            >
+              {{ brand.brandNmKor }}
+            </div>
+          </div>
+          <div v-else-if="usualBrandSearch.trim()" class="search-list">
+            <div class="search-item" @click="showBrandRegistrationModal">
+              등록하기
+            </div>
+          </div>
+          <div class="selected-brands">
+            <div
+              v-for="brand in usualBrands"
+              :key="brand.brandCd"
+              class="selected-brand"
+            >
+              {{ brand.brandNmKor }}
+              <span class="remove-brand" @click="removeUsualBrand(brand)">×</span>
+            </div>
+          </div>
         </div>
         <div>
+          <label class="form-label">연락처</label>
+          <input class="form-input" type="text" v-model="contactInfo" placeholder="연락처를 입력하세요" />
+        </div>
+        <div>
+          <label class="form-label">비고</label>
+          <input class="form-input" type="text" v-model="shopDescription" placeholder="비고를 입력하세요" />
+        </div>
+        <!-- <div v-if="branchTypeCd !== '00030001'">
+          <span>웹사이트 주소 입력</span>
+          <input type="text" v-model="website"/>
+        </div> -->
+        <!-- <div>
           <span>한정판 발매 브랜드</span>
           <input type="text" v-model="limitedBrandSearch" @input="searchLimitedBrands"/>
           <div v-if="limitedBrandList.length > 0" class="search-list">
             <div v-for="brand in limitedBrandList" 
-                 :key="brand.brandNo" 
+                 :key="brand.brandNo"
                  @click="addLimitedBrand(brand)"
                  class="search-item">
               {{ brand.brandNmKor }}
@@ -371,40 +574,16 @@ export default {
           </div>
           <div class="selected-brands">
             <div v-for="brand in limitedBrands" 
-                 :key="brand.brandNo" 
+                 :key="brand.brandNo"
                  class="selected-brand">
               {{ brand.brandNmKor }}
               <span class="remove-brand" @click="removeLimitedBrand(brand)">×</span>
             </div>
           </div>
-        </div>
-        <div>
-          <span>상시 취급 브랜드</span>
-          <input type="text" v-model="usualBrandSearch" @input="searchUsualBrands"/>
-          <div v-if="usualBrandList.length > 0" class="search-list">
-            <div v-for="brand in usualBrandList" 
-                 :key="brand.brandNo" 
-                 @click="addUsualBrand(brand)"
-                 class="search-item">
-              {{ brand.brandNmKor }}
-            </div>
-          </div>
-          <div v-else-if="usualBrandSearch.trim()" class="search-list">
-            <div class="search-item" @click="showBrandRegistrationModal">
-              등록하기
-            </div>
-          </div>
-          <div class="selected-brands">
-            <div v-for="brand in usualBrands" 
-                 :key="brand.brandNo" 
-                 class="selected-brand">
-              {{ brand.brandNmKor }}
-              <span class="remove-brand" @click="removeUsualBrand(brand)">×</span>
-            </div>
-          </div>
-        </div>
+        </div> -->
       </div>
-      
+      <div class="required-guide">*은 <b>필수 입력값</b>입니다.</div>
+
       <div>
         <button @click="closeModal">취소</button>
         <button @click="register">등록</button>
@@ -413,10 +592,10 @@ export default {
   </div>
 
   <!-- Brand Registration Modal -->
-  <BrandRegistrationModal 
+  <BrandRegistrationModal
     v-if="showBrandModal"
     :show="showBrandModal"
-    :searchText="limitedBrandSearch"
+    :searchText="offlineStoreTypeCd === '00030002' ? selectedBrandNmKor : usualBrandSearch"
     @close="closeBrandModal"
     @register="handleBrandRegistration"
   />
@@ -578,11 +757,11 @@ export default {
     width: 95%;
     padding: 1rem;
   }
-  
+
   .register-modal > div:first-child {
     padding: 1rem;
   }
-  
+
   .register-modal button {
     padding: 8px 1rem;
   }
@@ -654,4 +833,103 @@ export default {
   font-size: 0.9rem;
   font-family: var(--main-font);
 }
-</style> 
+
+.register-modal select option {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color1);
+  font-family: var(--main-font);
+}
+
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
+  outline: none;
+}
+.custom-select-selected {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color1);
+  font-size: 0.9rem;
+  font-family: var(--main-font);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+.custom-select-arrow {
+  margin-left: 8px;
+  font-size: 0.8em;
+}
+.custom-select-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #222;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  z-index: 1002;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.custom-select-options li {
+  padding: 8px;
+  color: var(--color1);
+  font-family: var(--main-font);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.custom-select-options li:hover {
+  background-color: var(--color6);
+  color: #fff;
+}
+.required-guide {
+  color: #b85c3b;
+  font-size: 0.92rem;
+  font-weight: 500;
+  margin: 1.2rem 0 0.2rem 0;
+  text-align: left;
+}
+.form-label {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--main-font);
+  font-size: 0.9rem;
+  font-weight: normal;
+  margin-bottom: 0.2em;
+  color: var(--color1);
+}
+.form-input {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--color1);
+  font-size: 0.9rem;
+  font-family: var(--main-font);
+  transition: all 0.2s ease;
+}
+.form-input:focus {
+  outline: none;
+  border-color: var(--color6);
+  background-color: rgba(255, 255, 255, 0.15);
+}
+.form-input::placeholder {
+  color: rgba(255, 244, 204, 0.5);
+}
+.required-star {
+  color: #b85c3b;
+  margin-left: 2px;
+  font-size: 1em;
+}
+</style>
