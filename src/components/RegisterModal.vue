@@ -67,6 +67,8 @@ export default {
       selectedBrandCd: "",
       selectedBrandNmEng: "",
       selectedBrandNmKor: "",
+      // Validation error message
+      validationError: "",
     };
   },
   methods: {
@@ -280,6 +282,24 @@ export default {
       }
     },
     register() {
+      if (this.offlineStoreTypeCd === "00030001") {
+        // 오프라인 스토어 validation
+        if (!this.storeKorNm || !this.storeEngNm || !this.branchNm || 
+            !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
+          this.validationError = "필수 입력값을 모두 입력해주세요.";
+          return;
+        }
+      } else if (this.offlineStoreTypeCd === "00030002") {
+        // 브랜드 샵 validation
+        if (!this.selectedBrandNmKor || !this.branchNm || 
+            !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
+          this.validationError = "필수 입력값을 모두 입력해주세요.";
+          return;
+        }
+      }
+      
+      this.validationError = "";
+
       let branchData=null;
       if (this.offlineStoreTypeCd === "00030001") {
         // 오프라인 스토어
@@ -290,7 +310,6 @@ export default {
           branchTypeCd: this.branchTypeCd,
           offlineStoreTypeCd: this.offlineStoreTypeCd,
           branchKorNm: this.branchKorNm,
-          branchEngNm: this.branchEngNm,
           branchCd: this.branchCd,
           cntryCd: this.cntryCd,
           branchNm: this.branchNm,
@@ -464,8 +483,8 @@ export default {
           </div>
         </div>
         <div v-if="['00030002'].includes(offlineStoreTypeCd)"> 
-          <label class="form-label">브랜드명</label>
-          <span class="required-star">*</span>
+          <label class="form-label">브랜드명<span class="required-star">*</span></label>
+         
           <input class="form-input" type="text" v-model="selectedBrandNmKor" @input="searchBrandsForShop" />
           <div v-if="usualBrandList.length > 0" class="search-list">
             <div
@@ -588,6 +607,10 @@ export default {
         </div> -->
       </div>
       <div class="required-guide">*은 <b>필수 입력값</b>입니다.</div>
+      
+      <div v-if="validationError" class="validation-error">
+        {{ validationError }}
+      </div>
 
       <div>
         <button @click="closeModal">취소</button>
@@ -936,5 +959,17 @@ export default {
   color: #b85c3b;
   margin-left: 2px;
   font-size: 1em;
+}
+
+.validation-error {
+  color: #b85c3b;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0.5rem 0;
+  text-align: center;
+  padding: 8px;
+  background-color: rgba(184, 92, 59, 0.1);
+  border: 1px solid rgba(184, 92, 59, 0.3);
+  border-radius: 4px;
 }
 </style>
