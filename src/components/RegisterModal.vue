@@ -88,8 +88,8 @@ export default {
         if (this.storeKorNm.trim()) {
           this.storeEngNm = "";
           this.getApi(
-            "/store/name",
-            { name: this.storeKorNm },
+            "/store/offline",
+            { name: this.storeKorNm, offlineStoreTypeCd: this.offlineStoreTypeCd },
             this.storeSearchSuccess,
             this.storeSearchFail
           );
@@ -260,6 +260,7 @@ export default {
     },
     // 브랜드 샵(00030002)용 메서드
     selectBrandForShop(brand) {
+      console.log(brand);
       this.selectedBrand = brand;
       this.selectedBrandCd = brand.brandCd;
       this.selectedBrandNmEng = brand.brandNmEng;
@@ -307,6 +308,7 @@ export default {
           offlineStoreTypeCd: this.offlineStoreTypeCd,
           branchNm: this.branchNm,
           cntryCd: this.cntryCd,
+          branchTypeCd: this.branchTypeCd,
           branchRoadAddr: this.selectedAddress.branchRoadAddr,
           branchAddr: this.selectedAddress.branchAddr,
           lon: this.selectedAddress.lon,
@@ -314,6 +316,9 @@ export default {
           shopDescription: this.shopDescription,
           contactInfo: this.contactInfo,
           brandCd: this.selectedBrandCd,
+          storeCd: this.selectedBrandCd,
+          storeEngNm: this.selectedBrandNmEng,
+          storeKorNm: this.selectedBrandNmKor,
         };
       }
       

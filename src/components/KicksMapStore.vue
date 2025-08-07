@@ -167,7 +167,7 @@ export default {
       this.countryList = [];
     },
     getBranches(cntryCd) {
-      this.getApi('/store/offline', { cntryCd:cntryCd, branchType: this.branchType }, this.getBranchesSuccess, this.getBranchesFail)
+      this.getApi('/store/offline/branches', { cntryCd:cntryCd, branchType: this.branchType }, this.getBranchesSuccess, this.getBranchesFail)
     },
     getBranchesSuccess(res) {
       this.regionList = res.data;
