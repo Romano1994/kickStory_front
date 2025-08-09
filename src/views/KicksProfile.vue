@@ -153,11 +153,6 @@ export default {
         padding: 0.8rem;
         background: #f8f9fa;
         border-radius: 8px;
-        transition: all 0.3s ease;
-    }
-    .info-row:hover {
-        background: #f0f0f0;
-        transform: translateX(5px);
     }
     .info-label {
         width: 80px;

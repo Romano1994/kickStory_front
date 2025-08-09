@@ -17,8 +17,10 @@ import { faComment, faEye, faFlag, faClock } from '@fortawesome/free-solid-svg-i
 import auth from './js/auth';
 // import leaflet from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { initGA } from './js/ga';
 
-
+const GA_ID = process.env.VUE_APP_GA_ID;
+const GA_ON = String(process.env.VUE_APP_GA_ON).toLowerCase() === 'true';
 
 const app = createApp(App);
 const COMMON_COMPONENTS=[];
@@ -53,9 +55,12 @@ app.config.globalProperties.$axios=axios;
 
 app.mixin(apiMix);
 
-createApp(App).use(VueAwesomePaginate).mount("#app");
-
 loadComponents();
 app.use(router);
+
+// GA 초기화 (router 준비 이후)
+initGA({ id: GA_ID, router, enabled: GA_ON });
+
+app.use(VueAwesomePaginate);
 app.mount('#app')
 

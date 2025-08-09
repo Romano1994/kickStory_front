@@ -124,7 +124,6 @@ export default {
             this.postApi('/auth/findPwdRequest',
                 mbr,        // param
                 () => {     // success
-                    alert("인증번호가 발송됐습니다.");
                 },
                 (result) => {   //fail
                     const message = result.response.data;
