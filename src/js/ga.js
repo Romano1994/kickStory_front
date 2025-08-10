@@ -45,6 +45,6 @@ export function initGA({id, router, enabled = true}) {
         });
     }
 
-    // 앱 최초 진입 후
-    router.isReady().then(() => sendPageView(router.currentRoute.value));
+    // 라우트 변경마다
+    router.afterEach(to => sendPageView(to));
 }
