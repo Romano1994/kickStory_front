@@ -23,18 +23,25 @@ const menus = [
     },
     {
         path: "/",
-        name: "KicksHistory",//컴포넌트명
-        componentPath:"KicksHistory",//실제 컴포넌트 경로
+        name: "KicksMap",//컴포넌트명
+        componentPath:"KicksMap",//실제 컴포넌트 경로
         depth:1,
         meta: {requiresAuth:true}
     },
-    {
-        path: "/kp",
-        name: "KicksProfile",//컴포넌트명
-        componentPath:"KicksProfile",//실제 컴포넌트 경로
-        depth:1,
-        meta: {requiresAuth:false}
-    },
+    // {
+    //     path: "/",
+    //     name: "KicksHistory",//컴포넌트명
+    //     componentPath:"KicksHistory",//실제 컴포넌트 경로
+    //     depth:1,
+    //     meta: {requiresAuth:true}
+    // },
+    // {
+    //     path: "/kp",
+    //     name: "KicksProfile",//컴포넌트명
+    //     componentPath:"KicksProfile",//실제 컴포넌트 경로
+    //     depth:1,
+    //     meta: {requiresAuth:false}
+    // },
     {
         path: "/kc",
         name: "KicksCommunity",//컴포넌트명
@@ -47,13 +54,6 @@ const menus = [
         name: "KicksCommunityDetail",//컴포넌트명
         componentPath:"KicksCommunityDetail",//실제 컴포넌트 경로
         depth:0,
-        meta: {requiresAuth:true}
-    },
-    {
-        path: "/km",
-        name: "KicksMap",//컴포넌트명
-        componentPath:"KicksMap",//실제 컴포넌트 경로
-        depth:1,
         meta: {requiresAuth:true}
     },
     {

@@ -79,7 +79,7 @@ export default {
     },
     // 추가: 지역별 매장 수 조회 메서드
     getBranches(cntryCd) {
-      this.getApi('/store/offline', { cntryCd }, this.getBranchesSuccess, this.getBranchesFail)
+      this.getApi('/store/offline/branches', { cntryCd }, this.getBranchesSuccess, this.getBranchesFail)
     },
     getBranchesSuccess(res) {
       this.regionList = res.data
