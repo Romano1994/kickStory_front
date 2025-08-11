@@ -69,6 +69,12 @@ export default {
       selectedBrandNmKor: "",
       // Validation error message
       validationError: "",
+      // New fields for 00030003 type
+      strtDt: "",
+      endDt: "",
+      feeYn: "N",
+      reservationLink: "",
+      description: "",
     };
   },
   methods: {
@@ -262,7 +268,6 @@ export default {
     },
     // 브랜드 샵(00030002)용 메서드
     selectBrandForShop(brand) {
-      console.log(brand);
       this.selectedBrand = brand;
       this.selectedBrandCd = brand.brandCd;
       this.selectedBrandNmEng = brand.brandNmEng;
@@ -293,6 +298,15 @@ export default {
         // 브랜드 샵 validation
         if (!this.selectedBrandNmKor || !this.branchNm || 
             !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
+          this.validationError = "필수 입력값을 모두 입력해주세요.";
+          return;
+        }
+      } else if (this.offlineStoreTypeCd === "00030003") {
+        // 새로운 타입 validation
+        if (!this.storeCd || !this.storeEngNm || !this.storeKorNm || !this.selectedBrandCd ||
+            !this.strtDt || !this.endDt || !this.selectedAddress.branchRoadAddr || 
+            !this.selectedAddress.branchAddr || !this.selectedAddress.lon || 
+            !this.selectedAddress.lat) {
           this.validationError = "필수 입력값을 모두 입력해주세요.";
           return;
         }
@@ -338,6 +352,24 @@ export default {
           storeCd: this.selectedBrandCd,
           storeEngNm: this.selectedBrandNmEng,
           storeKorNm: this.selectedBrandNmKor,
+        };
+      } else if (this.offlineStoreTypeCd === "00030003") {
+        // 새로운 타입
+        branchData = {
+          storeCd: this.storeCd,
+          storeEngNm: this.storeEngNm,
+          storeKorNm: this.storeKorNm,
+          brandCd: this.selectedBrandCd,
+          strtDt: this.strtDt,
+          endDt: this.endDt,
+          branchRoadAddr: this.selectedAddress.branchRoadAddr,
+          branchAddr: this.selectedAddress.branchAddr,
+          lon: this.selectedAddress.lon,
+          lat: this.selectedAddress.lat,
+          feeYn: this.feeYn,
+          reservationLink: this.reservationLink,
+          description: this.description,
+          offlineStoreTypeCd: this.offlineStoreTypeCd,
         };
       }
       
