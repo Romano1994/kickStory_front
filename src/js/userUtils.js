@@ -2,11 +2,9 @@ import axios from "axios";
 import auth from "../js/auth";
 import router from './router';
 
-const isLoggedIn = () => {
-    const access = sessionStorage.getItem(auth.accessName);
-
+const parseAccess = (access) => {
     if(!access) {
-        return false;
+        return "";
     }
 
     const payloadBase64 = access.split('.')[1];
@@ -15,7 +13,17 @@ const isLoggedIn = () => {
         return;
     }
 
-    const payload = JSON.parse(atob(payloadBase64));
+    return JSON.parse(atob(payloadBase64));
+}
+
+const isLoggedIn = () => {
+    const access = sessionStorage.getItem(auth.accessName);
+
+    if(!access) {
+        return false;
+    }
+
+    const payload = parseAccess(access);
 
     if(payload.exp) {
         // 밀리초 단위로 변환
@@ -42,4 +50,29 @@ const logOut = () => {
         });
     
 }
-export default {isLoggedIn, logOut};
+
+const getMbrId = () => {
+    if(!isLoggedIn) {
+        return "";
+    }
+
+    const access = sessionStorage.getItem(auth.accessName);
+
+    const payload = parseAccess(access)
+    
+    return payload.id;
+}
+
+const getMbrNo = () => {
+    if(!isLoggedIn) {
+        return "";
+    }
+
+    const access = sessionStorage.getItem(auth.accessName);
+
+    const payload = parseAccess(access);
+
+    return payload.mbrNo;
+}
+
+export default {isLoggedIn, logOut, getMbrId, getMbrNo};

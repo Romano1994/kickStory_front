@@ -21,10 +21,21 @@ if(access) {
 
 function response(data,sucFunc){
   sucFunc(data);
-  // commSwitch.off('LoadingBar');
+
+  // const page_location = window.location.origin + url;
+  // window.gtag('event', 'api_call', {
+  //   url: url,
+  //   page_location: page_location,
+  // });
 }
 
 function onFail(error,failFunc){
+  // const page_location = window.location.origin + url;
+  // window.gtag('event', 'api_call', {
+  //   url: url,
+  //   page_location: page_location,
+  // });
+
   let message = error.response.data;
   if(message !== undefined) {
     failFunc(message);
@@ -42,31 +53,31 @@ export default{
     
     // commSwitch.on('LoadingBar'); 
     axios.get(url,param)
-    .then((data)=>response(data,success))
-    .catch((error)=>onFail(error,fail));
+    .then((data)=>response(data,success,url))
+    .catch((error)=>onFail(error,fail,url));
   },
   post:async function postApi(url,param,success,fail){
     // commSwitch.on('LoadingBar');
 
     axios.post(url,param)
-      .then((data)=>response(data,success))
-      .catch((error)=>onFail(error,fail));
+      .then((data)=>response(data,success,url))
+      .catch((error)=>onFail(error,fail,url));
 
   },
   put:async function putApi(url,param,success,fail){
     // commSwitch.on('LoadingBar');
 
     axios.put(url,param)
-      .then((data)=>response(data,success))
-      .catch((error)=>onFail(error,fail));
+      .then((data)=>response(data,success,url))
+      .catch((error)=>onFail(error,fail,url));
 
   },
   patch:async function patchApi(url,param,success,fail){
     // commSwitch.on('LoadingBar');
 
     axios.patch(url,param)
-      .then((data)=>response(data,success))
-      .catch((error)=>onFail(error,fail));
+      .then((data)=>response(data,success,url))
+      .catch((error)=>onFail(error,fail,url));
 
   },
   delete:async function deleteApi(url,params,success,fail){
@@ -74,8 +85,8 @@ export default{
 
     // commSwitch.on('LoadingBar');
     axios.delete(url,param)
-      .then((data)=>response(data,success))
-      .catch((error)=>onFail(error,fail));
+      .then((data)=>response(data,success,url))
+      .catch((error)=>onFail(error,fail,url));
 
   },
  

@@ -144,7 +144,7 @@ export default {
                 () => {},       // success
                 (result) => {   // fail
                     this.joinVerifModalOpen = false;
-                    const message = result.response.data;
+                    const message = result;
                     if(message) {
                         alert(message);
                     } else {

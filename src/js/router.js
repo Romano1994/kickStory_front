@@ -44,4 +44,16 @@ router.beforeEach(async(to, from, next) => {
   next();
 });
 
+router.afterEach((to) => {
+  window.dataLayer = window.dataLayer || [];
+  document.title = to.name;
+
+  window.dataLayer.push({
+    event: 'route_change',
+    page_path: to.fullPath,
+    page_title: to.name,
+    page_location: window.location.href
+  });
+});
+
 export default router;

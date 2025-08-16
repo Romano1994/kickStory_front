@@ -18,8 +18,6 @@ import auth from './js/auth';
 // import leaflet from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-
-
 const app = createApp(App);
 const COMMON_COMPONENTS=[];
 
@@ -53,9 +51,8 @@ app.config.globalProperties.$axios=axios;
 
 app.mixin(apiMix);
 
-createApp(App).use(VueAwesomePaginate).mount("#app");
-
 loadComponents();
 app.use(router);
-app.mount('#app')
 
+app.use(VueAwesomePaginate);
+app.mount('#app')
