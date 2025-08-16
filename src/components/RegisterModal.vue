@@ -399,6 +399,43 @@ export default {
       this.showTypeDropdown = false;
       this.showFeeDropdown = false; // 요금 드롭다운도 닫기
       
+      // 모든 변수 초기화
+      this.storeCd = "";
+      this.storeKorNm = "";
+      this.storeEngNm = "";
+      this.cntry = "";
+      this.branchNm = "";
+      this.place = "";
+      this.website = "";
+      this.shopDescription = "";
+      this.contactInfo = "";
+      this.storeList = [];
+      this.addressList = [];
+      this.selectedAddress = {
+        storeName: "",
+        branchRoadAddr: "",
+        branchAddr: "",
+        lon: "",
+        lat: "",
+      };
+      this.usualBrands = [];
+      this.usualBrandSearch = "";
+      this.usualBrandList = [];
+      this.countryList = [];
+      this.cntryCd = "";
+      this.isStoreSelect = false;
+      this.lastSelectedStore = null;
+      this.selectedBrand = null;
+      this.selectedBrandCd = "";
+      this.selectedBrandNmEng = "";
+      this.selectedBrandNmKor = "";
+      this.validationError = "";
+      this.strtDt = "";
+      this.endDt = "";
+      this.feeYn = "N";
+      this.reservationLink = "";
+      this.description = "";
+      
       // 팝업샵(00030003)을 선택했을 때 날짜 선택기 초기화
       if (type.commCdDtl === '00030003') {
         this.$nextTick(() => {
@@ -561,6 +598,26 @@ export default {
             </ul>
           </div>
         </div>
+        <div v-if="['00030002','00030003'].includes(offlineStoreTypeCd)"> 
+          <label class="form-label">브랜드명<span class="required-star">*</span></label>
+         
+          <input class="form-input" type="text" v-model="selectedBrandNmKor" @input="searchBrandsForShop" />
+          <div v-if="usualBrandList.length > 0" class="search-list">
+            <div
+              v-for="brand in usualBrandList"
+              :key="brand.brandCd"
+              @click="selectBrandForShop(brand)"
+              class="search-item"
+            >
+              {{ brand.brandNmKor }}({{ brand.brandNmEng }})
+            </div>
+          </div>
+          <div v-else-if="selectedBrandNmKor.trim() && !selectedBrand" class="search-list">
+            <div class="search-item" @click="showBrandRegistrationModal">
+              등록하기
+            </div>
+          </div>
+        </div>
         <div>
           <div v-if="['00030001','00030003'].includes(offlineStoreTypeCd)">
             <label class="form-label">
@@ -581,27 +638,6 @@ export default {
               <div class="search-item" @click="showStoreRegistrationModal">
                 등록하기
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="['00030002','00030003'].includes(offlineStoreTypeCd)"> 
-          <label class="form-label">브랜드명<span class="required-star">*</span></label>
-         
-          <input class="form-input" type="text" v-model="selectedBrandNmKor" @input="searchBrandsForShop" />
-          <div v-if="usualBrandList.length > 0" class="search-list">
-            <div
-              v-for="brand in usualBrandList"
-              :key="brand.brandCd"
-              @click="selectBrandForShop(brand)"
-              class="search-item"
-            >
-              {{ brand.brandNmKor }}
-            </div>
-          </div>
-          <div v-else-if="selectedBrandNmKor.trim() && !selectedBrand" class="search-list">
-            <div class="search-item" @click="showBrandRegistrationModal">
-              등록하기
             </div>
           </div>
         </div>
