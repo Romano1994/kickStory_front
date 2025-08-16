@@ -2,6 +2,9 @@
 import AddressSearchModal from "./AddressSearchModal.vue";
 import BrandRegistrationModal from "./BrandRegistrationModal.vue";
 import CommonModal from "./CommonModal.vue";
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.css";
+import { Korean } from "flatpickr/dist/l10n/ko.js";
 
 export default {
   name: "RegisterModal",
@@ -17,15 +20,13 @@ export default {
       storeEngNm: "",
       cntry: "",
       branchNm: "",
-      offlineStoreTypeCd: "00030001", // Default to offline
+      offlineStoreTypeCd: "00030001",
       place: "",
       website: "",
       shopDescription: "",
       contactInfo: "",
-      // Store search related
       storeSearchTimeout: null,
       storeList: [],
-      // Address search related
       addressList: [],
       showAddressModal: false,
       selectedAddress: {
@@ -36,14 +37,11 @@ export default {
         lat: "",
       },
       addressSearchTimeout: null,
-      // Brand related
       usualBrands: [],
       usualBrandSearch: "",
       usualBrandList: [],
-      // Country search related
       countryList: [],
       cntryCd: "",
-      // Branch search related
       offlineStoreTypeList: [],
       isStoreSelect: false,
       lastSelectedStore: null,
@@ -62,19 +60,19 @@ export default {
       commonModalType: "confirm",
       showTypeDropdown: false,
       branchTypeCd: "00050001",
-      // 00030002(온라인)일 때 단일 브랜드 저장
       selectedBrand: null,
       selectedBrandCd: "",
       selectedBrandNmEng: "",
       selectedBrandNmKor: "",
-      // Validation error message
       validationError: "",
-      // New fields for 00030003 type
       strtDt: "",
       endDt: "",
       feeYn: "N",
       reservationLink: "",
       description: "",
+      startDatePicker: null,
+      endDatePicker: null,
+      showFeeDropdown: false,
     };
   },
   methods: {
@@ -84,7 +82,6 @@ export default {
       }
 
       this.storeSearchTimeout = setTimeout(() => {
-        // 선택된 스토어와 현재 입력값이 같으면 검색하지 않음
         if (
           this.lastSelectedStore &&
           this.lastSelectedStore.storeKorNm === this.storeKorNm
@@ -110,7 +107,6 @@ export default {
       this.storeList = res.data;
     },
     storeSearchFail() {
-      // console.error('Store search failed:', error)
       this.storeList = [];
     },
     selectStore(store) {
@@ -160,7 +156,7 @@ export default {
         } else {
           this.addressList = [];
         }
-      }, 500); // 500ms 대기
+      }, 500);
     },
     searchAddressSuccess(res) {
       this.addressList = res.data;
@@ -213,10 +209,8 @@ export default {
       this.showBrandModal = false;
     },
     handleBrandRegistration(brand) {
-      // TODO: Implement brand registration API call
-      this.addLimitedBrand(brand);
+      this.addUsualBrand(brand);
     },
-    // Usual brands methods
     searchUsualBrands() {
       if (this.usualBrandSearch.trim()) {
         this.getApi(
@@ -266,7 +260,6 @@ export default {
     removeSingleBrand() {
       this.selectedBrand = null;
     },
-    // 브랜드 샵(00030002)용 메서드
     selectBrandForShop(brand) {
       this.selectedBrand = brand;
       this.selectedBrandCd = brand.brandCd;
@@ -288,21 +281,18 @@ export default {
     },
     register() {
       if (this.offlineStoreTypeCd === "00030001") {
-        // 오프라인 스토어 validation
         if (!this.storeKorNm || !this.storeEngNm || !this.branchNm || 
             !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
           this.validationError = "필수 입력값을 모두 입력해주세요.";
           return;
         }
       } else if (this.offlineStoreTypeCd === "00030002") {
-        // 브랜드 샵 validation
         if (!this.selectedBrandNmKor || !this.branchNm || 
             !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
           this.validationError = "필수 입력값을 모두 입력해주세요.";
           return;
         }
       } else if (this.offlineStoreTypeCd === "00030003") {
-        // 새로운 타입 validation
         if (!this.storeCd || !this.storeEngNm || !this.storeKorNm || !this.selectedBrandCd ||
             !this.strtDt || !this.endDt || !this.selectedAddress.branchRoadAddr || 
             !this.selectedAddress.branchAddr || !this.selectedAddress.lon || 
@@ -314,9 +304,8 @@ export default {
       
       this.validationError = "";
 
-      let branchData=null;
+      let branchData = null;
       if (this.offlineStoreTypeCd === "00030001") {
-        // 오프라인 스토어
         branchData = {
           storeCd: this.storeCd,
           storeEngNm: this.storeEngNm,
@@ -334,10 +323,8 @@ export default {
           shopDescription: this.shopDescription,
           contactInfo: this.contactInfo,
         };
-
       } else if (this.offlineStoreTypeCd === "00030002") {
-        // 오프라인 스토어 (브랜드 샵)
-       branchData = {
+        branchData = {
           offlineStoreTypeCd: this.offlineStoreTypeCd,
           branchNm: this.branchNm,
           cntryCd: this.cntryCd,
@@ -354,7 +341,6 @@ export default {
           storeKorNm: this.selectedBrandNmKor,
         };
       } else if (this.offlineStoreTypeCd === "00030003") {
-        // 새로운 타입
         branchData = {
           storeCd: this.storeCd,
           storeEngNm: this.storeEngNm,
@@ -374,11 +360,11 @@ export default {
       }
       
       this.postApi(
-          "/store/offline-branch/registration",
-          branchData,
-          this.registerSuccess,
-          this.registerFail
-        );
+        "/store/offline-branch/registration",
+        branchData,
+        this.registerSuccess,
+        this.registerFail
+      );
     },
     registerSuccess(res) {
       this.commonModalMessage = res.data;
@@ -392,7 +378,6 @@ export default {
     },
     handleCommonModalConfirm() {
       this.showCommonModal = false;
-      // registerSuccess에서 호출된 경우에만 RegisterModal을 닫음
       if (
         this.commonModalType === "alert" &&
         this.commonModalMessage &&
@@ -408,17 +393,31 @@ export default {
     selectType(type) {
       this.offlineStoreTypeCd = type.commCdDtl;
       this.showTypeDropdown = false;
+      this.showFeeDropdown = false; // 요금 드롭다운도 닫기
+      
+      // 팝업샵(00030003)을 선택했을 때 날짜 선택기 초기화
+      if (type.commCdDtl === '00030003') {
+        this.$nextTick(() => {
+          this.initDatePickers();
+        });
+      } else {
+        // 다른 유형을 선택했을 때 날짜 선택기 제거
+        this.destroyDatePickers();
+      }
     },
     handleTypeDropdownBlur(e) {
       console.log(e);
-
-      // 드롭다운 외부 클릭 시 닫기
       setTimeout(() => {
         this.showTypeDropdown = false;
       }, 100);
     },
+    handleFeeDropdownBlur(e) {
+      console.log(e);
+      setTimeout(() => {
+        this.showFeeDropdown = false;
+      }, 100);
+    },
     fetchOfflineStoreTypeList() {
-      // KicksMapStore의 fetchBranchTypeList 참고
       this.getApi(
         "/comm-cd/detail",
         { commCd: "0003" },
@@ -433,30 +432,72 @@ export default {
       console.error("오프라인 스토어 타입 목록 불러오기 실패", err);
       this.offlineStoreTypeList = [];
     },
+    initDatePickers() {
+      // 시작일 날짜 선택기
+      this.startDatePicker = flatpickr("#startDate", {
+        dateFormat: "Y-m-d",
+        locale: Korean,
+        allowInput: true,
+        clickOpens: false,
+        onChange: (selectedDates, dateStr) => {
+          this.strtDt = dateStr;
+        }
+      });
+
+      // 종료일 날짜 선택기
+      this.endDatePicker = flatpickr("#endDate", {
+        dateFormat: "Y-m-d",
+        locale: Korean,
+        allowInput: true,
+        clickOpens: false,
+        onChange: (selectedDates, dateStr) => {
+          this.endDt = dateStr;
+        }
+      });
+    },
+    destroyDatePickers() {
+      if (this.startDatePicker) {
+        this.startDatePicker.destroy();
+      }
+      if (this.endDatePicker) {
+        this.endDatePicker.destroy();
+      }
+    },
+    toggleFeeDropdown() {
+      this.showFeeDropdown = !this.showFeeDropdown;
+    },
+    selectFee(fee) {
+      this.feeYn = fee;
+      this.showFeeDropdown = false;
+    },
   },
   mounted() {
     this.fetchOfflineStoreTypeList();
   },
   watch: {
-    // storeKorNm() {
-    //   this.storeEngNm = '';
-    //   // this.isStoreSelect = false;
-    // }
     selectedBrandNmKor() {
-      // 브랜드명이 변경되면 선택된 브랜드 정보 초기화
       this.selectedBrand = null;
       this.selectedBrandCd = "";
       this.selectedBrandNmEng = "";
+    },
+    offlineStoreTypeCd() {
+      // 유형이 변경될 때마다 날짜 선택기 재초기화
+      this.$nextTick(() => {
+        this.destroyDatePickers();
+        if (this.offlineStoreTypeCd === '00030003') {
+          this.initDatePickers();
+        }
+      });
     }
   },
   beforeUnmount() {
-    // 컴포넌트가 제거될 때 타이머 정리
     if (this.addressSearchTimeout) {
       clearTimeout(this.addressSearchTimeout);
     }
     if (this.storeSearchTimeout) {
       clearTimeout(this.storeSearchTimeout);
     }
+    this.destroyDatePickers();
   },
 };
 </script>
@@ -489,7 +530,7 @@ export default {
           </div>
         </div>
         <div>
-          <div v-if="['00030001'].includes(offlineStoreTypeCd)">
+          <div v-if="['00030001','00030003'].includes(offlineStoreTypeCd)">
             <label class="form-label">
               스토어명(한글)<span class="required-star">*</span>
             </label>
@@ -507,14 +548,14 @@ export default {
           </div>
         </div>
         <div>
-          <div v-if="['00030001'].includes(offlineStoreTypeCd)">
+          <div v-if="['00030001','00030003'].includes(offlineStoreTypeCd)">
             <label class="form-label">
-              스토어명(영문)<span class="required-star">*</span>
+              스토어명(영문)<span class="required-star" v-if="['00030003'].includes(offlineStoreTypeCd)">*</span>
             </label>
             <input class="form-input" type="text" v-model="storeEngNm" />
           </div>
         </div>
-        <div v-if="['00030002'].includes(offlineStoreTypeCd)"> 
+        <div v-if="['00030002','00030003'].includes(offlineStoreTypeCd)"> 
           <label class="form-label">브랜드명<span class="required-star">*</span></label>
          
           <input class="form-input" type="text" v-model="selectedBrandNmKor" @input="searchBrandsForShop" />
@@ -555,7 +596,7 @@ export default {
             </div>
           </div>
         </div>
-        <div v-if="['00030001', '00030002'].includes(offlineStoreTypeCd)">
+        <div v-if="['00030001', '00030002', '00030003'].includes(offlineStoreTypeCd)">
           <label class="form-label">
             주소검색<span class="required-star">*</span>
           </label>
@@ -570,6 +611,89 @@ export default {
             @close="showAddressModal = false"
             @select="handleAddressSelect"
           />
+        </div>
+        
+        <!-- 팝업샵(00030003) 전용 항목들 -->
+        <div v-if="['00030003'].includes(offlineStoreTypeCd)">
+          <label class="form-label">
+            시작일<span class="required-star">*</span>
+          </label>
+          <div class="date-input-wrapper">
+            <input 
+              id="startDate" 
+              class="form-input date-input" 
+              type="text" 
+              v-model="strtDt" 
+              placeholder="YYYY-MM-DD"
+              readonly
+              @click="startDatePicker && startDatePicker.open()"
+            />
+            <span class="calendar-icon" @click="startDatePicker && startDatePicker.open()">📅</span>
+          </div>
+        </div>
+        
+        <div v-if="['00030003'].includes(offlineStoreTypeCd)">
+          <label class="form-label">
+            종료일<span class="required-star">*</span>
+          </label>
+          <div class="date-input-wrapper">
+            <input 
+              id="endDate" 
+              class="form-input date-input" 
+              type="text" 
+              v-model="endDt" 
+              placeholder="YYYY-MM-DD"
+              readonly
+              @click="endDatePicker && endDatePicker.open()"
+            />
+            <span class="calendar-icon" @click="endDatePicker && endDatePicker.open()">📅</span>
+          </div>
+        </div>
+        
+        <div v-if="['00030003'].includes(offlineStoreTypeCd)">
+          <label class="form-label">
+            요금
+          </label>
+          <div class="custom-select-wrapper" tabindex="0" @blur="handleFeeDropdownBlur">
+            <div class="custom-select-selected" @click="toggleFeeDropdown">
+              {{ feeYn === 'N' ? '무료' : '유료' }}
+              <span class="custom-select-arrow">▼</span>
+            </div>
+            <ul v-if="showFeeDropdown" class="custom-select-options">
+              <li
+                :class="{ selected: feeYn === 'N' }"
+                @click="selectFee('N')"
+              >
+                무료
+              </li>
+              <li
+                :class="{ selected: feeYn === 'Y' }"
+                @click="selectFee('Y')"
+              >
+                유료
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div v-if="['00030003'].includes(offlineStoreTypeCd)">
+          <label class="form-label">예약 링크</label>
+          <input 
+            class="form-input" 
+            type="text" 
+            v-model="reservationLink" 
+            placeholder="예약 링크를 입력하세요"
+          />
+        </div>
+        
+        <div v-if="['00030003'].includes(offlineStoreTypeCd)">
+          <label class="form-label">설명</label>
+          <textarea 
+            class="form-textarea" 
+            v-model="description" 
+            placeholder="팝업샵에 대한 설명을 입력하세요"
+            rows="3"
+          ></textarea>
         </div>
         <div v-if="['00030001'].includes(offlineStoreTypeCd)"> 
           <label class="form-label">취급 브랜드</label>
@@ -1003,5 +1127,50 @@ export default {
   background-color: rgba(184, 92, 59, 0.1);
   border: 1px solid rgba(184, 92, 59, 0.3);
   border-radius: 4px;
+}
+
+.date-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.date-input {
+  padding-right: 40px;
+}
+
+.calendar-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: var(--color6);
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--color1);
+  font-size: 0.9rem;
+  font-family: var(--main-font);
+  transition: all 0.2s ease;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color6);
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.form-textarea::placeholder {
+  color: rgba(255, 244, 204, 0.5);
 }
 </style>
