@@ -2,6 +2,7 @@
 import AddressSearchModal from "./AddressSearchModal.vue";
 import BrandRegistrationModal from "./BrandRegistrationModal.vue";
 import CommonModal from "./CommonModal.vue";
+import StoreRegistrationModal from "./StoreRegistrationModal.vue";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.css";
 import { Korean } from "flatpickr/dist/l10n/ko.js";
@@ -12,6 +13,7 @@ export default {
     AddressSearchModal,
     BrandRegistrationModal,
     CommonModal,
+    StoreRegistrationModal,
   },
   data() {
     return {
@@ -73,6 +75,7 @@ export default {
       startDatePicker: null,
       endDatePicker: null,
       showFeeDropdown: false,
+      showStoreModal: false,
     };
   },
   methods: {
@@ -280,29 +283,29 @@ export default {
       }
     },
     register() {
-      if (this.offlineStoreTypeCd === "00030001") {
-        if (!this.storeKorNm || !this.storeEngNm || !this.branchNm || 
-            !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
-          this.validationError = "필수 입력값을 모두 입력해주세요.";
-          return;
-        }
-      } else if (this.offlineStoreTypeCd === "00030002") {
-        if (!this.selectedBrandNmKor || !this.branchNm || 
-            !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
-          this.validationError = "필수 입력값을 모두 입력해주세요.";
-          return;
-        }
-      } else if (this.offlineStoreTypeCd === "00030003") {
-        if (!this.storeCd || !this.storeEngNm || !this.storeKorNm || !this.selectedBrandCd ||
-            !this.strtDt || !this.endDt || !this.selectedAddress.branchRoadAddr || 
-            !this.selectedAddress.branchAddr || !this.selectedAddress.lon || 
-            !this.selectedAddress.lat) {
-          this.validationError = "필수 입력값을 모두 입력해주세요.";
-          return;
-        }
-      }
+      // if (this.offlineStoreTypeCd === "00030001") {
+      //   if (!this.storeKorNm || !this.storeEngNm || !this.branchNm || !this.storeCd ||
+      //       !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
+      //     this.validationError = "필수 입력값을 모두 입력해주세요.";
+      //     return;
+      //   }
+      // } else if (this.offlineStoreTypeCd === "00030002") {
+      //   if (!this.selectedBrandNmKor || !this.branchNm || 
+      //       !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
+      //     this.validationError = "필수 입력값을 모두 입력해주세요.";
+      //     return;
+      //   }
+      // } else if (this.offlineStoreTypeCd === "00030003") {
+      //   if (!this.storeCd || !this.storeEngNm || !this.storeKorNm || !this.selectedBrandCd ||
+      //       !this.strtDt || !this.endDt || !this.selectedAddress.branchRoadAddr || 
+      //       !this.selectedAddress.branchAddr || !this.selectedAddress.lon || 
+      //       !this.selectedAddress.lat) {
+      //     this.validationError = "필수 입력값을 모두 입력해주세요.";
+      //     return;
+      //   }
+      // }
       
-      this.validationError = "";
+      // this.validationError = "";
 
       let branchData = null;
       if (this.offlineStoreTypeCd === "00030001") {
@@ -348,8 +351,8 @@ export default {
           brandCd: this.selectedBrandCd,
           strtDt: this.strtDt,
           endDt: this.endDt,
-          branchRoadAddr: this.selectedAddress.branchRoadAddr,
-          branchAddr: this.selectedAddress.branchAddr,
+          popupRoadAddr: this.selectedAddress.branchRoadAddr,
+          popupAddr: this.selectedAddress.branchAddr,
           lon: this.selectedAddress.lon,
           lat: this.selectedAddress.lat,
           feeYn: this.feeYn,
@@ -372,7 +375,7 @@ export default {
       this.showCommonModal = true;
     },
     registerFail(error) {
-      this.commonModalMessage = error || "등록에 실패했습니다.";
+      this.commonModalMessage =error.message;
       this.commonModalType = "alert";
       this.showCommonModal = true;
     },
@@ -382,6 +385,7 @@ export default {
         this.commonModalType === "alert" &&
         this.commonModalMessage &&
         !this.commonModalMessage.includes("실패") &&
+        !this.commonModalMessage.includes("오류") &&
         !this.commonModalMessage.toLowerCase().includes("fail")
       ) {
         this.closeModal();
@@ -470,6 +474,34 @@ export default {
       this.feeYn = fee;
       this.showFeeDropdown = false;
     },
+    showStoreRegistrationModal() {
+      this.showStoreModal = true;
+    },
+    closeStoreModal() {
+      this.showStoreModal = false;
+    },
+    handleStoreRegistration(result) {
+      this.closeStoreModal();
+      
+      if (result.success) {
+        // 스토어 등록 성공 시 CommonModal로 성공 메시지 표시
+        this.commonModalMessage = result.message;
+        this.commonModalType = "alert";
+        this.showCommonModal = true;
+        
+        // 성공적으로 등록된 스토어 정보를 현재 입력 필드에 설정
+        if (result.data) {
+          this.storeCd = result.data.storeCd;
+          this.storeKorNm = result.data.storeKorNm;
+          this.storeEngNm = result.data.storeEngNm;
+        }
+      } else {
+        // 스토어 등록 실패 시 CommonModal로 실패 메시지 표시
+        this.commonModalMessage = result.message;
+        this.commonModalType = "alert";
+        this.showCommonModal = true;
+      }
+    },
   },
   mounted() {
     this.fetchOfflineStoreTypeList();
@@ -532,7 +564,7 @@ export default {
         <div>
           <div v-if="['00030001','00030003'].includes(offlineStoreTypeCd)">
             <label class="form-label">
-              스토어명(한글)<span class="required-star">*</span>
+              스토어명<span class="required-star">*</span>
             </label>
             <input class="form-input" type="text" v-model="storeKorNm" @input="storeSearch" />
             <div v-if="storeList.length > 0" class="search-list">
@@ -545,16 +577,14 @@ export default {
                 {{ store.storeKorNm }}({{ store.storeEngNm }})
               </div>
             </div>
+            <div v-else-if="storeKorNm.trim() && !storeCd" class="search-list">
+              <div class="search-item" @click="showStoreRegistrationModal">
+                등록하기
+              </div>
+            </div>
           </div>
         </div>
-        <div>
-          <div v-if="['00030001','00030003'].includes(offlineStoreTypeCd)">
-            <label class="form-label">
-              스토어명(영문)<span class="required-star" v-if="['00030003'].includes(offlineStoreTypeCd)">*</span>
-            </label>
-            <input class="form-input" type="text" v-model="storeEngNm" />
-          </div>
-        </div>
+
         <div v-if="['00030002','00030003'].includes(offlineStoreTypeCd)"> 
           <label class="form-label">브랜드명<span class="required-star">*</span></label>
          
@@ -782,6 +812,15 @@ export default {
     :searchText="offlineStoreTypeCd === '00030002' ? selectedBrandNmKor : usualBrandSearch"
     @close="closeBrandModal"
     @register="handleBrandRegistration"
+  />
+
+  <!-- Store Registration Modal -->
+  <StoreRegistrationModal
+    v-if="showStoreModal"
+    :show="showStoreModal"
+    :searchText="storeKorNm"
+    @close="closeStoreModal"
+    @register="handleStoreRegistration"
   />
 
   <!-- Common Modal -->
@@ -1173,4 +1212,6 @@ export default {
 .form-textarea::placeholder {
   color: rgba(255, 244, 204, 0.5);
 }
+
+
 </style>
