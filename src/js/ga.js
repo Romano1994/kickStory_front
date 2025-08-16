@@ -27,7 +27,7 @@ function loadGtag(id) {
 /**
  * GA 초기화
  */
-export function initGA({id, router, enabled = true}) {
+export function initGA({id, router, enabled}) {
     if (!enabled) return;
     if (!id) return;
     if (isDntEnabled()) return;

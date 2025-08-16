@@ -19,22 +19,22 @@ if(access) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
 }
 
-function response(data,sucFunc,url){
+function response(data,sucFunc){
   sucFunc(data);
 
-  const page_location = window.location.origin + url;
-  window.gtag('event', 'api_call', {
-    url: url,
-    page_location: page_location,
-  });
+  // const page_location = window.location.origin + url;
+  // window.gtag('event', 'api_call', {
+  //   url: url,
+  //   page_location: page_location,
+  // });
 }
 
-function onFail(error,failFunc,url){
-  const page_location = window.location.origin + url;
-  window.gtag('event', 'api_call', {
-    url: url,
-    page_location: page_location,
-  });
+function onFail(error,failFunc){
+  // const page_location = window.location.origin + url;
+  // window.gtag('event', 'api_call', {
+  //   url: url,
+  //   page_location: page_location,
+  // });
 
   let message = error.response.data;
   if(message !== undefined) {
