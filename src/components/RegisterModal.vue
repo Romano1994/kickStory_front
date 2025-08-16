@@ -283,29 +283,29 @@ export default {
       }
     },
     register() {
-      // if (this.offlineStoreTypeCd === "00030001") {
-      //   if (!this.storeKorNm || !this.storeEngNm || !this.branchNm || !this.storeCd ||
-      //       !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
-      //     this.validationError = "필수 입력값을 모두 입력해주세요.";
-      //     return;
-      //   }
-      // } else if (this.offlineStoreTypeCd === "00030002") {
-      //   if (!this.selectedBrandNmKor || !this.branchNm || 
-      //       !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
-      //     this.validationError = "필수 입력값을 모두 입력해주세요.";
-      //     return;
-      //   }
-      // } else if (this.offlineStoreTypeCd === "00030003") {
-      //   if (!this.storeCd || !this.storeEngNm || !this.storeKorNm || !this.selectedBrandCd ||
-      //       !this.strtDt || !this.endDt || !this.selectedAddress.branchRoadAddr || 
-      //       !this.selectedAddress.branchAddr || !this.selectedAddress.lon || 
-      //       !this.selectedAddress.lat) {
-      //     this.validationError = "필수 입력값을 모두 입력해주세요.";
-      //     return;
-      //   }
-      // }
+      if (this.offlineStoreTypeCd === "00030001") {
+        if (!this.storeKorNm || !this.storeEngNm || !this.branchNm || !this.storeCd ||
+            !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
+          this.validationError = "필수 입력값을 모두 입력해주세요.";
+          return;
+        }
+      } else if (this.offlineStoreTypeCd === "00030002") {
+        if (!this.selectedBrandNmKor || !this.branchNm || 
+            !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
+          this.validationError = "필수 입력값을 모두 입력해주세요.";
+          return;
+        }
+      } else if (this.offlineStoreTypeCd === "00030003") {
+        if (!this.storeCd || !this.storeEngNm || !this.storeKorNm || !this.selectedBrandCd ||
+            !this.strtDt || !this.endDt || !this.selectedAddress.branchRoadAddr || 
+            !this.selectedAddress.branchAddr || !this.selectedAddress.lon || 
+            !this.selectedAddress.lat) {
+          this.validationError = "필수 입력값을 모두 입력해주세요.";
+          return;
+        }
+      }
       
-      // this.validationError = "";
+      this.validationError = "";
 
       let branchData = null;
       if (this.offlineStoreTypeCd === "00030001") {
