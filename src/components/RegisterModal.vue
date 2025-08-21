@@ -353,6 +353,7 @@ export default {
           endDt: this.endDt,
           popupRoadAddr: this.selectedAddress.branchRoadAddr,
           popupAddr: this.selectedAddress.branchAddr,
+          cntryCd: "KR",
           lon: this.selectedAddress.lon,
           lat: this.selectedAddress.lat,
           feeYn: this.feeYn,

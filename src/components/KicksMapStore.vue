@@ -47,7 +47,7 @@
       </div>
     </div>
     <div v-if="storeType === '00050001'">
-      <div v-if="branchType === '00030001' || branchType === '00030002'">
+      <!-- <div v-if="branchType === '00030001' || branchType === '00030002'"> -->
         <div v-if="regionList.length" class="location-list">
           <div class="country-select-container">
             <select class="country-select" :value="selectedCountry" @change="handleCountryChange" >
@@ -69,7 +69,8 @@
                 </div>
                 <ul class="store-list" v-show="expandedDistricts[district.admRginCd]">
                   <li class="store-item" v-for="store in district.offlineBranchList" :key="store.branchNm" @click="handleStoreClick(store)" :class="{ active: activeStore === store.branchNm }">
-                    <span>{{ store.storeKorNm }} {{ store.branchNm }}</span>
+                      <span v-if="branchType === '00030001' || branchType === '00030002'">{{ store.storeKorNm }} {{ store.branchNm }}</span>
+                      <span v-if="branchType === '00030003'">{{ store.storeKorNm }}</span>
                     <button class="store-more-btn" @click.stop="$emit('store-more', store)">더보기</button>
                   </li>
                 </ul>
@@ -83,10 +84,10 @@
             <div class="no-store-text">등록된 스토어 정보가 없습니다</div>
           </div>
         </div>
-      </div>
-      <div v-else-if="branchType === '00030003'">
+      <!-- </div> -->
+      <!-- <div v-else-if="branchType === '00030003'">
         팝업샵 목록이 나올 자리
-      </div>
+      </div> -->
     </div>
     <!-- <div class="online-content" v-if="branchType === '00030002'">
       <div class="online-placeholder">
@@ -167,7 +168,7 @@ export default {
       this.countryList = [];
     },
     getBranches(cntryCd) {
-      this.getApi('/store/offline/branches', { cntryCd:cntryCd, branchType: this.branchType }, this.getBranchesSuccess, this.getBranchesFail)
+      this.getApi('/store/offline/branches', { cntryCd:cntryCd, offlineStoreType : this.branchType }, this.getBranchesSuccess, this.getBranchesFail)
     },
     getBranchesSuccess(res) {
       this.regionList = res.data;
