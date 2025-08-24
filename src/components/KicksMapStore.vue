@@ -19,14 +19,14 @@
       <div class="tab-list">
         <button 
           class="tab-item" 
-          :class="{ active: branchType === '00030001' }"
+          :class="{ active: offlineStoreType === '00030001' }"
           @click="changeTab('00030001')"
         >
           오프라인
         </button>
         <button 
           class="tab-item" 
-          :class="{ active: branchType === '00030002' }"
+          :class="{ active: offlineStoreType === '00030002' }"
           @click="changeTab('00030002')"
         >
           온라인
@@ -39,7 +39,7 @@
           v-for="type in branchTypeList"
           :key="type.commCdDtl"
           class="tab-item"
-          :class="{ active: branchType === type.commCdDtl }"
+          :class="{ active: offlineStoreType === type.commCdDtl }"
           @click="changeBranchType(type.commCdDtl)"
         >
           {{ type.commCdDtlNm }}
@@ -69,8 +69,8 @@
                 </div>
                 <ul class="store-list" v-show="expandedDistricts[district.admRginCd]">
                   <li class="store-item" v-for="store in district.offlineBranchList" :key="store.branchNm" @click="handleStoreClick(store)" :class="{ active: activeStore === store.branchNm }">
-                      <span v-if="branchType === '00030001' || branchType === '00030002'">{{ store.storeKorNm }} {{ store.branchNm }}</span>
-                      <span v-if="branchType === '00030003'">{{ store.storeKorNm }}</span>
+                      <span v-if="offlineStoreType === '00030001' || offlineStoreType === '00030002'">{{ store.storeKorNm }} {{ store.branchNm }}</span>
+                      <span v-if="offlineStoreType === '00030003'">{{ store.storeKorNm }}</span>
                     <button class="store-more-btn" @click.stop="$emit('store-more', store)">더보기</button>
                   </li>
                 </ul>
@@ -106,7 +106,7 @@ export default {
   data() {
     return {
       branchTypeList: [], // 지점 타입 리스트로 명칭 변경
-      branchType: '00030001',
+      offlineStoreType: '00030001',
       storeType: '00050001',
       selectedCountry: 'KR',
       countryList: [],
@@ -118,7 +118,7 @@ export default {
   },
   methods: {
     changeBranchType(type) {
-      this.branchType = type;
+      this.offlineStoreType = type;
     },
     handleCountryChange(e) {
       this.selectedCountry = e.target.value;
@@ -154,7 +154,7 @@ export default {
       console.error('지점 타입 목록 불러오기 실패', err);
     },
     getCountryCount() {
-      this.getApi('/store/offline/countries/count',{branchType: this.branchType}, this.getCountryCountSuccess, this.getCountryCountFail)
+      this.getApi('/store/offline/countries/count',{offlineStoreType: this.offlineStoreType}, this.getCountryCountSuccess, this.getCountryCountFail)
     },
     getCountryCountSuccess(res) {
       this.countryList = res.data;
@@ -168,7 +168,7 @@ export default {
       this.countryList = [];
     },
     getBranches(cntryCd) {
-      this.getApi('/store/offline/branches', { cntryCd:cntryCd, offlineStoreType : this.branchType }, this.getBranchesSuccess, this.getBranchesFail)
+      this.getApi('/store/offline/branches', { cntryCd:cntryCd, offlineStoreType : this.offlineStoreType }, this.getBranchesSuccess, this.getBranchesFail)
     },
     getBranchesSuccess(res) {
       this.regionList = res.data;
@@ -184,7 +184,7 @@ export default {
         this.getBranches();
       }
     },
-    branchType(newType) {
+    offlineStoreType(newType) {
       if (newType) {
         this.getCountryCount();
         this.getBranches();
