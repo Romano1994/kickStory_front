@@ -15,24 +15,6 @@
         <button class="register-btn" @click="$emit('open-register-modal')">발매처 등록하기</button>
       </div>
     </div>
-    <!-- <div class="tab-container">
-      <div class="tab-list">
-        <button 
-          class="tab-item" 
-          :class="{ active: offlineStoreType === '00030001' }"
-          @click="changeTab('00030001')"
-        >
-          오프라인
-        </button>
-        <button 
-          class="tab-item" 
-          :class="{ active: offlineStoreType === '00030002' }"
-          @click="changeTab('00030002')"
-        >
-          온라인
-        </button>
-      </div>
-    </div> -->
     <div class="tab-container" v-if="branchTypeList.length">
       <div class="tab-list">
         <button
@@ -47,53 +29,43 @@
       </div>
     </div>
     <div v-if="storeType === '00050001'">
-      <!-- <div v-if="branchType === '00030001' || branchType === '00030002'"> -->
-        <div v-if="regionList.length" class="location-list">
-          <div class="country-select-container">
-            <select class="country-select" :value="selectedCountry" @change="handleCountryChange" >
-              <option v-for="country in countryList" :key="country.cntryCd" :value="country.cntryCd">
-                {{ country.cntryKorNm }}({{ country.cntryCnt }})
-              </option>
-            </select>
+      <div v-if="regionList.length" class="location-list">
+        <div class="country-select-container">
+          <select class="country-select" :value="selectedCountry" @change="handleCountryChange" >
+            <option v-for="country in countryList" :key="country.cntryCd" :value="country.cntryCd">
+              {{ country.cntryKorNm }}({{ country.cntryCnt }})
+            </option>
+          </select>
+        </div>
+        <div class="location-item" v-for="city in regionList" :key="city.admSidoNm">
+          <div class="city-header" @click="toggleCity(city.admSidoNm)">
+            <span>{{ city.admSidoNm }}</span>
+            <span class="arrow" :class="{ expanded: expandedCities[city.admSidoNm] }">&gt;</span>
           </div>
-          <div class="location-item" v-for="city in regionList" :key="city.admSidoNm">
-            <div class="city-header" @click="toggleCity(city.admSidoNm)">
-              <span>{{ city.admSidoNm }}</span>
-              <span class="arrow" :class="{ expanded: expandedCities[city.admSidoNm] }">&gt;</span>
-            </div>
-            <div v-show="expandedCities[city.admSidoNm]" class="district-list">
-              <div class="district-item" v-for="district in city.admSggList" :key="district.admRginCd">
-                <div class="district-header" @click="toggleDistrict(district.admRginCd)">
-                  <span>{{ district.admSggNm }}({{ district.cnt }})</span>
-                  <span class="arrow" :class="{ expanded: expandedDistricts[district.admRginCd] }">&gt;</span>
-                </div>
-                <ul class="store-list" v-show="expandedDistricts[district.admRginCd]">
-                  <li class="store-item" v-for="store in district.offlineBranchList" :key="store.branchNm" @click="handleStoreClick(store)" :class="{ active: activeStore === store.branchNm }">
-                      <span v-if="offlineStoreType === '00030001' || offlineStoreType === '00030002'">{{ store.storeKorNm }} {{ store.branchNm }}</span>
-                      <span v-if="offlineStoreType === '00030003'">{{ store.storeKorNm }}</span>
-                    <button class="store-more-btn" @click.stop="$emit('store-more', store)">더보기</button>
-                  </li>
-                </ul>
+          <div v-show="expandedCities[city.admSidoNm]" class="district-list">
+            <div class="district-item" v-for="district in city.admSggList" :key="district.admRginCd">
+              <div class="district-header" @click="toggleDistrict(district.admRginCd)">
+                <span>{{ district.admSggNm }}({{ district.cnt }})</span>
+                <span class="arrow" :class="{ expanded: expandedDistricts[district.admRginCd] }">&gt;</span>
               </div>
+              <ul class="store-list" v-show="expandedDistricts[district.admRginCd]">
+                <li class="store-item" v-for="store in district.offlineBranchList" :key="store.branchNm" @click="handleStoreClick(store)" :class="{ active: activeStore === store.branchNm }">
+                    <span v-if="offlineStoreType === '00030001' || offlineStoreType === '00030002'">{{ store.storeKorNm }} {{ store.branchNm }}</span>
+                    <span v-if="offlineStoreType === '00030003'">{{ store.storeKorNm }}</span>
+                  <button class="store-more-btn" @click.stop="$emit('store-more', store)">더보기</button>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
-        <div v-else>
-          <div class="no-store-box">
-            <img src="@/assets/map/location-pin.png" alt="No Store" class="no-store-icon" />
-            <div class="no-store-text">등록된 스토어 정보가 없습니다</div>
-          </div>
-        </div>
-      <!-- </div> -->
-      <!-- <div v-else-if="branchType === '00030003'">
-        팝업샵 목록이 나올 자리
-      </div> -->
-    </div>
-    <!-- <div class="online-content" v-if="branchType === '00030002'">
-      <div class="online-placeholder">
-        <p>온라인 발매처 목록이 여기에 표시됩니다.</p>
       </div>
-    </div> -->
+      <div v-else>
+        <div class="no-store-box">
+          <img src="@/assets/map/location-pin.png" alt="No Store" class="no-store-icon" />
+          <div class="no-store-text">등록된 스토어 정보가 없습니다</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -102,7 +74,6 @@ import api from '@/js/menu/mixins/api/api-call';
 
 export default {
   name: 'KicksMapStore',
-  // props, emits 모두 삭제
   data() {
     return {
       branchTypeList: [], // 지점 타입 리스트로 명칭 변경
@@ -122,7 +93,7 @@ export default {
     },
     handleCountryChange(e) {
       this.selectedCountry = e.target.value;
-      // this.getBranches(this.selectedCountry);
+      this.getBranches(this.selectedCountry);
     },
     toggleCity(city) {
       this.expandedCities = {
@@ -475,4 +446,4 @@ export default {
     font-size: 1rem;
   }
 }
-</style> 
+</style>

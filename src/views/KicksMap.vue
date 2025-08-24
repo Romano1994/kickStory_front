@@ -1,7 +1,7 @@
 <script>
 import L from 'leaflet'
 import RegisterModal from '@/components/RegisterModal.vue'
-import KicksMapStore from '@/components/KicksMapStore.vue'
+// import KicksMapStore from '@/components/KicksMapStore.vue'
 import KicksMapRoute from '@/components/KicksMapRoute.vue'
 import KicksMapFavorite from '@/components/KicksMapFavorite.vue'
 
@@ -9,7 +9,7 @@ export default {
   name: "KicksMap",
   components: {
     RegisterModal,
-    KicksMapStore,
+    // KicksMapStore,
     KicksMapRoute,
     KicksMapFavorite
   },
@@ -21,40 +21,29 @@ export default {
       storeIcon: null,
       activeStoreIcon: null,
       showRegisterModal: false,
-      branchType: '00030001', // 추가: 기본값은 오프라인
-      countryList: [], // 국가별 갯수 리스트
-      selectedCountry: '', // 선택된 국가
-      regionList: [], // 지역별 매장 수 리스트
       activeNavIndex: 0,
       navList: [
         {itemNm: "쇼핑코스", imgSrc: "/assets/map/route.png"},
-        {itemNm: "스토어", imgSrc: "/assets/map/store.png"},
         {itemNm: "즐겨찾기", imgSrc: "/assets/map/favorite.png"},
       ],
-      expandedCities: {},
-      expandedDistricts: {},
-      activeStore: null,
       storeMarkers: [],
-      routePolyline: null // 경로 폴리라인
+      routePolyline: null, // 경로 폴리라인
+      showContent: true, // content 표시 여부
+      contentWidth: 400, // content 너비
+      isResizing: false, // 리사이징 중인지 여부
+      minContentWidth: 300, // 최소 content 너비
+      maxContentWidth: 800, // 최대 content 너비
     }
   },
   computed: {
     currentContentComponent() {
       return [
-        'KicksMapStore',
         'KicksMapRoute',
         'KicksMapFavorite'
       ][this.activeNavIndex]
     }
   },
-  watch: {
-    // selectedCountry가 변경될 때 지역별 매장 수 조회
-    selectedCountry(newCountry) {
-      if (newCountry) {
-        this.getBranches(newCountry)
-      }
-    }
-  },
+
   methods: {
     openRegisterModal() {
       this.showRegisterModal = true
@@ -62,40 +51,7 @@ export default {
     closeRegisterModal() {
       this.showRegisterModal = false
     },
-    // 추가: 국가별 갯수 조회 메서드
-    getCountryCount() {
-      this.getApi('/store/offline/countries/count', null, this.getCountryCountSuccess, this.getCountryCountFail)
-    },
-    getCountryCountSuccess(res) {
-      this.countryList = res.data
-      // 첫 번째 국가를 기본 선택으로 설정
-      if (this.countryList.length > 0) {
-        this.selectedCountry = this.countryList[0].cntryCd
-      }
-    },
-    getCountryCountFail(error) {
-      console.error('Country count fetch failed:', error)
-      this.countryList = []
-    },
-    // 추가: 지역별 매장 수 조회 메서드
-    getBranches(cntryCd) {
-      this.getApi('/store/offline/branches', { cntryCd }, this.getBranchesSuccess, this.getBranchesFail)
-    },
-    getBranchesSuccess(res) {
-      this.regionList = res.data
-    },
-    getBranchesFail(error) {
-      console.error('Region count fetch failed:', error)
-      this.regionList = []
-    },
-    toggleCity(city) {
-      this.expandedCities[city] = !this.expandedCities[city]
-    },
-    toggleDistrict(district) {
-      this.expandedDistricts[district] = !this.expandedDistricts[district]
-    },
     onStoreClick(store) {
-      this.activeStore = store.branchNm;
       if (store.lat && store.lon && this.map) {
         this.map.setView([store.lat, store.lon]);
       }
@@ -149,26 +105,66 @@ export default {
       this.map.fitBounds(this.routePolyline.getBounds(), { padding: [30, 30] });
     },
     onTabChange(idx) {
-      this.activeNavIndex = idx;
-      // 탭이 바뀔 때마다 국가/지역 리스트 새로 불러오기
-      this.getCountryCount();
+      // 같은 탭을 다시 클릭하면 content 토글
+      if (this.activeNavIndex === idx) {
+        this.showContent = !this.showContent;
+      } else {
+        // 다른 탭을 클릭하면 해당 탭으로 변경하고 content 표시
+        this.activeNavIndex = idx;
+        this.showContent = true;
+      }
+      
+      // map 재렌더링
+      this.$nextTick(() => {
+        if (this.map) {
+          this.map.invalidateSize();
+        }
+      });
     },
-    onSelectedCountryChange(newCountry) {
-      this.selectedCountry = newCountry;
-      this.getBranches(newCountry);
+    
+    startResize(e) {
+      this.isResizing = true;
+      document.addEventListener('mousemove', this.handleResize);
+      document.addEventListener('mouseup', this.stopResize);
+      e.preventDefault();
+    },
+    
+    handleResize(e) {
+      if (!this.isResizing) return;
+      
+      const newWidth = e.clientX - this.$el.offsetLeft - 60; // navbar 너비(60px) 제외
+      const clampedWidth = Math.max(this.minContentWidth, Math.min(this.maxContentWidth, newWidth));
+      this.contentWidth = clampedWidth;
+      
+      // map 재렌더링
+      this.$nextTick(() => {
+        if (this.map) {
+          this.map.invalidateSize();
+        }
+      });
+    },
+    
+    stopResize() {
+      this.isResizing = false;
+      document.removeEventListener('mousemove', this.handleResize);
+      document.removeEventListener('mouseup', this.stopResize);
     },
     // onStoreMore(store) {
     //   // TODO: 더보기 버튼 클릭 시 동작 구현
     // }
   },
   mounted() {
-    this.getCountryCount();
-    
     //map 객체 반환
     //[coordinate],zoom level
     this.map = L.map('map', {
       zoomControl: false
     }).setView([37.547809, 126.979914], 13);
+    
+    // Leaflet map의 z-index를 낮춤
+    const mapContainer = this.map.getContainer();
+    if (mapContainer) {
+      mapContainer.style.zIndex = '1';
+    }
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -258,6 +254,23 @@ export default {
       this.marker.addTo(this.map);
       this.addStoreMarkers();
     }
+    
+    // map 로드 완료 후 content가 제대로 보이도록 보장
+    this.$nextTick(() => {
+      if (this.showContent) {
+        // content가 보여야 하는 상태라면 강제로 다시 표시
+        this.showContent = false;
+        this.$nextTick(() => {
+          this.showContent = true;
+        });
+      }
+    });
+  },
+  
+  beforeUnmount() {
+    // 이벤트 리스너 정리
+    document.removeEventListener('mousemove', this.handleResize);
+    document.removeEventListener('mouseup', this.stopResize);
   }
 }
 </script>
@@ -273,27 +286,21 @@ export default {
           </div>
         </li>
       </ul>
-      <div class="content">
-        <KicksMapRoute
-          v-if="activeNavIndex === 0"
-          :region-list="regionList"
-          :country-list="countryList"
-          :selected-country="selectedCountry"
-          :expanded-cities="expandedCities"
-          :expanded-districts="expandedDistricts"
-          @update:selectedCountry="onSelectedCountryChange"
-          @update:expandedCities="val => expandedCities = val"
-          @update:expandedDistricts="val => expandedDistricts = val"
-          @draw-route="onDrawRoute"
-        />
-        <KicksMapStore
-          v-if="activeNavIndex === 1"
-          @open-register-modal="openRegisterModal"
-        />
-        <KicksMapFavorite v-if="activeNavIndex === 2" />
+    </div>
+    <div class="map-container">
+      <div id="map"></div>
+      <div class="content-overlay" v-show="showContent">
+        <div class="content" :style="{ width: contentWidth + 'px' }">
+          <div class="resize-handle" @mousedown="startResize"></div>
+          <KicksMapRoute
+            v-if="activeNavIndex === 0"
+            @open-register-modal="openRegisterModal"
+            @draw-route="onDrawRoute"
+          />
+          <KicksMapFavorite v-if="activeNavIndex === 1" />
+        </div>
       </div>
     </div>
-    <div id="map" class="map-container"></div>
     <RegisterModal v-if="showRegisterModal" @close="closeRegisterModal" />
   </div>
 </template>
@@ -309,11 +316,12 @@ export default {
 }
 
 .navbar {
-  width: 400px;
-  min-width: 400px;
+  width: 60px;
+  min-width: 60px;
   height: 90vh;
   display: flex;
   gap: 0;
+  z-index: 20;
 }
 
 .navbar-list {
@@ -337,12 +345,45 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
-  flex: 1;
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
-  width: calc(100% - 60px);
   max-height: 90vh;
   overflow-y: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  position: relative;
+  transition: width 0.1s ease;
+}
+
+.resize-handle {
+  position: absolute;
+  right: -8px;
+  top: 0;
+  width: 16px;
+  height: 100%;
+  cursor: ew-resize;
+  background: linear-gradient(90deg, rgba(0,0,0,0.05), rgba(0,0,0,0.1));
+  border-radius: 0 8px 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.resize-handle::before {
+  content: '⋮⋮';
+  color: rgba(0,0,0,0.3);
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: -2px;
+  transform: rotate(90deg);
+}
+
+.resize-handle:hover {
+  background: linear-gradient(90deg, rgba(0,0,0,0.1), rgba(0,0,0,0.2));
+}
+
+.resize-handle:hover::before {
+  color: rgba(0,0,0,0.5);
 }
 
 .navbar-item {
@@ -593,6 +634,29 @@ export default {
   overflow: hidden;
   min-height: 700px;
   height: 90vh;
+  position: relative;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  position: relative;
+}
+
+.content-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  border-radius: 8px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 1rem;
 }
 
 @media screen and (max-width: 1024px) {
@@ -600,24 +664,6 @@ export default {
     height: calc(100vh - 12rem);
     padding: 0.5rem;
     gap: 0.5rem;
-  }
-
-  .navbar {
-    width: 360px;
-    min-width: 360px;
-  }
-  
-  .search-container {
-    gap: 4px;
-  }
-  
-  .search-select {
-    width: 80px;
-    min-width: 80px;
-  }
-  
-  .search-btn {
-    padding: 8px 12px;
   }
 }
 
@@ -639,6 +685,12 @@ export default {
 
   .content {
     border-radius: 0 8px 8px 0;
+  }
+
+  .content-overlay {
+    left: 0;
+    width: 100%;
+    padding: 0.5rem;
   }
 
   .map-container {

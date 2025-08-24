@@ -1,58 +1,142 @@
 <template>
   <div class="route-content">
-    <div class="btn-group route-type-toggle" role="group" aria-label="Route Type Toggle">
-      <button
-        type="button"
-        class="btn"
-        :class="selectedType === 'optimal' ? 'btn-primary' : 'btn-outline-primary'"
-        @click="selectType('optimal')"
-      >최적경로</button>
-      <button
-        type="button"
-        class="btn"
-        :class="selectedType === 'fixed' ? 'btn-primary' : 'btn-outline-primary'"
-        @click="selectType('fixed')"
-      >도착지 고정</button>
-    </div>
-    <div class="location-list">
-      <div class="country-select-container">
-        <select class="country-select" :value="selectedCountry" @change="handleCountryChange">
-          <option v-for="country in countryList" :key="country.cntryCd" :value="country.cntryCd">
-            {{ country.cntryKorNm }}({{ country.cntryCnt }})
-          </option>
-        </select>
+    <!-- 탭 선택 (편집샵, 브랜드샵, 팝업샵) -->
+    <div class="tab-container" v-if="branchTypeList.length">
+      <div class="tab-list">
+        <button
+          v-for="type in branchTypeList"
+          :key="type.commCdDtl"
+          class="tab-item"
+          :class="{ active: offlineStoreType === type.commCdDtl }"
+          @click="changeBranchType(type.commCdDtl)"
+        >
+          {{ type.commCdDtlNm }}
+        </button>
       </div>
-      <div class="location-item" v-for="city in regionList" :key="city.admSidoNm">
-        <div class="city-header" @click="toggleCity(city.admSidoNm)">
-          <span>{{ city.admSidoNm }}</span>
-          <span class="arrow" :class="{ expanded: expandedCities[city.admSidoNm] }">&gt;</span>
+    </div>
+
+    <!-- 검색 기능 -->
+    <div class="search-section">
+      <div class="search-box">
+        <input 
+          type="text" 
+          class="search-input" 
+          :placeholder="getSearchPlaceholder()"
+          v-model="searchKeyword"
+        />
+        <button class="search-btn" @click="searchStores">검색</button>
+      </div>
+      <!-- 검색 결과 -->
+      <div class="search-results" v-if="searchResults.length > 0">
+        <h5>검색 결과</h5>
+        <ul class="search-result-list">
+          <li 
+            v-for="store in searchResults" 
+            :key="store.branchNm" 
+            class="search-result-item"
+            @click="addStoreToRoute(store)"
+          >
+            <span>{{ store.storeKorNm }} {{ store.branchNm }}</span>
+            <button class="add-btn">추가</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 지역별 스토어 목록 -->
+    <div class="store-section" v-if="storeType === '00050001'">
+      <div class="section-header">
+        <h5>지역별 스토어</h5>
+        <div class="country-select-container">
+          <select class="country-select" :value="selectedCountry" @change="handleCountryChange">
+            <option v-for="country in countryList" :key="country.cntryCd" :value="country.cntryCd">
+              {{ country.cntryKorNm }}({{ country.cntryCnt }})
+            </option>
+          </select>
         </div>
-        <div v-show="expandedCities[city.admSidoNm]" class="district-list">
-          <div class="district-item" v-for="district in city.admSggList" :key="district.admRginCd">
-            <div class="district-header" @click="toggleDistrict(district.admRginCd)">
-              <span>{{ district.admSggNm }}({{ district.cnt }})</span>
-              <span class="arrow" :class="{ expanded: expandedDistricts[district.admRginCd] }">&gt;</span>
+      </div>
+      
+      <div v-if="regionList.length" class="location-list">
+        <div class="location-item" v-for="city in regionList" :key="city.admSidoNm">
+          <div class="city-header" @click="toggleCity(city.admSidoNm)">
+            <span>{{ city.admSidoNm }}</span>
+            <span class="arrow" :class="{ expanded: expandedCities[city.admSidoNm] }">&gt;</span>
+          </div>
+          <div v-show="expandedCities[city.admSidoNm]" class="district-list">
+            <div class="district-item" v-for="district in city.admSggList" :key="district.admRginCd">
+              <div class="district-header" @click="toggleDistrict(district.admRginCd)">
+                <span>{{ district.admSggNm }}({{ district.cnt }})</span>
+                <span class="arrow" :class="{ expanded: expandedDistricts[district.admRginCd] }">&gt;</span>
+              </div>
+              <ul class="store-list" v-show="expandedDistricts[district.admRginCd]">
+                <li 
+                  class="store-item" 
+                  v-for="store in district.offlineBranchList" 
+                  :key="store.branchNm" 
+                  @click="addStoreToRoute(store)" 
+                  :class="{ active: activeStore === store.branchNm }"
+                >
+                  <span v-if="offlineStoreType === '00030001' || offlineStoreType === '00030002'">{{ store.storeKorNm }} {{ store.branchNm }}</span>
+                  <span v-if="offlineStoreType === '00030003'">{{ store.storeKorNm }}</span>
+                  <button class="add-btn">추가</button>
+                </li>
+              </ul>
             </div>
-            <ul class="store-list" v-show="expandedDistricts[district.admRginCd]">
-              <li class="store-item" v-for="store in district.offlineBranchList" :key="store.branchNm" @click="handleStoreClick(store)">
-                <span>{{ store.storeKorNm }} {{ store.branchNm }}</span>
-              </li>
-            </ul>
           </div>
         </div>
       </div>
+      <div v-else>
+        <div class="no-store-box">
+          <img src="@/assets/map/location-pin.png" alt="No Store" class="no-store-icon" />
+          <div class="no-store-text">등록된 스토어 정보가 없습니다</div>
+        </div>
+      </div>
     </div>
-    <div class="selected-stores">
-      <h5>선택된 경로</h5>
-      <ul>
-        <li v-for="store in selectedStores" :key="store.branchNm">
-          {{ store.storeKorNm }} {{ store.branchNm }}
-          <button @click="removeStore(store)">제거</button>
-        </li>
-      </ul>
-      <div v-if="!selectedStores.length" style="color: #aaa; font-size: 0.95rem; padding: 0.5rem 0 0.5rem 0.5rem;">선택된 매장이 없습니다.</div>
+
+    <!-- 경로 설정 -->
+    <div class="route-section">
+      <div class="section-header">
+        <h5>경로 검색 방식</h5>
+      </div>
+      <div class="btn-group route-type-toggle" role="group" aria-label="Route Type Toggle">
+        <button
+          type="button"
+          class="btn"
+          :class="selectedType === 'optimal' ? 'btn-primary' : 'btn-outline-primary'"
+          @click="selectType('optimal')"
+        >최적경로</button>
+        <button
+          type="button"
+          class="btn"
+          :class="selectedType === 'fixed' ? 'btn-primary' : 'btn-outline-primary'"
+          @click="selectType('fixed')"
+        >도착지 고정</button>
+      </div>
     </div>
-    <button class="find-route-btn" @click="findRoute">경로 찾기</button>
+
+    <!-- 선택된 경로 -->
+    <div class="selected-route-section">
+      <div class="section-header">
+        <h5>선택된 경로</h5>
+        <span class="store-count">({{ selectedStores.length }}개)</span>
+      </div>
+      <div class="selected-stores">
+        <ul>
+          <li v-for="(store, index) in selectedStores" :key="store.branchNm">
+            <span class="store-order">{{ index + 1 }}</span>
+            <span class="store-name">{{ store.storeKorNm }} {{ store.branchNm }}</span>
+            <button @click="removeStore(store)" class="remove-btn">제거</button>
+          </li>
+        </ul>
+        <div v-if="!selectedStores.length" class="empty-route">
+          스토어를 추가해주세요
+        </div>
+      </div>
+      <button class="find-route-btn" @click="findRoute" :disabled="selectedStores.length === 0">
+        경로 찾기
+      </button>
+    </div>
+
     <CommonModal
       :show="showRouteModal"
       type="alert"
@@ -65,21 +149,15 @@
 </template>
 <script>
 import CommonModal from './CommonModal.vue';
+import api from '@/js/menu/mixins/api/api-call';
+
 export default {
   name: 'KicksMapRoute',
   components: { CommonModal },
-  props: {
-    regionList: Array,
-    countryList: Array,
-    selectedCountry: String,
-    expandedCities: Object,
-    expandedDistricts: Object
-  },
   emits: [
-    'update:selectedCountry',
-    'update:expandedCities',
-    'update:expandedDistricts',
-    'draw-route'
+    'draw-route',
+    'open-register-modal',
+    'store-more'
   ],
   data() {
     return {
@@ -88,6 +166,17 @@ export default {
       currentLocation: null, // { lat, lon }
       showRouteModal: false,
       routeModalContent: '',
+      branchTypeList: [], // 지점 타입 리스트로 명칭 변경
+      offlineStoreType: '00030001',
+      storeType: '00050001',
+      selectedCountry: 'KR',
+      countryList: [],
+      regionList: [],
+      expandedCities: {},
+      expandedDistricts: {},
+      activeStore: null,
+      searchKeyword: '',
+      searchResults: [],
     }
   },
   methods: {
@@ -95,24 +184,84 @@ export default {
       this.selectedType = type;
       this.$emit('route-type-change', type);
     },
+    changeBranchType(type) {
+      this.offlineStoreType = type;
+      this.searchResults = []; // 탭 변경시 검색 결과 초기화
+    },
     handleCountryChange(e) {
-      this.$emit('update:selectedCountry', e.target.value);
+      this.selectedCountry = e.target.value;
+      this.getBranches(this.selectedCountry);
     },
     toggleCity(city) {
-      const updated = { ...this.expandedCities, [city]: !this.expandedCities[city] }
-      this.$emit('update:expandedCities', updated)
+      this.expandedCities = {
+        ...this.expandedCities,
+        [city]: !this.expandedCities[city]
+      };
     },
     toggleDistrict(district) {
-      const updated = { ...this.expandedDistricts, [district]: !this.expandedDistricts[district] }
-      this.$emit('update:expandedDistricts', updated)
+      this.expandedDistricts = {
+        ...this.expandedDistricts,
+        [district]: !this.expandedDistricts[district]
+      };
     },
-    handleStoreClick(store) {
+    addStoreToRoute(store) {
+      this.activeStore = store.branchNm;
       if (!this.selectedStores.find(s => s.branchNm === store.branchNm)) {
         this.selectedStores.push(store);
       }
     },
     removeStore(store) {
       this.selectedStores = this.selectedStores.filter(s => s.branchNm !== store.branchNm);
+    },
+    getSearchPlaceholder() {
+      const placeholders = {
+        '00030001': '편집샵 검색 (예: 나이키, 아디다스)',
+        '00030002': '브랜드샵 검색 (예: 나이키, 아디다스)',
+        '00030003': '팝업샵 검색 (예: 한정판, 특별전)'
+      };
+      return placeholders[this.offlineStoreType] || '스토어 검색';
+    },
+    searchStores() {
+      // 검색 로직은 나중에 구현
+      console.log('검색:', this.searchKeyword);
+    },
+    fetchBranchTypeList() {
+      api.get(
+        '/comm-cd/detail',
+        { commCd: '0003' },
+        this.handleBranchTypeListSuccess,
+        this.handleBranchTypeListFail
+      );
+    },
+    handleBranchTypeListSuccess(res) {
+      this.branchTypeList = res.data; // 응답 구조에 따라 필요시 수정
+    },
+    handleBranchTypeListFail(err) {
+      console.error('지점 타입 목록 불러오기 실패', err);
+    },
+    getCountryCount() {
+      this.getApi('/store/offline/countries/count',{offlineStoreType: this.offlineStoreType}, this.getCountryCountSuccess, this.getCountryCountFail)
+    },
+    getCountryCountSuccess(res) {
+      this.countryList = res.data;
+      if (this.countryList.length > 0) {
+        this.selectedCountry = this.countryList[0].cntryCd;
+        this.getBranches(this.selectedCountry);
+      }
+    },
+    getCountryCountFail(error) {
+      console.error('국가별 카운트 조회 실패:', error);
+      this.countryList = [];
+    },
+    getBranches(cntryCd) {
+      this.getApi('/store/offline/branches', { cntryCd:cntryCd, offlineStoreType : this.offlineStoreType }, this.getBranchesSuccess, this.getBranchesFail)
+    },
+    getBranchesSuccess(res) {
+      this.regionList = res.data;
+    },
+    getBranchesFail(error) {
+      console.error('지역별 매장 수 조회 실패:', error);
+      this.regionList = [];
     },
     async findRoute() {
       if (!this.currentLocation) {
@@ -172,7 +321,17 @@ export default {
       this.showRouteModal = false;
     },
   },
+  watch: {
+    offlineStoreType(newType) {
+      if (newType) {
+        this.getCountryCount();
+      }
+    },
+  },
   mounted() {
+    this.fetchBranchTypeList();
+    this.getCountryCount();
+    
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -193,97 +352,239 @@ export default {
 <style scoped>
 @import '../css/main.css';
 @import '../css/map.css';
-.route-type-toggle {
-  margin-bottom: 1rem;
+
+.route-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* 탭 스타일 */
+.tab-container {
+  margin-bottom: 0.5rem;
+}
+
+.tab-list {
   display: flex;
   background-color: var(--color2);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: none;
-}
-.route-type-toggle .btn {
-  flex: 1 1 0;
-  width: 50%;
-  text-align: center;
-  border: none;
-  background: transparent;
-  color: var(--color1);
-  font-family: var(--sub-font);
-  font-size: 0.98rem;
-  padding: 12px 0;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  border-radius: 0;
-}
-.route-type-toggle .btn.btn-primary {
-  background-color: var(--color6);
-  color: #fff;
-  font-weight: bold;
-}
-.route-type-toggle .btn.btn-outline-primary {
-  background-color: transparent;
-  color: var(--color1);
-  font-weight: normal;
-}
-.route-type-toggle .btn:not(:last-child) {
-  border-right: 1px solid rgba(255,255,255,0.12);
-}
-.route-type-toggle .btn:focus {
-  outline: none;
-  background-color: rgba(255,255,255,0.08);
 }
 
-.location-list {
+.tab-item {
+  flex: 1;
+  padding: 12px;
+  background-color: transparent;
+  border: none;
+  color: var(--color1);
+  font-family: var(--sub-font);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tab-item.active {
+  background-color: var(--color6);
+  color: white;
+}
+
+/* 검색 섹션 */
+.search-section {
   background-color: var(--color2);
   border-radius: 8px;
-  overflow: hidden;
+  padding: 1rem;
+}
+
+.search-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: var(--main-font);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color1);
+}
+
+.search-input::placeholder {
+  color: rgba(255, 244, 204, 0.6);
+}
+
+.search-btn {
+  padding: 8px 16px;
+  background-color: var(--color6);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: var(--sub-font);
+  white-space: nowrap;
+}
+
+.search-results {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+}
+
+.search-results h5 {
+  margin: 0 0 0.7rem 0;
+  color: var(--color1);
+  font-family: var(--sub-font);
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.search-result-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color1);
+  font-size: 0.9rem;
+  font-family: var(--main-font);
+  cursor: pointer;
+}
+
+.search-result-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.add-btn {
+  padding: 4px 8px;
+  background: var(--color6);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-btn:hover {
+  background: #2a7a7f;
+}
+
+/* 스토어 섹션 */
+.store-section {
+  background-color: var(--color2);
+  border-radius: 8px;
+  padding: 1rem;
   flex: 1;
   display: flex;
   flex-direction: column;
-  max-height: 500px;
-  overflow-y: auto;
+  min-height: 300px;
 }
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.section-header h5 {
+  margin: 0;
+  color: var(--color1);
+  font-family: var(--sub-font);
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.country-select-container {
+  flex-shrink: 0;
+}
+
+.country-select {
+  padding: 6px 8px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--color1);
+  font-size: 0.8rem;
+  font-family: var(--main-font);
+  cursor: pointer;
+}
+
+.location-list {
+  flex: 1;
+  overflow-y: auto;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
 .location-item {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
+
 .city-header {
-  padding: 1rem;
+  padding: 0.8rem;
   display: flex;
   align-items: center;
   gap: 0.7rem;
   color: var(--color1);
   cursor: pointer;
   font-family: var(--sub-font);
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
+
 .arrow {
   color: var(--color1);
   transition: transform 0.3s ease;
 }
+
 .arrow.expanded {
   transform: rotate(90deg);
 }
+
 .district-list {
   padding-left: 1.5rem;
 }
+
 .district-header {
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  padding: 0.7rem 0;
+  padding: 0.6rem 0;
 }
+
 .district-header span {
   color: var(--color1);
+  font-size: 0.9rem;
 }
+
 .store-list {
   list-style: none;
   padding: 0;
   margin: 0;
   background-color: var(--color5);
 }
+
 .store-item {
-  padding: 0.8rem 2rem;
+  padding: 0.7rem 1.5rem;
   color: var(--color1);
   font-size: 0.9rem;
   font-family: var(--main-font);
@@ -293,112 +594,220 @@ export default {
   align-items: center;
   justify-content: space-between;
 }
+
 .store-item:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
+
 .store-item.active {
   background-color: var(--color6);
   color: #fff;
   font-weight: bold;
 }
-.country-select-container {
-  padding: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-.country-select {
-  width: 100%;
-  padding: 8px;
-  border: none;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: var(--color1);
-  font-size: 0.9rem;
-  font-family: var(--main-font);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.country-select:focus {
-  outline: none;
-  border-color: var(--color6);
-  background-color: rgba(255, 255, 255, 0.15);
-}
-.country-select option {
-  background-color: var(--color2);
-  color: var(--color1);
-  font-family: var(--main-font);
-}
-.selected-stores {
-  background-color: var(--color2);
-  border-radius: 8px;
-  margin-top: 1rem;
-  padding: 1rem 1rem 0.5rem 1rem;
-  font-family: var(--main-font);
-  font-size: 0.98rem;
-  box-shadow: none;
-}
-.selected-stores h5 {
-  margin: 0 0 0.7rem 0;
+
+.no-store-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
   color: var(--color1);
   font-family: var(--sub-font);
-  font-size: 1.05rem;
+  font-size: 1rem;
+}
+
+.no-store-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+/* 경로 설정 섹션 */
+.route-section {
+  background-color: var(--color2);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.route-type-toggle {
+  display: flex;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.route-type-toggle .btn {
+  flex: 1;
+  text-align: center;
+  border: none;
+  background: transparent;
+  color: var(--color1);
+  font-family: var(--sub-font);
+  font-size: 0.9rem;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  border-radius: 0;
+}
+
+.route-type-toggle .btn.btn-primary {
+  background-color: var(--color6);
+  color: #fff;
   font-weight: bold;
 }
+
+.route-type-toggle .btn.btn-outline-primary {
+  background-color: transparent;
+  color: var(--color1);
+  font-weight: normal;
+}
+
+.route-type-toggle .btn:not(:last-child) {
+  border-right: 1px solid rgba(255,255,255,0.12);
+}
+
+/* 선택된 경로 섹션 */
+.selected-route-section {
+  background-color: var(--color2);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.store-count {
+  color: var(--color6);
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.selected-stores {
+  margin-bottom: 1rem;
+}
+
 .selected-stores ul {
   list-style: none;
   padding: 0;
   margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
 }
+
 .selected-stores li {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 0.7rem 0.5rem;
   border-bottom: 1px solid rgba(255,255,255,0.08);
   color: var(--color1);
-  font-size: 0.97rem;
+  font-size: 0.9rem;
   font-family: var(--main-font);
-  background: none;
 }
+
 .selected-stores li:last-child {
   border-bottom: none;
 }
-.selected-stores button {
-  margin-left: 1rem;
-  padding: 4px 10px;
-  background: var(--color6);
+
+.store-order {
+  background-color: var(--color6);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-right: 0.8rem;
+  flex-shrink: 0;
+}
+
+.store-name {
+  flex: 1;
+  margin-right: 0.8rem;
+}
+
+.remove-btn {
+  padding: 4px 8px;
+  background: #e74c3c;
   color: #fff;
   border: none;
   border-radius: 4px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   cursor: pointer;
   transition: background 0.2s;
+  flex-shrink: 0;
 }
-.selected-stores button:hover {
-  background: #2a7a7f;
+
+.remove-btn:hover {
+  background: #c0392b;
 }
-.selected-stores > div {
+
+.empty-route {
+  text-align: center;
   color: #aaa;
-  font-size: 0.95rem;
-  padding: 0.5rem 0 0.5rem 0.5rem;
+  font-size: 0.9rem;
+  padding: 2rem 0;
+  font-style: italic;
 }
+
 .find-route-btn {
   width: 100%;
-  margin-top: 1rem;
   background-color: var(--color6);
   color: #fff;
   border: none;
   border-radius: 8px;
   font-family: var(--sub-font);
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: bold;
   padding: 12px 0;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  box-shadow: none;
-  display: block;
+  transition: background 0.2s;
 }
-.find-route-btn:hover {
+
+.find-route-btn:hover:not(:disabled) {
   background: #2a7a7f;
+}
+
+.find-route-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+@media screen and (max-width: 1024px) {
+  .search-box {
+    gap: 4px;
+  }
+  
+  .search-btn {
+    padding: 8px 12px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+@media screen and (max-width: 720px) {
+  .route-content {
+    gap: 0.5rem;
+  }
+  
+  .search-section,
+  .store-section,
+  .route-section,
+  .selected-route-section {
+    padding: 0.8rem;
+  }
+  
+  .store-item {
+    padding: 0.6rem 1rem;
+  }
+  
+  .selected-stores li {
+    padding: 0.6rem 0.3rem;
+  }
 }
 </style> 
