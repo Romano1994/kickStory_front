@@ -122,7 +122,7 @@ export default {
     },
     handleCountryChange(e) {
       this.selectedCountry = e.target.value;
-      this.getBranches(this.selectedCountry);
+      // this.getBranches(this.selectedCountry);
     },
     toggleCity(city) {
       this.expandedCities = {
@@ -179,15 +179,9 @@ export default {
     },
   },
   watch: {
-    selectedCountry(newCountry) {
-      if (newCountry) {
-        this.getBranches();
-      }
-    },
     offlineStoreType(newType) {
       if (newType) {
         this.getCountryCount();
-        this.getBranches();
       }
     },
   },
