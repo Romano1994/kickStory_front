@@ -1,6 +1,7 @@
 <script>
 import L from 'leaflet'
 import RegisterModal from '@/components/RegisterModal.vue'
+import CommonModal from '@/components/CommonModal.vue'
 // import KicksMapStore from '@/components/KicksMapStore.vue'
 import KicksMapRoute from '@/components/KicksMapRoute.vue'
 import KicksMapFavorite from '@/components/KicksMapFavorite.vue'
@@ -11,7 +12,8 @@ export default {
     RegisterModal,
     // KicksMapStore,
     KicksMapRoute,
-    KicksMapFavorite
+    KicksMapFavorite,
+    CommonModal
   },
   data() {
     return {
@@ -20,8 +22,14 @@ export default {
       icon: null,
       storeIcon: null,
       activeStoreIcon: null,
+      selectedStoreIcon: null,
+      selectedStoreMarkers: [],
       showRegisterModal: false,
+      showCommonModal: false,
+      commonModalMessage: '',
+      selectedStores: [],
       activeNavIndex: 0,
+      offlineStoreType: '00030001',
       navList: [
         {itemNm: "쇼핑코스", imgSrc: "/assets/map/route.png"},
         {itemNm: "즐겨찾기", imgSrc: "/assets/map/favorite.png"},
@@ -33,6 +41,7 @@ export default {
       isResizing: false, // 리사이징 중인지 여부
       minContentWidth: 300, // 최소 content 너비
       maxContentWidth: 800, // 최대 content 너비
+      regionStoreList: [],
     }
   },
   computed: {
@@ -58,20 +67,28 @@ export default {
       this.addStoreMarkers(); // 마커 리프레시
     },
     addStoreMarkers() {
-      if (!this.regionList) return;
+      if (!this.regionStoreList || !this.map) return;
       // 기존 매장 마커 제거 (중복 방지)
       if (this.storeMarkers) {
         this.storeMarkers.forEach(m => this.map.removeLayer(m));
       }
       this.storeMarkers = [];
-      this.regionList.forEach(city => {
+      this.regionStoreList.forEach(city => {
         city.admSggList.forEach(district => {
           district.offlineBranchList.forEach(store => {
+            //TODO : 팝업샵 선택된 경로 전체 활성화 오류 수정 필요
+            const isSelected = this.offlineStoreType!="0003003"?Array.isArray(this.selectedStores) && this.selectedStores.some(s => s.branchNm === store.branchNm):
+            Array.isArray(this.selectedStores) && this.selectedStores.some(s => s.storeCd === store.storeCd);
             let icon = this.storeIcon;
-            if (this.activeStore === store.branchNm) {
-              icon = this.activeStoreIcon;
-            }
-            const marker = L.marker([store.lat, store.lon], { icon })
+            if (isSelected) {
+              icon = this.selectedStoreIcon;
+            } 
+            // else if (this.activeStore!="00030003"&&this.activeStore === store.branchNm) {
+            //   icon = this.activeStoreIcon;
+            // }else if (this.activeStore=="00030003"&&this.activeStore === store.storeCd) {
+            //   icon = this.activeStoreIcon;
+            // }
+            const marker = L.marker([store.lat, store.lon], { icon, zIndexOffset: isSelected ? 900 : 0 })
               .addTo(this.map)
               .bindPopup(`${store.storeKorNm} ${store.branchNm}`);
             marker.on('click', () => {
@@ -82,12 +99,33 @@ export default {
         });
       });
     },
+    addSelectedStoreMarkers() {
+      if (!this.map) return;
+      if (this.selectedStoreMarkers) {
+        this.selectedStoreMarkers.forEach(m => this.map.removeLayer(m));
+      }
+      this.selectedStoreMarkers = [];
+      if (!Array.isArray(this.selectedStores)) return;
+      this.selectedStores.forEach(store => {
+        if (store.lat && store.lon) {
+          const marker = L.marker([store.lat, store.lon], { icon: this.selectedStoreIcon, zIndexOffset: 2000 })
+            .addTo(this.map)
+            .bindPopup(`${store.storeKorNm} ${store.branchNm}`);
+          marker.setZIndexOffset(2000);
+          this.selectedStoreMarkers.push(marker);
+        }
+      });
+    },
     onStoreMarkerClick(store, district, city) {
       this.expandedCities = { ...this.expandedCities, [city.admSidoNm]: true };
       this.expandedDistricts = { ...this.expandedDistricts, [district.admRginCd]: true };
-      this.activeStore = store.branchNm;
       this.map.setView([store.lat, store.lon], 16);
       this.addStoreMarkers();
+      if(this.offlineStoreType!="00030003"){
+        this.activeStore = store.branchNm;
+      }else{
+        this.activeStore= store.storeCd;
+      }
     },
     onDrawRoute(coordsArr) {
       // coordsArr: [[lat, lng], ...]
@@ -120,6 +158,39 @@ export default {
           this.map.invalidateSize();
         }
       });
+    },
+    closeOverlay() {
+      if (this.showContent) {
+        this.showContent = false;
+        this.$nextTick(() => {
+          if (this.map) {
+            this.map.invalidateSize();
+          }
+        });
+      }
+    },
+    handleUpdateregionStoreList(list) {
+      this.regionStoreList = list || [];
+      this.addStoreMarkers();
+      this.addSelectedStoreMarkers();
+    },
+    handleAddStore(store) {
+      //TODO : branchNm> branchCd로 변경필요
+      if (this.offlineStoreType!="00030003"&&!this.selectedStores.find(s => s.branchNm === store.branchNm)) {
+        this.selectedStores.push(store);
+      }else if(this.offlineStoreType=="00030003"&&!this.selectedStores.find(s => s.storeCd === store.storeCd)){
+        this.selectedStores.push(store);
+      }
+    },
+    handleRemoveStore(store) {
+      this.selectedStores = this.selectedStores.filter(s => s.branchNm !== store.branchNm);
+    },
+    handleStoreTypeChange(newType) {
+      this.offlineStoreType = newType;
+      // Reset active store when type changes
+      this.activeStore = null;
+      this.addStoreMarkers();
+      this.addSelectedStoreMarkers();
     },
     
     startResize(e) {
@@ -190,9 +261,9 @@ export default {
               const lon = position.coords.longitude;
               map.setView([lat, lon], 16);
             },
-            (error) => {
-              console.log(error);
-              alert('위치 정보를 가져올 수 없습니다.');
+            () => {
+              this.commonModalMessage = '지도를 구성하던 중 오류가 발생하였습니다.';
+              this.showCommonModal = true;
             }
           );
         } else {
@@ -203,12 +274,14 @@ export default {
     };
     locateBtn.addTo(this.map);
 
-    // 내 위치 아이콘
+    // 내 위치 아이콘 (빨간색 마커)
     this.icon = L.icon({
-      iconUrl: 'assets/map/location-pin.png',
-      iconSize: [38, 38],
-      iconAnchor: [22, 94],
-      popupAnchor: [-3, -76],
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      shadowSize: [41, 41]
     });
     // 매장용 아이콘 (파란색)
     this.storeIcon = L.icon({
@@ -228,6 +301,15 @@ export default {
       shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       shadowSize: [65, 65]
     });
+    // 선택된 매장용 아이콘 (초록색)
+    this.selectedStoreIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      shadowSize: [41, 41]
+    });
 
     // 내 위치에 마커 표시
     if (navigator.geolocation) {
@@ -239,13 +321,16 @@ export default {
           this.marker.addTo(this.map);
           this.map.setView([lat, lon], 13);
           this.addStoreMarkers();
+          this.addSelectedStoreMarkers();
         },
-        (error) => {
+        () => {
           // 위치 정보 못 가져오면 기본 위치에 마커
-          console.log(error);
-          this.marker = L.marker([37.547809, 126.979914], { icon: this.icon });
+          this.commonModalMessage = '현재 위치를 가져오지 못하였습니다.';
+          this.showCommonModal = true;
+          this.marker = L.marker([37.566734, 126.978236], { icon: this.icon });
           this.marker.addTo(this.map);
           this.addStoreMarkers();
+          this.addSelectedStoreMarkers();
         }
       );
     } else {
@@ -265,6 +350,15 @@ export default {
         });
       }
     });
+  },
+  watch: {
+    selectedStores: {
+      handler() {
+        this.addStoreMarkers();
+        this.addSelectedStoreMarkers();
+      },
+      deep: true
+    }
   },
   
   beforeUnmount() {
@@ -289,19 +383,46 @@ export default {
     </div>
     <div class="map-container">
       <div id="map"></div>
-      <div class="content-overlay" v-show="showContent">
-        <div class="content" :style="{ width: contentWidth + 'px' }">
+      <div class="map-legend">
+        <div class="legend-item">
+          <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png" alt="현재 위치" />
+          <span>현재 위치</span>
+        </div>
+        <div class="legend-item">
+          <img class="legend-item" src="https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png" alt="활성 매장" />
+          <span>지역별 스토어</span>
+        </div>
+        <div class="legend-item">
+          <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png" alt="선택된 매장" />
+          <span>선택된 경로</span>
+        </div>
+      </div>
+      <div class="content-overlay" v-show="showContent" @click="closeOverlay">
+        <div class="content" :style="{ width: contentWidth + 'px' }" @click.stop>
           <div class="resize-handle" @mousedown="startResize"></div>
           <KicksMapRoute
             v-if="activeNavIndex === 0"
+            :selected-stores="selectedStores"
+            :offline-store-type="offlineStoreType"
             @open-register-modal="openRegisterModal"
             @draw-route="onDrawRoute"
+            @update-region-list="handleUpdateregionStoreList"
+            @store-type-change="handleStoreTypeChange"
+            @add-store="handleAddStore"
+            @remove-store="handleRemoveStore"
           />
           <KicksMapFavorite v-if="activeNavIndex === 1" />
         </div>
       </div>
     </div>
     <RegisterModal v-if="showRegisterModal" @close="closeRegisterModal" />
+    <CommonModal
+      :show="showCommonModal"
+      :content="commonModalMessage"
+      type="alert"
+      @close="showCommonModal = false"
+      @confirm="showCommonModal = false"
+    />
   </div>
 </template>
 
@@ -635,6 +756,37 @@ export default {
   min-height: 700px;
   height: 90vh;
   position: relative;
+}
+
+.map-legend {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 500;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+}
+.legend-item img {
+  width: 16px;
+  height: 26px;
+  object-fit: contain;
+}
+.legend-item img.legend-active {
+  width: 20px;
+  height: 32px;
+}
+.legend-item span {
+  color: #333;
+  font-size: 0.8rem;
+  font-family: var(--main-font);
 }
 
 #map {

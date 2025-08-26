@@ -56,8 +56,8 @@
         </div>
       </div>
       
-      <div v-if="regionList.length" class="location-list">
-        <div class="location-item" v-for="city in regionList" :key="city.admSidoNm">
+      <div v-if="regionStoreList.length" class="location-list">
+        <div class="location-item" v-for="city in regionStoreList" :key="city.admSidoNm">
           <div class="city-header" @click="toggleCity(city.admSidoNm)">
             <span>{{ city.admSidoNm }}</span>
             <span class="arrow" :class="{ expanded: expandedCities[city.admSidoNm] }">&gt;</span>
@@ -68,17 +68,29 @@
                 <span>{{ district.admSggNm }}({{ district.cnt }})</span>
                 <span class="arrow" :class="{ expanded: expandedDistricts[district.admRginCd] }">&gt;</span>
               </div>
-              <ul class="store-list" v-show="expandedDistricts[district.admRginCd]">
+              <ul v-if="offlineStoreType !== '00030003'" class="store-list" v-show="expandedDistricts[district.admRginCd]">
                 <li 
                   class="store-item" 
                   v-for="store in district.offlineBranchList" 
                   :key="store.branchNm" 
-                  @click="addStoreToRoute(store)" 
+                  @click="openStoreDetail(store)" 
                   :class="{ active: activeStore === store.branchNm }"
                 >
-                  <span v-if="offlineStoreType === '00030001' || offlineStoreType === '00030002'">{{ store.storeKorNm }} {{ store.branchNm }}</span>
-                  <span v-if="offlineStoreType === '00030003'">{{ store.storeKorNm }}</span>
-                  <button class="add-btn">추가</button>
+                  <span>{{ store.storeKorNm }} {{ store.branchNm }}</span>
+                  <button class="add-btn"  @click="addStoreToRoute(store)" >추가</button>
+                </li>
+           
+              </ul>
+              <ul v-else class="store-list" v-show="expandedDistricts[district.admRginCd]">
+                <li 
+                  class="store-item" 
+                  v-for="store in district.offlineBranchList" 
+                  :key="store.storeCd" 
+                  @click="openStoreDetail(store)" 
+                  :class="{ active: activeStore === store.storeCd }"
+                >
+                  <span >{{ store.storeKorNm }}</span>
+                  <button class="add-btn"  @click="addStoreToRoute(store)" >추가</button>
                 </li>
               </ul>
             </div>
@@ -157,21 +169,35 @@ export default {
   emits: [
     'draw-route',
     'open-register-modal',
-    'store-more'
+    'store-more',
+    'update-region-list',
+    'add-store',
+    'remove-store',
+    'store-type-change'
   ],
+  props: {
+    selectedStores: {
+      type: Array,
+      default: () => []
+    },
+    offlineStoreType: {
+      type: String,
+      default: '00030001'
+    }
+  },
   data() {
     return {
       selectedType: 'optimal',
-      selectedStores: [],
+      // selectedStores is provided by parent via props
       currentLocation: null, // { lat, lon }
       showRouteModal: false,
       routeModalContent: '',
       branchTypeList: [], // 지점 타입 리스트로 명칭 변경
-      offlineStoreType: '00030001',
+      // offlineStoreType is now provided by parent via props
       storeType: '00050001',
       selectedCountry: 'KR',
       countryList: [],
-      regionList: [],
+      regionStoreList: [],
       expandedCities: {},
       expandedDistricts: {},
       activeStore: null,
@@ -185,7 +211,7 @@ export default {
       this.$emit('route-type-change', type);
     },
     changeBranchType(type) {
-      this.offlineStoreType = type;
+      this.$emit('store-type-change', type);
       this.searchResults = []; // 탭 변경시 검색 결과 초기화
     },
     handleCountryChange(e) {
@@ -205,13 +231,18 @@ export default {
       };
     },
     addStoreToRoute(store) {
-      this.activeStore = store.branchNm;
-      if (!this.selectedStores.find(s => s.branchNm === store.branchNm)) {
-        this.selectedStores.push(store);
+      this.$emit('add-store', store);
+    },
+    openStoreDetail(store) {
+      if(this.offlineStoreType !== '00030003'){
+        this.activeStore = store.branchNm;
+      } else {
+        this.activeStore = store.storeCd;
       }
+      //TODO : 스토어 상세페이지 열기
     },
     removeStore(store) {
-      this.selectedStores = this.selectedStores.filter(s => s.branchNm !== store.branchNm);
+      this.$emit('remove-store', store);
     },
     getSearchPlaceholder() {
       const placeholders = {
@@ -257,11 +288,13 @@ export default {
       this.getApi('/store/offline/branches', { cntryCd:cntryCd, offlineStoreType : this.offlineStoreType }, this.getBranchesSuccess, this.getBranchesFail)
     },
     getBranchesSuccess(res) {
-      this.regionList = res.data;
+      this.regionStoreList = res.data;
+      this.$emit('update-region-list', this.regionStoreList);
     },
     getBranchesFail(error) {
       console.error('지역별 매장 수 조회 실패:', error);
-      this.regionList = [];
+      this.regionStoreList = [];
+      this.$emit('update-region-list', this.regionStoreList);
     },
     async findRoute() {
       if (!this.currentLocation) {
@@ -322,10 +355,19 @@ export default {
     },
   },
   watch: {
-    offlineStoreType(newType) {
-      if (newType) {
-        this.getCountryCount();
-      }
+    regionStoreList: {
+      handler(newVal) {
+        this.$emit('update-region-list', newVal);
+      },
+      deep: true
+    },
+    offlineStoreType: {
+      handler(newType) {
+        if (newType) {
+          this.getCountryCount();
+        }
+      },
+      immediate: true
     },
   },
   mounted() {
@@ -502,6 +544,25 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+}
+
+.inline-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color1);
+  font-family: var(--sub-font);
+  font-size: 0.8rem;
+}
+.legend-item img {
+  width: 12px;
+  height: 20px;
+  object-fit: contain;
 }
 
 .section-header h5 {
