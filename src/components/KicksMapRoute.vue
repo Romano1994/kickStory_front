@@ -23,6 +23,7 @@
           class="search-input" 
           :placeholder="getSearchPlaceholder()"
           v-model="searchKeyword"
+          @keydown.enter="searchStores"
         />
         <button class="search-btn" @click="searchStores">검색</button>
       </div>
@@ -103,12 +104,18 @@
           <div class="no-store-text">등록된 스토어 정보가 없습니다</div>
         </div>
       </div>
+      <button class="register-btn" @click="$emit('open-register-modal')">스토어 등록하기</button>
     </div>
 
     <!-- 경로 설정 -->
     <div class="route-section">
       <div class="section-header">
-        <h5>경로 검색 방식</h5>
+        <div class="section-title-with-help">
+          <h5>경로 검색 방식</h5>
+          <button class="help-icon" @click="showRouteHelpModal" title="경로 검색 방식 도움말">
+            ?
+          </button>
+        </div>
       </div>
       <div class="btn-group route-type-toggle" role="group" aria-label="Route Type Toggle">
         <button
@@ -157,6 +164,26 @@
       @close="closeRouteModal"
       @confirm="closeRouteModal"
     />
+    
+    <CommonModal
+      :show="isShowRouteHelpModal"
+      type="alert"
+      title="경로 검색 방식 안내"
+      :htmlContent="`
+        <div style='text-align: left; line-height: 1.8;'>
+          <div style='margin-bottom: 1rem;'>
+            <strong style='color: var(--color6); font-size: 1.1rem;'>🎯 최적경로</strong>
+            <p style='margin: 0.5rem 0 0 0; color: var(--color1);'>현재 위치에서 모든 스토어를 가장 효율적인 순서로 방문하는 경로를 찾습니다.</p>
+          </div>
+          <div>
+            <strong style='color: var(--color6); font-size: 1.1rem;'>📍 도착지 고정</strong>
+            <p style='margin: 0.5rem 0 0 0; color: var(--color1);'>선택한 첫 번째 스토어부터 순서대로 방문하며, 마지막 스토어를 최종 목적지로 설정합니다.</p>
+          </div>
+        </div>
+      `"
+      @close="closeRouteHelpModal"
+      @confirm="closeRouteHelpModal"
+    />
   </div>
 </template>
 <script>
@@ -192,6 +219,7 @@ export default {
       currentLocation: null, // { lat, lon }
       showRouteModal: false,
       routeModalContent: '',
+      isShowRouteHelpModal: false,
       branchTypeList: [], // 지점 타입 리스트로 명칭 변경
       // offlineStoreType is now provided by parent via props
       storeType: '00050001',
@@ -246,15 +274,44 @@ export default {
     },
     getSearchPlaceholder() {
       const placeholders = {
-        '00030001': '편집샵 검색 (예: 나이키, 아디다스)',
+        '00030001': '편집샵 검색 (예: 웍스아웃, 카시나나)',
         '00030002': '브랜드샵 검색 (예: 나이키, 아디다스)',
-        '00030003': '팝업샵 검색 (예: 한정판, 특별전)'
+        '00030003': '팝업샵 검색 (예: 귀멸의 칼날 팝업업)'
       };
       return placeholders[this.offlineStoreType] || '스토어 검색';
     },
     searchStores() {
-      // 검색 로직은 나중에 구현
-      console.log('검색:', this.searchKeyword);
+      const keyword = (this.searchKeyword || '').trim();
+      if (!keyword) {
+        this.searchResults = [];
+        return;
+      }
+
+      const lowerKeyword = keyword.toLowerCase();
+      const seen = new Set();
+      const results = [];
+
+      // 현재 국가에 대한 지역별 스토어 목록(this.regionStoreList)에서 검색
+      this.regionStoreList.forEach(city => {
+        (city.admSggList || []).forEach(district => {
+          (district.offlineBranchList || []).forEach(store => {
+            const kor = String(store.storeKorNm || '').toLowerCase();
+            const eng = String(store.storeEngNm || '').toLowerCase();
+            const isMatch = kor.includes(lowerKeyword) || eng.includes(lowerKeyword);
+            if (!isMatch) return;
+
+            const key = this.offlineStoreType !== '00030003'
+              ? `B-${store.branchCd}`
+              : `S-${store.storeCd}`;
+            if (key && !seen.has(key)) {
+              seen.add(key);
+              results.push(store);
+            }
+          });
+        });
+      });
+
+      this.searchResults = results;
     },
     fetchBranchTypeList() {
       api.get(
@@ -352,6 +409,12 @@ export default {
     },
     closeRouteModal() {
       this.showRouteModal = false;
+    },
+    showRouteHelpModal() {
+      this.isShowRouteHelpModal = true;
+    },
+    closeRouteHelpModal() {
+      this.isShowRouteHelpModal = false;
     },
   },
   watch: {
@@ -691,6 +754,32 @@ export default {
   padding: 1rem;
 }
 
+.section-title-with-help {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.help-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--color6);
+  color: white;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.help-icon:hover {
+  background-color: #2a7a7f;
+}
+
 .route-type-toggle {
   display: flex;
   background-color: rgba(255, 255, 255, 0.1);
@@ -833,6 +922,26 @@ export default {
 .find-route-btn:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+/* 스토어 등록하기 버튼 */
+.register-btn {
+  margin-top: 1rem;
+  width: 100%;
+  background-color: var(--color6);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--sub-font);
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 12px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.register-btn:hover {
+  background: #2a7a7f;
 }
 
 @media screen and (max-width: 1024px) {

@@ -14,6 +14,10 @@ export default {
       type: String,
       default: ''
     },
+    htmlContent: {
+      type: String,
+      default: ''
+    },
     type: {
       type: String,
       default: 'confirm',
@@ -51,7 +55,8 @@ export default {
         <h3>{{ title }}</h3>
       </div>
       <div class="modal-content">
-        <div v-if="content" class="content-text">{{ content }}</div>
+        <div v-if="htmlContent" class="content-text" v-html="htmlContent"></div>
+        <div v-else-if="content" class="content-text">{{ content }}</div>
         <slot></slot>
       </div>
       <div class="modal-footer">
