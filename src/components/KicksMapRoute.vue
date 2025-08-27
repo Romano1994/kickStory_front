@@ -32,7 +32,7 @@
         <ul class="search-result-list">
           <li 
             v-for="store in searchResults" 
-            :key="store.branchNm" 
+            :key="store.branchCd" 
             class="search-result-item"
             @click="addStoreToRoute(store)"
           >
@@ -72,7 +72,7 @@
                 <li 
                   class="store-item" 
                   v-for="store in district.offlineBranchList" 
-                  :key="store.branchNm" 
+                  :key="store.branchCd" 
                   @click="openStoreDetail(store)" 
                   :class="{ active: activeStore === store.branchNm }"
                 >
@@ -235,7 +235,7 @@ export default {
     },
     openStoreDetail(store) {
       if(this.offlineStoreType !== '00030003'){
-        this.activeStore = store.branchNm;
+        this.activeStore = store.branchCd;
       } else {
         this.activeStore = store.storeCd;
       }

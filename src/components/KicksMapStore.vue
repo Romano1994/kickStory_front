@@ -18,11 +18,11 @@
     <div class="tab-container" v-if="branchTypeList.length">
       <div class="tab-list">
         <button
-          v-for="type in branchTypeList"
-          :key="type.commCdDtl"
-          class="tab-item"
-          :class="{ active: offlineStoreType === type.commCdDtl }"
-          @click="changeBranchType(type.commCdDtl)"
+            v-for="type in branchTypeList"
+            :key="type.commCdDtl"
+            class="tab-item"
+            :class="{ active: offlineStoreType === type.commCdDtl }"
+            @click="changeBranchType(type.commCdDtl)"
         >
           {{ type.commCdDtlNm }}
         </button>
@@ -31,7 +31,7 @@
     <div v-if="storeType === '00050001'">
       <div v-if="regionList.length" class="location-list">
         <div class="country-select-container">
-          <select class="country-select" :value="selectedCountry" @change="handleCountryChange" >
+          <select class="country-select" :value="selectedCountry" @change="handleCountryChange">
             <option v-for="country in countryList" :key="country.cntryCd" :value="country.cntryCd">
               {{ country.cntryKorNm }}({{ country.cntryCnt }})
             </option>
@@ -49,9 +49,12 @@
                 <span class="arrow" :class="{ expanded: expandedDistricts[district.admRginCd] }">&gt;</span>
               </div>
               <ul class="store-list" v-show="expandedDistricts[district.admRginCd]">
-                <li class="store-item" v-for="store in district.offlineBranchList" :key="store.branchNm" @click="handleStoreClick(store)" :class="{ active: activeStore === store.branchNm }">
-                    <span v-if="offlineStoreType === '00030001' || offlineStoreType === '00030002'">{{ store.storeKorNm }} {{ store.branchNm }}</span>
-                    <span v-if="offlineStoreType === '00030003'">{{ store.storeKorNm }}</span>
+                <li class="store-item" v-for="store in district.offlineBranchList" :key="store.branchNm"
+                    @click="handleStoreClick(store)" :class="{ active: activeStore === store.branchNm }">
+                  <span v-if="offlineStoreType === '00030001' || offlineStoreType === '00030002'">{{ store.storeKorNm }} {{
+                      store.branchNm
+                    }}</span>
+                  <span v-if="offlineStoreType === '00030003'">{{ store.storeKorNm }}</span>
                   <button class="store-more-btn" @click.stop="$emit('store-more', store)">더보기</button>
                 </li>
               </ul>
@@ -61,7 +64,7 @@
       </div>
       <div v-else>
         <div class="no-store-box">
-          <img src="@/assets/map/location-pin.png" alt="No Store" class="no-store-icon" />
+          <img src="@/assets/map/location-pin.png" alt="No Store" class="no-store-icon"/>
           <div class="no-store-text">등록된 스토어 정보가 없습니다</div>
         </div>
       </div>
@@ -112,10 +115,10 @@ export default {
     },
     fetchBranchTypeList() {
       api.get(
-        '/comm-cd/detail',
-        { commCd: '0003' },
-        this.handleBranchTypeListSuccess,
-        this.handleBranchTypeListFail
+          '/comm-cd/detail',
+          {commCd: '0003'},
+          this.handleBranchTypeListSuccess,
+          this.handleBranchTypeListFail
       );
     },
     handleBranchTypeListSuccess(res) {
@@ -125,7 +128,7 @@ export default {
       console.error('지점 타입 목록 불러오기 실패', err);
     },
     getCountryCount() {
-      this.getApi('/store/offline/countries/count',{offlineStoreType: this.offlineStoreType}, this.getCountryCountSuccess, this.getCountryCountFail)
+      this.getApi('/store/offline/countries/count', {offlineStoreType: this.offlineStoreType}, this.getCountryCountSuccess, this.getCountryCountFail)
     },
     getCountryCountSuccess(res) {
       this.countryList = res.data;
@@ -139,7 +142,10 @@ export default {
       this.countryList = [];
     },
     getBranches(cntryCd) {
-      this.getApi('/store/offline/branches', { cntryCd:cntryCd, offlineStoreType : this.offlineStoreType }, this.getBranchesSuccess, this.getBranchesFail)
+      this.getApi('/store/offline/branches', {
+        cntryCd: cntryCd,
+        offlineStoreType: this.offlineStoreType
+      }, this.getBranchesSuccess, this.getBranchesFail)
     },
     getBranchesSuccess(res) {
       this.regionList = res.data;
@@ -361,6 +367,7 @@ export default {
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .store-more-btn:hover {
   background: #2a7a7f;
 }
@@ -368,6 +375,7 @@ export default {
 .district-list {
   padding-left: 1.5rem;
 }
+
 .district-header {
   cursor: pointer;
   display: flex;
@@ -396,12 +404,14 @@ export default {
   min-height: 180px;
   margin: 1rem 0;
 }
+
 .no-store-icon {
   width: 48px;
   height: 48px;
   margin-bottom: 1rem;
   opacity: 0.7;
 }
+
 .no-store-text {
   color: var(--color1);
   font-family: var(--sub-font);
@@ -414,10 +424,12 @@ export default {
   .search-container {
     gap: 4px;
   }
+
   .search-select {
     width: 80px;
     min-width: 80px;
   }
+
   .search-btn {
     padding: 8px 12px;
   }
@@ -428,20 +440,25 @@ export default {
     width: 95%;
     padding: 1rem;
   }
+
   .register-modal > div:first-child {
     padding: 1rem;
   }
+
   .register-modal button {
     padding: 8px 1rem;
   }
+
   .no-store-box {
     padding: 2rem 0.5rem;
     min-height: 120px;
   }
+
   .no-store-icon {
     width: 36px;
     height: 36px;
   }
+
   .no-store-text {
     font-size: 1rem;
   }
