@@ -141,8 +141,13 @@
       </div>
       <div class="selected-stores">
         <ul>
+          <li v-if="selectedType === 'optimal'" class="current-location-item">
+            <span class="store-order">📍</span>
+            <span class="store-name">현재 위치</span>
+          </li>
           <li v-for="(store, index) in selectedStores" :key="store.branchNm">
-            <span class="store-order">{{ index + 1 }}</span>
+            <!-- <span class="store-order">{{ index + 1 }}</span> -->
+            <span class="store-order">{{ selectedType === 'optimal' ? index + 2 : index + 1 }}</span>
             <span class="store-name">{{ store.storeKorNm }} {{ store.branchNm }}</span>
             <button @click="removeStore(store)" class="remove-btn">제거</button>
           </li>
@@ -185,6 +190,9 @@
       @confirm="closeRouteHelpModal"
     />
   </div>
+  <!-- //TODO : 스토어 등록하기 -->
+  <!-- //TODO : 최적경로 도착지 고정, 순서대로 -->
+  <!-- //TODO : 즐겨찾기 -->
 </template>
 <script>
 import CommonModal from './CommonModal.vue';
@@ -362,7 +370,12 @@ export default {
         alert('경로에 추가된 매장이 없습니다.');
         return;
       }
-      const coords = this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
+      let coords = null;
+      if(this.selectedType === 'optimal'){
+        coords = this.currentLocation.lon + ',' + this.currentLocation.lat + ';' + this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
+      }else{
+        coords = this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
+      }
       const url = `https://router.project-osrm.org/trip/v1/foot/${coords}?roundtrip=false&source=first&destination=any&overview=full&geometries=polyline`;
       try {
         const res = await fetch(url);
