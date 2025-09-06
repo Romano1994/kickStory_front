@@ -174,6 +174,9 @@
       <button class="find-route-btn" @click="findRoute" :disabled="selectedStores.length === 0">
         경로 찾기
       </button>
+      <button class="add-favorite-btn" @click="addToFavorites" :disabled="selectedStores.length === 0">
+        즐겨찾기 추가
+      </button>
     </div>
 
     <CommonModal
@@ -486,6 +489,13 @@ export default {
     },
     closeRouteHelpModal() {
       this.isShowRouteHelpModal = false;
+    },
+    addToFavorites() {
+      if (this.selectedStores.length === 0) return;
+      
+      // 즐겨찾기 추가 로직
+      console.log('즐겨찾기에 추가:', this.selectedStores);
+      // TODO: 실제 즐겨찾기 저장 API 호출
     },
   },
   watch: {
@@ -1063,6 +1073,30 @@ export default {
 }
 
 .find-route-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.add-favorite-btn {
+  width: 100%;
+  background-color: #f39c12;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--sub-font);
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 12px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-favorite-btn:hover:not(:disabled) {
+  background: #e67e22;
+}
+
+.add-favorite-btn:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
