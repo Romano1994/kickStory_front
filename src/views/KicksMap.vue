@@ -417,7 +417,7 @@ export default {
         </div>
       </div>
     </div>
-    <RegisterModal v-if="showRegisterModal" @close="closeRegisterModal"/>
+    <RegisterModal v-if="showRegisterModal" :initial-offline-store-type="offlineStoreType" @close="closeRegisterModal"/>
     <CommonModal
         :show="showCommonModal"
         :content="commonModalMessage"

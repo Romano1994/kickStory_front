@@ -15,6 +15,12 @@ export default {
     CommonModal,
     StoreRegistrationModal,
   },
+  props: {
+    initialOfflineStoreType: {
+      type: String,
+      default: '00030001'
+    }
+  },
   data() {
     return {
       storeCd: "",
@@ -22,7 +28,7 @@ export default {
       storeEngNm: "",
       cntry: "",
       branchNm: "",
-      offlineStoreTypeCd: "00030001",
+      offlineStoreTypeCd: this.initialOfflineStoreType,
       place: "",
       website: "",
       shopDescription: "",
@@ -42,6 +48,7 @@ export default {
       usualBrands: [],
       usualBrandSearch: "",
       usualBrandList: [],
+      searchBrandList: [],
       countryList: [],
       cntryCd: "",
       offlineStoreTypeList: [],
@@ -268,19 +275,26 @@ export default {
       this.selectedBrandCd = brand.brandCd;
       this.selectedBrandNmEng = brand.brandNmEng;
       this.selectedBrandNmKor = brand.brandNmKor;
-      this.usualBrandList = [];
+      this.searchBrandList = [];
     },
     searchBrandsForShop() {
       if (this.selectedBrandNmKor.trim()) {
         this.getApi(
           "/brand",
           { name: this.selectedBrandNmKor },
-          this.searchUsualBrandsSuccess,
-          this.searchUsualBrandsFail
+          this.searchBrandsForShopSuccess,
+          this.searchBrandsForShopFail
         );
       } else {
-        this.usualBrandList = [];
+        this.searchBrandList = [];
       }
+    },
+    searchBrandsForShopSuccess(res) {
+      this.searchBrandList = res.data;
+    },
+    searchBrandsForShopFail(error) {
+      console.error("Brand search failed:", error);
+      this.searchBrandList = [];
     },
     register() {
       if (this.offlineStoreTypeCd === "00030001") {
@@ -602,10 +616,10 @@ export default {
         <div v-if="['00030002','00030003'].includes(offlineStoreTypeCd)"> 
           <label class="form-label">브랜드명<span class="required-star">*</span></label>
          
-          <input class="form-input" type="text" v-model="selectedBrandNmKor" @input="searchBrandsForShop" />
-          <div v-if="usualBrandList.length > 0" class="search-list">
+          <input class="form-input" type="text" v-model="selectedBrandNmKor" @input="searchBrandsForShop" placeholder="브랜드명을 입력하세요" />
+          <div v-if="searchBrandList.length > 0" class="search-list">
             <div
-              v-for="brand in usualBrandList"
+              v-for="brand in searchBrandList"
               :key="brand.brandCd"
               @click="selectBrandForShop(brand)"
               class="search-item"
@@ -619,12 +633,20 @@ export default {
             </div>
           </div>
         </div>
+
+        <div v-if="['00030002'].includes(offlineStoreTypeCd)"> 
+          <label class="form-label">
+              브랜드명(영어)<span class="required-star">*</span>
+            </label>
+            <input class="form-input" type="text" v-model="selectedBrandNmEng" placeholder="영어 브랜드명을 입력하세요" />
+          </div>
+
         <div>
           <div v-if="['00030001','00030003'].includes(offlineStoreTypeCd)">
             <label class="form-label">
-              스토어명<span class="required-star">*</span>
+              {{ offlineStoreTypeCd === '00030001' ? '스토어명(한글)' : '스토어명' }}<span class="required-star">*</span>
             </label>
-            <input class="form-input" type="text" v-model="storeKorNm" @input="storeSearch" />
+            <input class="form-input" type="text" v-model="storeKorNm" @input="storeSearch" placeholder="스토어명을 입력하세요" />
             <div v-if="storeList.length > 0" class="search-list">
               <div
                 v-for="store in storeList"
@@ -642,16 +664,22 @@ export default {
             </div>
           </div>
         </div>
+        <div v-if="offlineStoreTypeCd === '00030001'">
+            <label class="form-label">
+              스토어명(영어)<span class="required-star">*</span>
+            </label>
+            <input class="form-input" type="text" v-model="storeEngNm" placeholder="영어 스토어명을 입력하세요" />
+          </div>
         <div v-if="['00030001', '00030002'].includes(offlineStoreTypeCd)">
           <label class="form-label">
             지점명
             <span class="required-star">*</span>
           </label>
-          <input class="form-input" type="text" v-model="branchNm" />
+          <input class="form-input" type="text" v-model="branchNm" placeholder="지점명을 입력하세요" />
         </div>
-        <div v-if="['00030001', '00030002'].includes(offlineStoreTypeCd)">
+        <!-- <div v-if="['00030001', '00030002'].includes(offlineStoreTypeCd)">
           <label class="form-label">국가</label>
-          <input class="form-input" type="text" v-model="cntry" @input="srchCntryList" />
+          <input class="form-input" type="text" v-model="cntry" @input="srchCntryList" placeholder="국가명을 입력하세요" />
           <div v-if="countryList.length > 0" class="search-list">
             <div
               v-for="country in countryList"
@@ -662,7 +690,7 @@ export default {
               {{ country.cntryKorNm }}
             </div>
           </div>
-        </div>
+        </div> -->
         <div v-if="['00030001', '00030002', '00030003'].includes(offlineStoreTypeCd)">
           <label class="form-label">
             주소검색<span class="required-star">*</span>
@@ -764,7 +792,7 @@ export default {
         </div>
         <div v-if="['00030001'].includes(offlineStoreTypeCd)"> 
           <label class="form-label">취급 브랜드</label>
-          <input class="form-input" type="text" v-model="usualBrandSearch" @input="searchUsualBrands" />
+          <input class="form-input" type="text" v-model="usualBrandSearch" @input="searchUsualBrands" placeholder="취급 브랜드명을 입력하세요" />
           <div v-if="usualBrandList.length > 0" class="search-list">
             <div
               v-for="brand in usualBrandList"
@@ -797,7 +825,7 @@ export default {
         </div>
         <div>
           <label class="form-label">비고</label>
-          <input class="form-input" type="text" v-model="shopDescription" placeholder="비고를 입력하세요" />
+          <input class="form-input" type="text" v-model="shopDescription" placeholder="추가 정보나 특이사항을 입력하세요" />
         </div>
         <!-- <div v-if="branchTypeCd !== '00030001'">
           <span>웹사이트 주소 입력</span>
@@ -970,12 +998,14 @@ export default {
 }
 
 .register-modal button:first-child {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--color1);
+  background-color: rgba(255, 255, 255, 0.3);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .register-modal button:first-child:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.7);
 }
 
 .register-modal button:last-child {

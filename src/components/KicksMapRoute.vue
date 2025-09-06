@@ -130,24 +130,39 @@
           :class="selectedType === 'fixed' ? 'btn-primary' : 'btn-outline-primary'"
           @click="selectType('fixed')"
         >도착지 고정</button>
+        <button
+          type="button"
+          class="btn"
+          :class="selectedType === 'sequential' ? 'btn-primary' : 'btn-outline-primary'"
+          @click="selectType('sequential')"
+        >순차 검색</button>
       </div>
     </div>
 
     <!-- 선택된 경로 -->
     <div class="selected-route-section">
       <div class="section-header">
-        <h5>선택된 경로</h5>
-        <span class="store-count">({{ selectedStores.length }}개)</span>
+        <div class="route-header-left">
+          <h5>선택된 경로</h5>
+          <span class="store-count">({{ selectedStores.length }}개)</span>
+        </div>
+        <div class="route-header-right">
+          <label class="current-location-toggle">
+            <input type="checkbox" v-model="useCurrentLocation" class="toggle-checkbox">
+            <span class="toggle-slider"></span>
+            <span class="toggle-text">현재 위치 시작</span>
+          </label>
+        </div>
       </div>
       <div class="selected-stores">
         <ul>
-          <li v-if="selectedType === 'optimal'" class="current-location-item">
+          <li v-if="useCurrentLocation" class="current-location-item">
             <span class="store-order">📍</span>
             <span class="store-name">현재 위치</span>
           </li>
           <li v-for="(store, index) in selectedStores" :key="store.branchNm">
             <!-- <span class="store-order">{{ index + 1 }}</span> -->
-            <span class="store-order">{{ selectedType === 'optimal' ? index + 2 : index + 1 }}</span>
+            <span class="store-order">{{ useCurrentLocation ? index + 2 : index + 1 }}</span>
             <span class="store-name">{{ store.storeKorNm }} {{ store.branchNm }}</span>
             <button @click="removeStore(store)" class="remove-btn">제거</button>
           </li>
@@ -178,11 +193,15 @@
         <div style='text-align: left; line-height: 1.8;'>
           <div style='margin-bottom: 1rem;'>
             <strong style='color: var(--color6); font-size: 1.1rem;'>🎯 최적경로</strong>
-            <p style='margin: 0.5rem 0 0 0; color: var(--color1);'>현재 위치에서 모든 스토어를 가장 효율적인 순서로 방문하는 경로를 찾습니다.</p>
+            <p style='margin: 0.5rem 0 0 0; color: var(--color1);'>'현재 위치 시작'이 활성화되지 않은 경우, 처음 스토어를 기준으로 가장 효율적인 순서로 방문하는 경로를 찾습니다.</p>
           </div>
           <div>
             <strong style='color: var(--color6); font-size: 1.1rem;'>📍 도착지 고정</strong>
-            <p style='margin: 0.5rem 0 0 0; color: var(--color1);'>선택한 첫 번째 스토어부터 순서대로 방문하며, 마지막 스토어를 최종 목적지로 설정합니다.</p>
+            <p style='margin: 0.5rem 0 0 0; color: var(--color1);'>선택된 경로 중 마지막 스토어를 최종 목적지로 설정하고, 그외의 스토어들은 최적 경로로 방문하는 경로를 찾습니다. '현재 위치 시작'이 활성화 되지 않은 경우, 첫 스토어 기준으로 경로를 찾습니다.</p>
+          </div>
+          <div style='margin-bottom: 1rem;'>
+            <strong style='color: var(--color6); font-size: 1.1rem;'>🔢 순차 검색</strong>
+            <p style='margin: 0.5rem 0 0 0; color: var(--color1);'>선택된 스토어들을 추가한 순서대로 방문하는 경로를 찾습니다.</p>
           </div>
         </div>
       `"
@@ -191,7 +210,6 @@
     />
   </div>
   <!-- //TODO : 스토어 등록하기 -->
-  <!-- //TODO : 최적경로 도착지 고정, 순서대로 -->
   <!-- //TODO : 즐겨찾기 -->
 </template>
 <script>
@@ -223,6 +241,7 @@ export default {
   data() {
     return {
       selectedType: 'optimal',
+      useCurrentLocation: true,
       // selectedStores is provided by parent via props
       currentLocation: null, // { lat, lon }
       showRouteModal: false,
@@ -362,7 +381,7 @@ export default {
       this.$emit('update-region-list', this.regionStoreList);
     },
     async findRoute() {
-      if (!this.currentLocation) {
+      if (this.useCurrentLocation && !this.currentLocation) {
         alert('현재 위치 정보를 가져올 수 없습니다.');
         return;
       }
@@ -371,23 +390,62 @@ export default {
         return;
       }
       let coords = null;
-      if(this.selectedType === 'optimal'){
-        coords = this.currentLocation.lon + ',' + this.currentLocation.lat + ';' + this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
-      }else{
-        coords = this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
+      let url = null;
+      
+      if (this.selectedType === 'sequential') {
+        // 순차 검색: 선택된 순서대로 방문
+        if (this.useCurrentLocation) {
+          coords = this.currentLocation.lon + ',' + this.currentLocation.lat + ';' + this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
+        } else {
+          coords = this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
+        }
+        url = `https://router.project-osrm.org/route/v1/foot/${coords}?overview=full&geometries=polyline`;
+      } else if (this.selectedType === 'optimal') {
+        // 최적경로: 가장 효율적인 순서로 방문
+        if (this.useCurrentLocation) {
+          coords = this.currentLocation.lon + ',' + this.currentLocation.lat + ';' + this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
+        } else {
+          coords = this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
+        }
+        url = `https://router.project-osrm.org/trip/v1/foot/${coords}?roundtrip=false&source=first&destination=any&overview=full&geometries=polyline`;
+      } else {
+        // 도착지 고정: 마지막 스토어를 목적지로 고정
+        if (this.useCurrentLocation) {
+          coords = this.currentLocation.lon + ',' + this.currentLocation.lat + ';' + this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
+        } else {
+          coords = this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
+        }
+        url = `https://router.project-osrm.org/trip/v1/foot/${coords}?roundtrip=false&source=first&destination=last&overview=full&geometries=polyline`;
       }
-      const url = `https://router.project-osrm.org/trip/v1/foot/${coords}?roundtrip=false&source=first&destination=any&overview=full&geometries=polyline`;
       try {
         const res = await fetch(url);
         const data = await res.json();
-        if (data.code === 'Ok' && data.trips && data.trips.length > 0) {
-          const trip = data.trips[0];
-          const distKm = (trip.distance / 1000).toFixed(2);
-          const durationMin = (trip.duration / 60).toFixed(1);
-          this.routeModalContent = `경로 총 거리: ${distKm}km, 예상 소요: ${durationMin}분`;
-          this.showRouteModal = true;
-          const coordsArr = this.decodePolyline(trip.geometry);
-          this.$emit('draw-route', coordsArr);
+        
+        if (data.code === 'Ok') {
+          let routeData = null;
+          
+          if (this.selectedType === 'sequential') {
+            // 순차 검색의 경우 routes 배열 사용
+            if (data.routes && data.routes.length > 0) {
+              routeData = data.routes[0];
+            }
+          } else {
+            // 최적경로, 도착지 고정의 경우 trips 배열 사용
+            if (data.trips && data.trips.length > 0) {
+              routeData = data.trips[0];
+            }
+          }
+          
+          if (routeData) {
+            const distKm = (routeData.distance / 1000).toFixed(2);
+            const durationMin = (routeData.duration / 60).toFixed(1);
+            this.routeModalContent = `경로 총 거리: ${distKm}km, 예상 소요: ${durationMin}분`;
+            this.showRouteModal = true;
+            const coordsArr = this.decodePolyline(routeData.geometry);
+            this.$emit('draw-route', coordsArr);
+          } else {
+            alert('경로를 찾을 수 없습니다.');
+          }
         } else {
           alert('경로를 찾을 수 없습니다.');
         }
@@ -831,6 +889,12 @@ export default {
   border-right: 1px solid rgba(255,255,255,0.12);
 }
 
+.route-type-toggle .btn {
+  min-width: 0;
+  flex: 1;
+  font-size: 0.85rem;
+}
+
 /* 선택된 경로 섹션 */
 .selected-route-section {
   background-color: var(--color2);
@@ -838,10 +902,76 @@ export default {
   padding: 1rem;
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.route-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.route-header-right {
+  flex-shrink: 0;
+}
+
 .store-count {
   color: var(--color6);
   font-size: 0.9rem;
   font-weight: bold;
+}
+
+/* 현재 위치 시작 토글 */
+.current-location-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-checkbox {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 40px;
+  height: 20px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+}
+
+.toggle-checkbox:checked + .toggle-slider {
+  background-color: var(--color6);
+}
+
+.toggle-checkbox:checked + .toggle-slider::before {
+  transform: translateX(20px);
+}
+
+.toggle-text {
+  color: var(--color1);
+  font-size: 0.8rem;
+  font-family: var(--sub-font);
+  white-space: nowrap;
 }
 
 .selected-stores {
