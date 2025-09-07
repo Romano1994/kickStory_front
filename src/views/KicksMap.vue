@@ -182,9 +182,65 @@ export default {
     clearWaypointMarkers() {
       if (this.waypointMarkers && this.waypointMarkers.length > 0) {
         this.waypointMarkers.forEach(marker => {
-          this.map.removeLayer(marker);
+          if (this.map) {
+            this.map.removeLayer(marker);
+          }
         });
         this.waypointMarkers = [];
+      }
+    },
+    clearAllMarkersAndResetLocation() {
+      if (!this.map) return;
+      
+      // 모든 매장 마커 제거
+      if (this.storeMarkers) {
+        this.storeMarkers.forEach(marker => this.map.removeLayer(marker));
+        this.storeMarkers = [];
+      }
+      
+      // 선택된 매장 마커 제거
+      if (this.selectedStoreMarkers) {
+        this.selectedStoreMarkers.forEach(marker => this.map.removeLayer(marker));
+        this.selectedStoreMarkers = [];
+      }
+      
+      // 웨이포인트 마커 제거
+      this.clearWaypointMarkers();
+      
+      // 경로 폴리라인 제거
+      if (this.routePolyline) {
+        this.map.removeLayer(this.routePolyline);
+        this.routePolyline = null;
+      }
+      
+      // 현재 위치 마커 제거 후 재설정
+      if (this.marker) {
+        this.map.removeLayer(this.marker);
+        this.marker = null;
+      }
+      
+      // 현재 위치 재설정
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            this.marker = L.marker([lat, lon], {icon: this.icon});
+            this.marker.addTo(this.map);
+            this.map.setView([lat, lon], 13);
+          },
+          () => {
+            // 위치 정보 못 가져오면 기본 위치에 마커
+            this.marker = L.marker([37.566734, 126.978236], {icon: this.icon});
+            this.marker.addTo(this.map);
+            this.map.setView([37.566734, 126.978236], 13);
+          }
+        );
+      } else {
+        // 브라우저가 geolocation 지원 안하면 기본 위치
+        this.marker = L.marker([37.547809, 126.979914], {icon: this.icon});
+        this.marker.addTo(this.map);
+        this.map.setView([37.547809, 126.979914], 13);
       }
     },
     onTabChange(idx) {
@@ -221,9 +277,9 @@ export default {
     },
     handleAddStore(store) {
       if (this.offlineStoreType != "00030003" && !this.selectedStores.find(s => s.branchCd === store.branchCd)) {
-        this.selectedStores.push(store);
+        this.selectedStores.push({offlineStoreType:this.offlineStoreType,...store});
       } else if (this.offlineStoreType == "00030003" && !this.selectedStores.find(s => s.storeCd === store.storeCd)) {
-        this.selectedStores.push(store);
+        this.selectedStores.push({offlineStoreType:this.offlineStoreType,...store});
       }
     },
     handleRemoveStore(store) {
@@ -234,6 +290,14 @@ export default {
       // Reset active store when type changes
       this.activeStore = null;
       this.addStoreMarkers();
+      this.addSelectedStoreMarkers();
+    },
+    handleAddStores(stores) {
+      // 기존 selectedStores 초기화 후 새로운 stores 추가
+      this.selectedStores = [];
+      stores.forEach(store => {
+        this.selectedStores.push(store);
+      });
       this.addSelectedStoreMarkers();
     },
 
@@ -399,6 +463,11 @@ export default {
         this.addSelectedStoreMarkers();
       },
       deep: true
+    },
+    activeNavIndex: {
+      handler() {
+        this.clearAllMarkersAndResetLocation();
+      }
     }
   },
   beforeUnmount() {
@@ -457,7 +526,7 @@ export default {
               @add-store="handleAddStore"
               @remove-store="handleRemoveStore"
           />
-          <KicksMapFavorite v-if="activeNavIndex === 1"/>
+          <KicksMapFavorite v-if="activeNavIndex === 1" @add-stores="handleAddStores" @draw-route="onDrawRoute"/>
         </div>
       </div>
     </div>
