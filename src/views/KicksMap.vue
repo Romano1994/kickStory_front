@@ -2,7 +2,6 @@
 import L from 'leaflet'
 import RegisterModal from '@/components/RegisterModal.vue'
 import CommonModal from '@/components/CommonModal.vue'
-// import KicksMapStore from '@/components/KicksMapStore.vue'
 import KicksMapRoute from '@/components/KicksMapRoute.vue'
 import KicksMapFavorite from '@/components/KicksMapFavorite.vue'
 
@@ -10,7 +9,6 @@ export default {
   name: "KicksMap",
   components: {
     RegisterModal,
-    // KicksMapStore,
     KicksMapRoute,
     KicksMapFavorite,
     CommonModal
@@ -36,6 +34,7 @@ export default {
       ],
       storeMarkers: [],
       routePolyline: null, // 경로 폴리라인
+      waypointMarkers: [], // 웨이포인트 마커들
       showContent: true, // content 표시 여부
       contentWidth: 400, // content 너비
       isResizing: false, // 리사이징 중인지 여부
@@ -86,7 +85,7 @@ export default {
 
             const marker = L.marker([store.lat, store.lon], {icon, zIndexOffset: isSelected ? 900 : 0})
                 .addTo(this.map)
-                .bindPopup(`${store.storeKorNm} ${store.branchNm}`);
+                // .bindPopup(`${store.storeKorNm} ${store.branchNm}`);
             marker.on('click', () => {
               this.onStoreMarkerClick(store, district, city);
             });
@@ -96,8 +95,6 @@ export default {
       });
     },
     addSelectedStoreMarkers() {
-      console.log("addSelectedStoreMarkers", this.selectedStores);
-
       if (!this.map) return;
       if (this.selectedStoreMarkers) {
         this.selectedStoreMarkers.forEach(m => this.map.removeLayer(m));
@@ -125,20 +122,70 @@ export default {
         this.activeStore = store.storeCd;
       }
     },
-    onDrawRoute(coordsArr) {
-      // coordsArr: [[lat, lng], ...]
+    onDrawRoute(coordsArr, wayPoints) {
+      
+      // 기존 경로 폴리라인 제거
       if (this.routePolyline) {
         this.map.removeLayer(this.routePolyline);
         this.routePolyline = null;
       }
+      
+      // 기존 웨이포인트 마커들 제거
+      this.clearWaypointMarkers();
+      
       // Leaflet은 [lat, lng] 순서 필요
       this.routePolyline = L.polyline(coordsArr, {
         color: '#2a7a7f', // 진한 청록
         weight: 6,
         opacity: 0.85
       }).addTo(this.map);
+      
+      // 웨이포인트 마커들 추가
+      if (wayPoints && Array.isArray(wayPoints)) {
+        wayPoints.forEach((waypoint) => {
+          // location 배열에서 [경도, 위도] -> [위도, 경도]로 변환
+          const lat = waypoint.location[1];
+          const lng = waypoint.location[0];
+                    
+          const waypointMarker = L.marker([lat, lng], {
+            icon: this.createNumberedIcon(waypoint.waypoint_index + 1),
+            zIndexOffset: 10000
+          }).addTo(this.map);
+          
+          // 팝업에 웨이포인트 정보 표시
+          waypointMarker.bindPopup(`
+            <div>
+              <strong>경유지 ${waypoint.waypoint_index + 1}</strong><br>
+              ${waypoint.name}<br>
+              <small>거리: ${waypoint.distance.toFixed(2)}m</small>
+            </div>
+          `);
+          
+          this.waypointMarkers.push(waypointMarker);
+        });
+      }
+      
       // 경로가 보이도록 지도 영역 fit
       this.map.fitBounds(this.routePolyline.getBounds(), {padding: [30, 30]});
+    },
+    // 숫자가 표시된 웨이포인트 마커 아이콘 생성
+    createNumberedIcon(number) {
+      return L.divIcon({
+        className: 'waypoint-marker',
+        html: `<div class="waypoint-number">${number}</div>`,
+        iconSize: [35, 35],
+        iconAnchor: [17, 17],
+        popupAnchor: [0, -17]
+      });
+    },
+    // 웨이포인트 마커들 제거
+    clearWaypointMarkers() {
+      if (this.waypointMarkers && this.waypointMarkers.length > 0) {
+        this.waypointMarkers.forEach(marker => {
+          this.map.removeLayer(marker);
+        });
+        this.waypointMarkers = [];
+      }
     },
     onTabChange(idx) {
       // 같은 탭을 다시 클릭하면 content 토글
@@ -173,8 +220,6 @@ export default {
       this.addSelectedStoreMarkers();
     },
     handleAddStore(store) {
-      console.log("handleAddStore store", store);
-
       if (this.offlineStoreType != "00030003" && !this.selectedStores.find(s => s.branchCd === store.branchCd)) {
         this.selectedStores.push(store);
       } else if (this.offlineStoreType == "00030003" && !this.selectedStores.find(s => s.storeCd === store.storeCd)) {
@@ -219,9 +264,6 @@ export default {
       document.removeEventListener('mousemove', this.handleResize);
       document.removeEventListener('mouseup', this.stopResize);
     },
-    // onStoreMore(store) {
-    //   // TODO: 더보기 버튼 클릭 시 동작 구현
-    // }
   },
   mounted() {
     //map 객체 반환
@@ -359,11 +401,13 @@ export default {
       deep: true
     }
   },
-
   beforeUnmount() {
     // 이벤트 리스너 정리
     document.removeEventListener('mousemove', this.handleResize);
     document.removeEventListener('mouseup', this.stopResize);
+    
+    // 웨이포인트 마커들 정리
+    this.clearWaypointMarkers();
   }
 }
 </script>
@@ -1043,5 +1087,29 @@ export default {
 .my-locate-btn svg {
   width: 18px;
   height: 18px;
+}
+
+/* 웨이포인트 마커 스타일 */
+.waypoint-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.waypoint-number {
+  width: 35px;
+  height: 35px;
+  background: #ff1744;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 23, 68, 0.6);
+  font-family: var(--sub-font);
+  z-index: 10000;
+  position: relative;
 }
 </style>

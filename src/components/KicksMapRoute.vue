@@ -211,17 +211,32 @@
       @close="closeRouteHelpModal"
       @confirm="closeRouteHelpModal"
     />
+    
+    <FavoriteRegisterModal
+      v-if="showFavoriteModal"
+      :selectedStores="selectedStores"
+      @close="closeFavoriteModal"
+      @save="saveFavoriteSuccess"
+    />
+    
+    <CommonModal
+      :show="showAlertModal"
+      type="alert"
+      :title="alertTitle"
+      :content="alertContent"
+      @close="closeAlertModal"
+      @confirm="closeAlertModal"
+    />
   </div>
-  <!-- //TODO : 스토어 등록하기 -->
-  <!-- //TODO : 즐겨찾기 -->
 </template>
 <script>
 import CommonModal from './CommonModal.vue';
+import FavoriteRegisterModal from './FavoriteRegisterModal.vue';
 import api from '@/js/menu/mixins/api/api-call';
 
 export default {
   name: 'KicksMapRoute',
-  components: { CommonModal },
+  components: { CommonModal, FavoriteRegisterModal },
   emits: [
     'draw-route',
     'open-register-modal',
@@ -261,6 +276,10 @@ export default {
       activeStore: null,
       searchKeyword: '',
       searchResults: [],
+      showFavoriteModal: false,
+      showAlertModal: false,
+      alertTitle: '',
+      alertContent: ''
     }
   },
   methods: {
@@ -385,11 +404,11 @@ export default {
     },
     async findRoute() {
       if (this.useCurrentLocation && !this.currentLocation) {
-        alert('현재 위치 정보를 가져올 수 없습니다.');
+        this.showAlert('위치 오류', '현재 위치 정보를 가져올 수 없습니다.');
         return;
       }
       if (this.selectedStores.length === 0) {
-        alert('경로에 추가된 매장이 없습니다.');
+        this.showAlert('경로 오류', '경로에 추가된 매장이 없습니다.');
         return;
       }
       let coords = null;
@@ -426,6 +445,7 @@ export default {
         
         if (data.code === 'Ok') {
           let routeData = null;
+          let wayPoints = data.waypoints;
           
           if (this.selectedType === 'sequential') {
             // 순차 검색의 경우 routes 배열 사용
@@ -445,15 +465,15 @@ export default {
             this.routeModalContent = `경로 총 거리: ${distKm}km, 예상 소요: ${durationMin}분`;
             this.showRouteModal = true;
             const coordsArr = this.decodePolyline(routeData.geometry);
-            this.$emit('draw-route', coordsArr);
+            this.$emit('draw-route', coordsArr, wayPoints);
           } else {
-            alert('경로를 찾을 수 없습니다.');
+            this.showAlert('경로 오류', '경로를 찾을 수 없습니다.');
           }
         } else {
-          alert('경로를 찾을 수 없습니다.');
+          this.showAlert('경로 오류', '경로를 찾을 수 없습니다.');
         }
       } catch (e) {
-        alert('경로 탐색 실패');
+        this.showAlert('경로 오류', '경로 탐색 실패');
         console.error(e);
       }
     },
@@ -492,10 +512,24 @@ export default {
     },
     addToFavorites() {
       if (this.selectedStores.length === 0) return;
-      
-      // 즐겨찾기 추가 로직
-      console.log('즐겨찾기에 추가:', this.selectedStores);
-      // TODO: 실제 즐겨찾기 저장 API 호출
+      this.showFavoriteModal = true;
+    },
+    closeFavoriteModal() {
+      this.showFavoriteModal = false;
+    },
+    saveFavoriteSuccess() {
+      this.showAlert('성공', '즐겨찾기에 추가되었습니다!');
+      this.closeFavoriteModal();
+    },
+    showAlert(title, content) {
+      this.alertTitle = title;
+      this.alertContent = content;
+      this.showAlertModal = true;
+    },
+    closeAlertModal() {
+      this.showAlertModal = false;
+      this.alertTitle = '';
+      this.alertContent = '';
     },
   },
   watch: {
