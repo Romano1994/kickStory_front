@@ -1,4 +1,5 @@
 <template>
+  <!-- TODO : 매장 이름 누르면 매장 정보 띄우기기 -->
   <div class="route-content">
     <!-- 탭 선택 (편집샵, 브랜드샵, 팝업샵) -->
     <div class="tab-container" v-if="branchTypeList.length">
@@ -15,35 +16,6 @@
       </div>
     </div>
 
-    <!-- 검색 기능 -->
-    <div class="search-section">
-      <div class="search-box">
-        <input 
-          type="text" 
-          class="search-input" 
-          :placeholder="getSearchPlaceholder()"
-          v-model="searchKeyword"
-          @keydown.enter="searchStores"
-        />
-        <button class="search-btn" @click="searchStores">검색</button>
-      </div>
-      <!-- 검색 결과 -->
-      <div class="search-results" v-if="searchResults.length > 0">
-        <h5>검색 결과</h5>
-        <ul class="search-result-list">
-          <li 
-            v-for="store in searchResults" 
-            :key="store.branchCd" 
-            class="search-result-item"
-            @click="addStoreToRoute(store)"
-          >
-            <span>{{ store.storeKorNm }} {{ store.branchNm }}</span>
-            <button class="add-btn">추가</button>
-          </li>
-        </ul>
-      </div>
-    </div>
-
     <!-- 지역별 스토어 목록 -->
     <div class="store-section" v-if="storeType === '00050001'">
       <div class="section-header">
@@ -54,6 +26,17 @@
               {{ country.cntryKorNm }}({{ country.cntryCnt }})
             </option>
           </select>
+        </div>
+      </div>
+      <div class="search-container">
+        <div class="search-box">
+          <input 
+            type="text" 
+            class="search-input" 
+            :placeholder="getSearchPlaceholder()"
+            v-model="searchKeyword"
+            @input="filterStores"
+          />
         </div>
       </div>
       
@@ -146,10 +129,10 @@
           스토어를 추가해주세요
         </div>
       </div>
-      <button class="find-route-btn" @click="findRoute" :disabled="selectedStores.length === 0">
+      <button class="find-route-btn" @click="findRoute" :disabled="routeButtonDisabled">
         경로 찾기
       </button>
-      <button class="add-favorite-btn" @click="addToFavorites" :disabled="selectedStores.length === 0">
+      <button class="add-favorite-btn" @click="addToFavorites" :disabled="favoriteButtondisable">
         즐겨찾기 추가
       </button>
     </div>
@@ -247,11 +230,11 @@ export default {
       selectedCountry: 'KR',
       countryList: [],
       regionStoreList: [],
+      originalStoreList: [], // 원본 스토어 데이터 저장용
       expandedCities: {},
       expandedDistricts: {},
       activeStore: null,
       searchKeyword: '',
-      searchResults: [],
       showFavoriteModal: false,
       showAlertModal: false,
       alertTitle: '',
@@ -299,7 +282,7 @@ export default {
     },
     getSearchPlaceholder() {
       const placeholders = {
-        '00030001': '편집샵 검색 (예: 웍스아웃, 카시나나)',
+        '00030001': '편집샵 검색 (예: 웍스아웃, 카시나)',
         '00030002': '브랜드샵 검색 (예: 나이키, 아디다스)',
         '00030003': '팝업샵 검색 (예: 귀멸의 칼날 팝업업)'
       };
@@ -370,8 +353,65 @@ export default {
       this.getApi('/store/offline/branches', { cntryCd:cntryCd, offlineStoreType : this.offlineStoreType }, this.getBranchesSuccess, this.getBranchesFail)
     },
     getBranchesSuccess(res) {
+      this.originalStoreList = JSON.parse(JSON.stringify(res.data)); // 깊은 복사로 원본 데이터 저장
       this.regionStoreList = res.data;
       this.$emit('update-region-list', this.regionStoreList);
+    },
+    filterStores() {
+      const keyword = (this.searchKeyword || '').trim().toLowerCase();
+      
+      // 원본 데이터에서 필터링된 스토어만 보여주기
+      if (this.originalStoreList.length === 0) return;
+      
+      if (!keyword) {
+        // 검색어가 없으면 원본 데이터로 복원하고 모든 도시/구/군 접기
+        this.regionStoreList = JSON.parse(JSON.stringify(this.originalStoreList));
+        // 모든 도시와 구/군 접기
+        this.expandedCities = {};
+        this.expandedDistricts = {};
+        return;
+      }
+      
+      this.regionStoreList = this.originalStoreList.map(city => {
+        // 도시 레벨에서 필터링
+        const filteredCity = { ...city };
+        
+        // 구/군 레벨에서 필터링
+        filteredCity.admSggList = (city.admSggList || []).map(district => {
+          const filteredDistrict = { ...district };
+          
+          // 스토어 레벨에서 필터링
+          filteredDistrict.offlineBranchList = (district.offlineBranchList || []).filter(store => {
+            const storeName = String(store.storeKorNm || '').toLowerCase();
+            const branchName = String(store.branchNm || '').toLowerCase();
+            const engName = String(store.storeEngNm || '').toLowerCase();
+            
+            return storeName.includes(keyword) || 
+                   branchName.includes(keyword) || 
+                   engName.includes(keyword);
+          });
+          
+          // 검색어가 있으면 해당 구/군 확장
+          if (keyword && filteredDistrict.offlineBranchList.length > 0) {
+            this.expandedDistricts = {
+              ...this.expandedDistricts,
+              [district.admRginCd]: true
+            };
+          }
+          
+          return filteredDistrict;
+        }).filter(district => district.offlineBranchList.length > 0); // 스토어가 없는 구/군은 제거
+        
+        // 검색어가 있으면 해당 도시 확장
+        if (keyword && filteredCity.admSggList.length > 0) {
+          this.expandedCities = {
+            ...this.expandedCities,
+            [city.admSidoNm]: true
+          };
+        }
+        
+        return filteredCity;
+      }).filter(city => city.admSggList.length > 0); // 구/군이 없는 도시는 제거
     },
     getBranchesFail(error) {
       console.error('지역별 매장 수 조회 실패:', error);
@@ -522,7 +562,19 @@ export default {
       },
       immediate: true
     },
+
   },
+  computed:{
+      routeButtonDisabled(){
+        let firstCondition = !this.useCurrentLocation&&this.selectedStores.length > 1;
+        let secondCondition = this.useCurrentLocation&&this.selectedStores.length >0;
+        return !(firstCondition || secondCondition);
+      },
+      favoriteButtondisable(){
+        if(this.selectedStores.length>1)return false;
+        return true;
+      }
+    },
   mounted() {
     this.fetchBranchTypeList();
     this.getCountryCount();
@@ -590,44 +642,120 @@ export default {
   color: white;
 }
 
-/* 검색 섹션 */
-.search-section {
+/* Store Section */
+.store-section {
   background-color: var(--color2);
   border-radius: 8px;
-  padding: 1rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 0 0.1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 2.2rem;
+}
+
+.section-header h5 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color1);
+  font-weight: 500;
+}
+
+.search-container {
+  padding: 0.3rem 0.8rem;
+  background-color: rgba(0, 0, 0, 0.1);
+  min-height: 2.2rem;
+  display: flex;
+  align-items: center;
 }
 
 .search-box {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 1rem;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
 }
 
 .search-input {
-  flex: 1;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  width: 100%;
+  padding: 0.25rem 0.6rem 0.25rem 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 0.8rem;
   font-family: var(--main-font);
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.2);
   color: var(--color1);
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--color6);
+  background-color: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 2px rgba(255, 160, 0, 0.2);
 }
 
 .search-input::placeholder {
   color: rgba(255, 244, 204, 0.6);
 }
 
-.search-btn {
-  padding: 8px 16px;
-  background-color: var(--color6);
-  color: white;
-  border: none;
+.search-box::before {
+  content: '\f002';
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 244, 204, 0.6);
+  font-size: 0.75rem;
+}
+
+.country-select-container {
+  min-width: 140px;
+}
+
+.country-select {
+  width: 100%;
+  padding: 0.2rem 1.5rem 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.2);
+  color: var(--color1);
+  font-size: 0.85rem;
   cursor: pointer;
-  font-size: 0.9rem;
-  font-family: var(--sub-font);
-  white-space: nowrap;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+}
+
+.country-select:focus {
+  outline: none;
+  border-color: var(--color6);
+  box-shadow: 0 0 0 2px rgba(255, 160, 0, 0.2);
+}
+
+@media (max-width: 640px) {
+  .section-header-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .country-select-container {
+    width: 100%;
+  }
+  
+  .search-container {
+    margin-top: 0.75rem;
+  }
 }
 
 .search-results {
@@ -690,7 +818,8 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 300px;
+  min-height: 500px;  /* Increased from 300px */
+  max-height: 70vh;   /* Added max height for better control */
 }
 
 .section-header {
@@ -748,6 +877,8 @@ export default {
   overflow-y: auto;
   background-color: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
+  padding: 0.5rem;  /* Added padding for better spacing */
+  margin: 0.5rem 0;  /* Added margin for better separation */
 }
 
 .location-item {
