@@ -16,29 +16,39 @@
         <font-awesome-icon :icon="['fas', 'clock']" /> {{ formatDate(post.regDtt) }}
       </div>
     </div>
-
-    <div class="content">{{ post.pstCntnt }}</div>
-
-    <div class="actions">
-      <button class="report"><font-awesome-icon :icon="['fas', 'flag']" /> 신고</button>
+    <div class="ql-snow">
+      <div class="ql-editor content" v-html="safeHtml(post.pstCntnt)"></div>
     </div>
+
+
+<!--    <div class="actions">-->
+<!--      <button class="report"><font-awesome-icon :icon="['fas', 'flag']" /> 신고</button>-->
+<!--    </div>-->
   </div>
 
   <!-- 댓글 목록 -->
   <div class="comments">
-    <div v-for="comment in comments" :key="comment.id" class="comment">
+    <div v-for="comment in comments" :key="comment.id"  :class="comment.prtId ? 'reply-comment' : ''" class="comment">
       <div class="comment-meta">
         <span class="comment-writer">{{ comment.id }}</span>
         <span class="comment-time"><font-awesome-icon :icon="['fas', 'clock']" /> {{ formatDate(comment.regDtt) }}</span>
       </div>
-      <div class="comment-body">{{ comment.cmtCntnt }}</div>
+      <div class="comment-body">
+        <template v-if="comment.prtId">
+          <span class="mention">@{{ comment.prtId }}</span>
+        </template>
+        {{ comment.cmtCntnt }}
+      </div>
       <div class="comment-actions">
         <span class="reply" @click="toggleReply(comment.cmtNo)">
           {{ activeReplyToId === comment.cmtNo ? '답글 숨기기' : '답글' }}
         </span>
       </div>
       <div v-if="activeReplyToId === comment.cmtNo" class="reply-form">
-        <textarea class="comment-textarea" v-model="newComment" placeholder="사이좋게 지내요. 서로를 배려하는 댓글을 남겨주세요."></textarea>
+        <div style="display: flex;">
+          <input class="comment-nickname" placeholder="닉네임" v-model="nickname"/>
+          <textarea class="comment-textarea" v-model="newComment" placeholder="사이좋게 지내요. 서로를 배려하는 댓글을 남겨주세요."></textarea>
+        </div>
         <div style="display: flex; justify-content: flex-end;">
           <button @click="submitReply(comment.cmtNo)" class="comment-submit">등록</button>
         </div>
@@ -48,7 +58,10 @@
 
   <!-- 댓글 작성 -->
   <div class="comment-form" v-if="activeReplyToId === null">
-    <textarea class="comment-textarea" v-model="newComment" placeholder="사이좋게 지내요. 서로를 배려하는 댓글을 남겨주세요."></textarea>
+    <div style="display: flex;">
+      <input class="comment-nickname" placeholder="닉네임" v-model="nickname"/>
+      <textarea class="comment-textarea" v-model="newComment" placeholder="사이좋게 지내요. 서로를 배려하는 댓글을 남겨주세요."></textarea>
+    </div>
     <div style="display: flex; justify-content: flex-end;">
       <button class="comment-submit" @click="submitReply()">등록</button>
     </div>
@@ -56,9 +69,8 @@
 
   <CommonModal
       :show="showConfirmModal"
-      content="로그인 후 등록 가능합니다. 로그인 하시겠습니까?"
-      type="confirm"
-      @close="closeConfirmModal"
+      :content="alertMsg"
+      type="alert"
       @confirm="handleConfirm"
   />
 </template>
@@ -69,29 +81,35 @@ import { useRoute } from 'vue-router'
 import axios from 'axios'
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import CommonModal from "@/components/CommonModal.vue";
-import router from "@/js/router";
-import auth from "@/js/auth";
+// import router from "@/js/router";
+// import auth from "@/js/auth";
+import DOMPurify from "dompurify";
 
 const route = useRoute()
 const post = ref({})
+const nickname = ref("")
 const comments = ref([])
-const newComment = ref(null)
+const newComment = ref("")
 const activeReplyToId = ref(null)
+const alertMsg = ref("")
 
 const showConfirmModal = ref(false);
 
-function closeConfirmModal() {
+// function closeConfirmModal() {
+//   showConfirmModal.value = false;
+// }
+
+function handleConfirm(){
   showConfirmModal.value = false;
 }
 
-function handleConfirm(){
-  router.push(`/login`);
-}
+// function openConfirmModal(){
+//   showConfirmModal.value = true;
+// }
 
-function openConfirmModal(){
-  showConfirmModal.value = true;
+function safeHtml(html) {
+  return DOMPurify.sanitize(html)
 }
-
 
 function toggleReply(commentId) {
   if (activeReplyToId.value === commentId) {
@@ -108,25 +126,45 @@ function toggleReply(commentId) {
 async function submitReply(cmtNo) {
   try {
 
-    let isLogin = await auth.getLoginStatus();
+    // let isLogin = await auth.getLoginStatus();
+    //
+    // if(!isLogin){
+    //   openConfirmModal();
+    //   return;
+    // }
 
-    console.log(isLogin);
-
-    if(!isLogin){
-      openConfirmModal();
+    if (!nickname.value?.trim()) {
+      handleAlert("닉네임을 입력하세요");
+      return;
+    }
+    if (!newComment.value.trim()) {
+      handleAlert("댓글을 입력하세요");
       return;
     }
 
     await axios.post(`/psts/${route.params.id}/cmts`, {
       prtCmtNo: cmtNo,
       cmtCntnt: newComment.value,
+      regNm: nickname.value
     })
     newComment.value = ''
     activeReplyToId.value = null
+    localStorage.setItem("nickname", nickname.value);
     await fetchComments() // 새로고침
   } catch (e) {
     console.error(e)
   }
+}
+function setNickName(){
+  const localNick = localStorage.getItem("nickname");
+  if (localNick) {
+    nickname.value = localNick;
+  }
+}
+
+function handleAlert(msg) {
+  alertMsg.value = msg;
+  showConfirmModal.value = true;
 }
 
 const fetchPost = async () => {
@@ -151,6 +189,7 @@ const formatDate = (utc) => {
 onMounted(() => {
   fetchPost()
   fetchComments()
+  setNickName()
 })
 
 watch(
@@ -230,6 +269,9 @@ watch(
   border-radius: 6px;
   cursor: pointer;
 }
+.comment.reply-comment {
+  padding-left: 40px;
+}
 
 .comments {
   border-top: 1px solid #444;
@@ -237,7 +279,7 @@ watch(
 
 .comment {
   border-bottom: 1px solid #333;
-  padding: 10px 24px 10px 24px;
+  padding: 10px 24px;
 }
 
 .comment-meta {
@@ -289,6 +331,23 @@ watch(
   background-color: rgba(255, 255, 255, 0.15);
 }
 
+.comment-nickname{
+  width: 8rem;
+  height: 1.8rem;
+  margin-right: 0.5rem;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--color1);
+}
+
+.comment-nickname:focus{
+  outline: none;
+  border-color: var(--color6);
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
 .comment-submit {
   border: none;
   padding: 6px 12px;
@@ -298,5 +357,11 @@ watch(
   color: white;
   font-size: 1rem;
   font-family: var(--main-font);
+}
+
+.mention {
+  color: var(--color6);
+  font-weight: bold;
+  margin-right: 4px;
 }
 </style>

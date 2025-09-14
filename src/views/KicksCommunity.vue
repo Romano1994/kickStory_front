@@ -35,8 +35,7 @@
     </table>
 
     <!-- paging -->
-    <div style="display: flex; justify-content: space-between; width: 70%; align-items: center;">
-      <div></div>
+    <div style="display: flex; justify-content: center; width: 70%; align-items: center;">
       <vue-awesome-paginate
           v-model="currentPage"
           :total-items="totalItems"
@@ -44,7 +43,20 @@
           :max-pages-shown="5"
           :show-breakpoint-buttons="false"
       />
-      <button @click="createPst" class="write-button">글쓰기</button>
+    </div>
+    <div style="display: flex; align-items: center; width: 70%;  justify-content: flex-end; margin-bottom: 1rem;">
+      <select class="search-option" v-model="schOpt">
+        <option value="cntnt">글</option>
+        <option value="titl">제목만</option>
+      </select>
+      <input
+          type="text"
+          class="search-input"
+          v-model="schKwd"
+          @keydown.enter="search"
+      />
+      <button @click="search" class="write-button">검색</button>
+      <button @click="createPst" class="write-button" style="margin-left: 3rem;">글쓰기</button>
     </div>
   </div>
 </template>
@@ -61,9 +73,15 @@ const currentPage = ref(1)
 const itemsPerPage = ref(Number(localStorage.getItem('itemsPerPage'))||20)
 const items = ref([])
 const totalItems = ref(0)
+const schKwd = ref("");
+const schOpt = ref("cntnt");
 
 function goToDetail(id) {
   router.push(`/kc/${id}`)
+}
+
+function search(){
+  fetchData();
 }
 
 const fetchData = async () => {
@@ -72,6 +90,8 @@ const fetchData = async () => {
       params: {
         page: currentPage.value,
         pageSize: itemsPerPage.value,
+        schKwd: schKwd.value,
+        schOpt: schOpt.value
       },
     })
     items.value = response.data.list
@@ -110,7 +130,7 @@ const formatDate = (utcString) => {
 }
 
 function createPst() {
-  router.push('/');
+  router.push("/kc/new");
 }
 </script>
 
@@ -193,5 +213,28 @@ function createPst() {
   cursor: pointer;
   font-size: 0.9rem;
   font-family: var(--sub-font);
+}
+
+.search-option {
+  padding: 6px 8px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--color1);
+  font-size: 0.8rem;
+  font-family: var(--main-font);
+  cursor: pointer;
+}
+
+.search-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: var(--main-font);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color1);
 }
 </style>
