@@ -3,7 +3,7 @@
     <div class="header-container">
         <div class="logo-container">
             <div class="logo-item">
-                <img class="logo-img" src="@/assets/logo1.jpg">
+                <img class="logo-img" src="@/assets/logo_modified2.png">
             </div>
         </div>
         <div class="login-container">
@@ -64,22 +64,31 @@ export default {
   align-items: center;
   justify-content: center;
   position: relative;
+  overflow: hidden; /* ensure children don't escape */
 }
 
 .logo-container {
   display: flex;
   align-items: center;
+  justify-content: center; /* center horizontally */
+  width: 100%;
+  height: 100%;
 }
 
 .logo-item {
-  width: 13rem;
-  background-size: cover;
+  width: 5rem; 
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
 
 .logo-img {
-  width: 100%;
-  object-fit: cover;
+  display: block;
+  max-width: 85%;
+  max-height: 85%; /* keep some padding inside header */
+  object-fit: contain; /* keep full image visible */
 }
 
 .login-container {
