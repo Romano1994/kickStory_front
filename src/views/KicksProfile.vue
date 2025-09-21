@@ -70,7 +70,7 @@ export default {
             
             // 멤버 정보 조회 실패 콜백
             const getMbrInfoFail = () => {
-                alert("멤버 정보를 가져오는데 실패했습니다.")
+                alert("멤버 정보를 가져오는데 실패했습니다.");
             };
 
             // 멤버 정보 조회

@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomePage from "@/views/HomePage.vue";
 import menus from "./menu/menus";
-import auth from "../js/auth";
+// import auth from "../js/auth";
 
 const mainRoutes= [];
 
@@ -28,6 +28,7 @@ const router = createRouter({
   routes,
 });
 
+/*
 // 네비게이션 가드 - 전역 가드
 router.beforeEach(async(to, from, next) => {
   // 로그인 여부 검사
@@ -43,6 +44,7 @@ router.beforeEach(async(to, from, next) => {
 
   next();
 });
+*/
 
 router.afterEach((to) => {
   window.dataLayer = window.dataLayer || [];
