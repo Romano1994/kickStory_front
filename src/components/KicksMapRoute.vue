@@ -445,7 +445,7 @@ export default {
       if (this.selectedType === 'sequential') {
         // 순차 검색: 선택된 순서대로 방문
         //url = `https://router.project-osrm.org/route/v1/foot/${coords}?overview=full&geometries=polyline`;
-        url = `selectedType=${this.selectType}&coords=${coords}&storeCds=${storeCds}&overview=full&geometries=polyline`;
+        url = `selectedType=${this.selectedType}&coords=${coords}&storeCds=${storeCds}&overview=full&geometries=polyline`;
       } else if (this.selectedType === 'optimal') {
         // 최적경로: 가장 효율적인 순서로 방문
         // url = `https://router.project-osrm.org/trip/v1/foot/${coords}?roundtrip=false&source=first&destination=any&overview=full&geometries=polyline`;

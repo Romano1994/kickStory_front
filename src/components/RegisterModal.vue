@@ -236,6 +236,7 @@ export default {
     },
     closeBrandModal() {
       this.showBrandModal = false;
+      this.searchBrandsForShop();
     },
     handleBrandRegistration(brand) {
       this.addUsualBrand(brand);
@@ -576,6 +577,7 @@ export default {
     },
     closeStoreModal() {
       this.showStoreModal = false;
+      this.storeSearch();
     },
     handleStoreRegistration(result) {
       this.closeStoreModal();
@@ -972,12 +974,12 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(141, 141, 141, 0.3);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 10000;
 }
 
 .loading-spinner {
