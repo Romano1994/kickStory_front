@@ -5,11 +5,11 @@
     <div class="tab-container" v-if="branchTypeList.length">
       <div class="tab-list">
         <button
-          v-for="type in branchTypeList"
-          :key="type.commCdDtl"
-          class="tab-item"
-          :class="{ active: offlineStoreType === type.commCdDtl }"
-          @click="changeBranchType(type.commCdDtl)"
+            v-for="type in branchTypeList"
+            :key="type.commCdDtl"
+            class="tab-item"
+            :class="{ active: offlineStoreType === type.commCdDtl }"
+            @click="changeBranchType(type.commCdDtl)"
         >
           {{ type.commCdDtlNm }}
         </button>
@@ -30,16 +30,16 @@
       </div>
       <div class="search-container">
         <div class="search-box">
-          <input 
-            type="text" 
-            class="search-input" 
-            :placeholder="getSearchPlaceholder()"
-            v-model="searchKeyword"
-            @input="filterStores"
+          <input
+              type="text"
+              class="search-input"
+              :placeholder="getSearchPlaceholder()"
+              v-model="searchKeyword"
+              @input="filterStores"
           />
         </div>
       </div>
-      
+
       <div v-if="regionStoreList.length" class="location-list">
         <div class="location-item" v-for="city in regionStoreList" :key="city.admSidoNm">
           <div class="city-header" @click="toggleCity(city.admSidoNm)">
@@ -52,29 +52,30 @@
                 <span>{{ district.admSggNm }}({{ district.cnt }})</span>
                 <span class="arrow" :class="{ expanded: expandedDistricts[district.admRginCd] }">&gt;</span>
               </div>
-              <ul v-if="offlineStoreType !== '00030003'" class="store-list" v-show="expandedDistricts[district.admRginCd]">
-                <li 
-                  class="store-item" 
-                  v-for="store in district.offlineBranchList" 
-                  :key="store.branchCd" 
-                  @click="openStoreDetail(store)" 
-                  :class="{ active: activeStore === store.branchNm }"
+              <ul v-if="offlineStoreType !== '00030003'" class="store-list"
+                  v-show="expandedDistricts[district.admRginCd]">
+                <li
+                    class="store-item"
+                    v-for="store in district.offlineBranchList"
+                    :key="store.branchCd"
+                    @click="openStoreDetail(store)"
+                    :class="{ active: activeStore === store.branchNm }"
                 >
                   <span>{{ store.storeKorNm }} {{ store.branchNm }}</span>
-                  <button class="add-btn"  @click="addStoreToRoute(store)" >추가</button>
+                  <button class="add-btn" @click="addStoreToRoute(store)">추가</button>
                 </li>
-           
+
               </ul>
               <ul v-else class="store-list" v-show="expandedDistricts[district.admRginCd]">
-                <li 
-                  class="store-item" 
-                  v-for="store in district.offlineBranchList" 
-                  :key="store.storeCd" 
-                  @click="openStoreDetail(store)" 
-                  :class="{ active: activeStore === store.storeCd }"
+                <li
+                    class="store-item"
+                    v-for="store in district.offlineBranchList"
+                    :key="store.storeCd"
+                    @click="openStoreDetail(store)"
+                    :class="{ active: activeStore === store.storeCd }"
                 >
-                  <span >{{ store.storeKorNm }}</span>
-                  <button class="add-btn"  @click="addStoreToRoute(store)" >추가</button>
+                  <span>{{ store.storeKorNm }}</span>
+                  <button class="add-btn" @click="addStoreToRoute(store)">추가</button>
                 </li>
               </ul>
             </div>
@@ -83,7 +84,7 @@
       </div>
       <div v-else>
         <div class="no-store-box">
-          <img src="@/assets/map/location-pin.png" alt="No Store" class="no-store-icon" />
+          <img src="@/assets/map/location-pin.png" alt="No Store" class="no-store-icon"/>
           <div class="no-store-text">등록된 스토어 정보가 없습니다</div>
         </div>
       </div>
@@ -91,10 +92,10 @@
     </div>
 
     <!-- 경로 설정 -->
-    <RouteTypeSelector 
-      :selected-type="selectedType"
-      @type-change="selectType"
-      @show-help="showRouteHelpModal"
+    <RouteTypeSelector
+        :selected-type="selectedType"
+        @type-change="selectType"
+        @show-help="showRouteHelpModal"
     />
 
     <!-- 선택된 경로 -->
@@ -138,19 +139,19 @@
     </div>
 
     <CommonModal
-      :show="showRouteModal"
-      type="alert"
-      title="경로 안내"
-      :content="routeModalContent"
-      @close="closeRouteModal"
-      @confirm="closeRouteModal"
+        :show="showRouteModal"
+        type="alert"
+        title="경로 안내"
+        :content="routeModalContent"
+        @close="closeRouteModal"
+        @confirm="closeRouteModal"
     />
-    
+
     <CommonModal
-      :show="isShowRouteHelpModal"
-      type="alert"
-      title="경로 검색 방식 안내"
-      :htmlContent="`
+        :show="isShowRouteHelpModal"
+        type="alert"
+        title="경로 검색 방식 안내"
+        :htmlContent="`
         <div style='text-align: left; line-height: 1.8;'>
           <div style='margin-bottom: 1rem;'>
             <strong style='color: var(--color6); font-size: 1.1rem;'>🎯 최적경로</strong>
@@ -166,24 +167,24 @@
           </div>
         </div>
       `"
-      @close="closeRouteHelpModal"
-      @confirm="closeRouteHelpModal"
+        @close="closeRouteHelpModal"
+        @confirm="closeRouteHelpModal"
     />
-    
+
     <FavoriteRegisterModal
-      v-if="showFavoriteModal"
-      :selectedStores="selectedStores"
-      @close="closeFavoriteModal"
-      @save="saveFavoriteSuccess"
+        v-if="showFavoriteModal"
+        :selectedStores="selectedStores"
+        @close="closeFavoriteModal"
+        @save="saveFavoriteSuccess"
     />
-    
+
     <CommonModal
-      :show="showAlertModal"
-      type="alert"
-      :title="alertTitle"
-      :content="alertContent"
-      @close="closeAlertModal"
-      @confirm="closeAlertModal"
+        :show="showAlertModal"
+        type="alert"
+        :title="alertTitle"
+        :content="alertContent"
+        @close="closeAlertModal"
+        @confirm="closeAlertModal"
     />
   </div>
 </template>
@@ -195,7 +196,7 @@ import api from '@/js/menu/mixins/api/api-call';
 
 export default {
   name: 'KicksMapRoute',
-  components: { CommonModal, FavoriteRegisterModal, RouteTypeSelector },
+  components: {CommonModal, FavoriteRegisterModal, RouteTypeSelector},
   emits: [
     'draw-route',
     'open-register-modal',
@@ -270,7 +271,7 @@ export default {
       this.$emit('add-store', store);
     },
     openStoreDetail(store) {
-      if(this.offlineStoreType !== '00030003'){
+      if (this.offlineStoreType !== '00030003') {
         this.activeStore = store.branchCd;
       } else {
         this.activeStore = store.storeCd;
@@ -309,8 +310,8 @@ export default {
             if (!isMatch) return;
 
             const key = this.offlineStoreType !== '00030003'
-              ? `B-${store.branchCd}`
-              : `S-${store.storeCd}`;
+                ? `B-${store.branchCd}`
+                : `S-${store.storeCd}`;
             if (key && !seen.has(key)) {
               seen.add(key);
               results.push(store);
@@ -323,10 +324,10 @@ export default {
     },
     fetchBranchTypeList() {
       api.get(
-        '/comm-cd/detail',
-        { commCd: '0003' },
-        this.handleBranchTypeListSuccess,
-        this.handleBranchTypeListFail
+          '/comm-cd/detail',
+          {commCd: '0003'},
+          this.handleBranchTypeListSuccess,
+          this.handleBranchTypeListFail
       );
     },
     handleBranchTypeListSuccess(res) {
@@ -336,7 +337,7 @@ export default {
       console.error('지점 타입 목록 불러오기 실패', err);
     },
     getCountryCount() {
-      this.getApi('/store/offline/countries/count',{offlineStoreType: this.offlineStoreType}, this.getCountryCountSuccess, this.getCountryCountFail)
+      this.getApi('/store/offline/countries/count', {offlineStoreType: this.offlineStoreType}, this.getCountryCountSuccess, this.getCountryCountFail)
     },
     getCountryCountSuccess(res) {
       this.countryList = res.data;
@@ -350,7 +351,10 @@ export default {
       this.countryList = [];
     },
     getBranches(cntryCd) {
-      this.getApi('/store/offline/branches', { cntryCd:cntryCd, offlineStoreType : this.offlineStoreType }, this.getBranchesSuccess, this.getBranchesFail)
+      this.getApi('/store/offline/branches', {
+        cntryCd: cntryCd,
+        offlineStoreType: this.offlineStoreType
+      }, this.getBranchesSuccess, this.getBranchesFail)
     },
     getBranchesSuccess(res) {
       this.originalStoreList = JSON.parse(JSON.stringify(res.data)); // 깊은 복사로 원본 데이터 저장
@@ -359,10 +363,10 @@ export default {
     },
     filterStores() {
       const keyword = (this.searchKeyword || '').trim().toLowerCase();
-      
+
       // 원본 데이터에서 필터링된 스토어만 보여주기
       if (this.originalStoreList.length === 0) return;
-      
+
       if (!keyword) {
         // 검색어가 없으면 원본 데이터로 복원하고 모든 도시/구/군 접기
         this.regionStoreList = JSON.parse(JSON.stringify(this.originalStoreList));
@@ -371,26 +375,26 @@ export default {
         this.expandedDistricts = {};
         return;
       }
-      
+
       this.regionStoreList = this.originalStoreList.map(city => {
         // 도시 레벨에서 필터링
-        const filteredCity = { ...city };
-        
+        const filteredCity = {...city};
+
         // 구/군 레벨에서 필터링
         filteredCity.admSggList = (city.admSggList || []).map(district => {
-          const filteredDistrict = { ...district };
-          
+          const filteredDistrict = {...district};
+
           // 스토어 레벨에서 필터링
           filteredDistrict.offlineBranchList = (district.offlineBranchList || []).filter(store => {
             const storeName = String(store.storeKorNm || '').toLowerCase();
             const branchName = String(store.branchNm || '').toLowerCase();
             const engName = String(store.storeEngNm || '').toLowerCase();
-            
-            return storeName.includes(keyword) || 
-                   branchName.includes(keyword) || 
-                   engName.includes(keyword);
+
+            return storeName.includes(keyword) ||
+                branchName.includes(keyword) ||
+                engName.includes(keyword);
           });
-          
+
           // 검색어가 있으면 해당 구/군 확장
           if (keyword && filteredDistrict.offlineBranchList.length > 0) {
             this.expandedDistricts = {
@@ -398,10 +402,10 @@ export default {
               [district.admRginCd]: true
             };
           }
-          
+
           return filteredDistrict;
         }).filter(district => district.offlineBranchList.length > 0); // 스토어가 없는 구/군은 제거
-        
+
         // 검색어가 있으면 해당 도시 확장
         if (keyword && filteredCity.admSggList.length > 0) {
           this.expandedCities = {
@@ -409,7 +413,7 @@ export default {
             [city.admSidoNm]: true
           };
         }
-        
+
         return filteredCity;
       }).filter(city => city.admSggList.length > 0); // 구/군이 없는 도시는 제거
     },
@@ -418,7 +422,7 @@ export default {
       this.regionStoreList = [];
       this.$emit('update-region-list', this.regionStoreList);
     },
-    async findRoute() {
+    findRoute() {
       if (this.useCurrentLocation && !this.currentLocation) {
         this.showAlert('위치 오류', '현재 위치 정보를 가져올 수 없습니다.');
         return;
@@ -429,74 +433,112 @@ export default {
       }
       let coords = null;
       let url = null;
-      
+      let storeCds = this.selectedStores.map(store => store.storeCd).join(",");
+
+      if (this.useCurrentLocation) {
+        coords = this.currentLocation.lon + ',' + this.currentLocation.lat + ';' + this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
+      } else {
+        coords = this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
+      }
+
+
       if (this.selectedType === 'sequential') {
         // 순차 검색: 선택된 순서대로 방문
-        if (this.useCurrentLocation) {
-          coords = this.currentLocation.lon + ',' + this.currentLocation.lat + ';' + this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
-        } else {
-          coords = this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
-        }
-        url = `https://router.project-osrm.org/route/v1/foot/${coords}?overview=full&geometries=polyline`;
+        //url = `https://router.project-osrm.org/route/v1/foot/${coords}?overview=full&geometries=polyline`;
+        url = `selectedType=${this.selectType}&coords=${coords}&storeCds=${storeCds}&overview=full&geometries=polyline`;
       } else if (this.selectedType === 'optimal') {
         // 최적경로: 가장 효율적인 순서로 방문
-        if (this.useCurrentLocation) {
-          coords = this.currentLocation.lon + ',' + this.currentLocation.lat + ';' + this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
-        } else {
-          coords = this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
-        }
-        url = `https://router.project-osrm.org/trip/v1/foot/${coords}?roundtrip=false&source=first&destination=any&overview=full&geometries=polyline`;
+        // url = `https://router.project-osrm.org/trip/v1/foot/${coords}?roundtrip=false&source=first&destination=any&overview=full&geometries=polyline`;
+        url = `selectedType=${this.selectedType}&coords=${coords}&storeCds=${storeCds}&roundtrip=false&overview=full&geometries=polyline`;
       } else {
         // 도착지 고정: 마지막 스토어를 목적지로 고정
-        if (this.useCurrentLocation) {
-          coords = this.currentLocation.lon + ',' + this.currentLocation.lat + ';' + this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
-        } else {
-          coords = this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
-        }
-        url = `https://router.project-osrm.org/trip/v1/foot/${coords}?roundtrip=false&source=first&destination=last&overview=full&geometries=polyline`;
+        //url = `https://router.project-osrm.org/trip/v1/foot/${coords}?roundtrip=false&source=first&destination=last&overview=full&geometries=polyline`;
+        url = `selectedType=${this.selectedType}&coords=${coords}&storeCds=${storeCds}&roundtrip=false&source=first&destination=last&overview=full&geometries=polyline`;
       }
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        
-        if (data.code === 'Ok') {
-          let routeData = null;
-          let wayPoints = data.waypoints;
-          
-          if (this.selectedType === 'sequential') {
-            // 순차 검색의 경우 routes 배열 사용
-            if (data.routes && data.routes.length > 0) {
-              routeData = data.routes[0];
-            }
-          } else {
-            // 최적경로, 도착지 고정의 경우 trips 배열 사용
-            if (data.trips && data.trips.length > 0) {
-              routeData = data.trips[0];
-            }
+
+      this.getApi("/navigation?" + url, null, this.findRouteSuccess, this.findRouteFail)
+
+      // try {
+      //   const res = await fetch(url);
+      //   const data = await res.json();
+
+      //   if (data.code === 'Ok') {
+      //     let routeData = null;
+      //     let wayPoints = data.waypoints;
+
+      //     if (this.selectedType === 'sequential') {
+      //       // 순차 검색의 경우 routes 배열 사용
+      //       if (data.routes && data.routes.length > 0) {
+      //         routeData = data.routes[0];
+      //       }
+      //     } else {
+      //       // 최적경로, 도착지 고정의 경우 trips 배열 사용
+      //       if (data.trips && data.trips.length > 0) {
+      //         routeData = data.trips[0];
+      //       }
+      //     }
+
+      //     if (routeData) {
+      //       const distKm = (routeData.distance / 1000).toFixed(2);
+      //       this.routeModalContent = `경로 총 거리: ${distKm}km`;
+      //       this.showRouteModal = true;
+      //       const coordsArr = this.decodePolyline(routeData.geometry);
+      //       this.$emit('draw-route', coordsArr, wayPoints);
+      //     } else {
+      //       this.showAlert('경로 오류', '경로를 찾을 수 없습니다.');
+      //     }
+      //   } else {
+      //     this.showAlert('경로 오류', '경로를 찾을 수 없습니다.');
+      //   }
+      // } catch (e) {
+      //   this.showAlert('경로 오류', '경로 탐색 실패');
+      //   console.error(e);
+      // }
+    },
+    findRouteSuccess(res) {
+      const data = res.data;
+      if (data.code === 'Ok') {
+        let routeData = null;
+        let wayPoints = data.waypoints;
+
+        if (this.selectedType === 'sequential') {
+          // 순차 검색의 경우 routes 배열 사용
+          if (data.routes && data.routes.length > 0) {
+            routeData = data.routes[0];
           }
-          
-          if (routeData) {
-            const distKm = (routeData.distance / 1000).toFixed(2);
-            this.routeModalContent = `경로 총 거리: ${distKm}km`;
-            this.showRouteModal = true;
-            const coordsArr = this.decodePolyline(routeData.geometry);
-            this.$emit('draw-route', coordsArr, wayPoints);
-          } else {
-            this.showAlert('경로 오류', '경로를 찾을 수 없습니다.');
+        } else {
+          // 최적경로, 도착지 고정의 경우 trips 배열 사용
+          if (data.trips && data.trips.length > 0) {
+            routeData = data.trips[0];
           }
+        }
+
+        if (routeData) {
+          const distKm = (routeData.distance / 1000).toFixed(2);
+          this.routeModalContent = `경로 총 거리: ${distKm}km`;
+          this.showRouteModal = true;
+          const coordsArr = this.decodePolyline(routeData.geometry);
+          this.$emit('draw-route', coordsArr, wayPoints);
         } else {
           this.showAlert('경로 오류', '경로를 찾을 수 없습니다.');
         }
-      } catch (e) {
-        this.showAlert('경로 오류', '경로 탐색 실패');
-        console.error(e);
+      } else {
+        const serverMessage = data && (data.message || data.msg || data.error || data.statusMessage);
+        this.showAlert('경로 오류', serverMessage || '경로를 찾는 중 오류가 발생하였습니다.');
       }
+    },
+    findRouteFail(err) {
+      const serverMessage = err && err.response && err.response.data && (err.response.data.message || err.response.data.msg || err.response.data.error || err.response.data.statusMessage);
+      const fallback = err && (err.message || '경로를 찾는 중 오류가 발생하였습니다.');
+      this.showAlert('경로 오류', serverMessage || fallback);
+      console.error('findRouteFail:', err);
     },
     decodePolyline(str, precision = 5) {
       let index = 0, lat = 0, lng = 0, coordinates = [], shift = 0, result = 0, byte = null;
       const factor = Math.pow(10, precision);
       while (index < str.length) {
-        shift = 0; result = 0;
+        shift = 0;
+        result = 0;
         do {
           byte = str.charCodeAt(index++) - 63;
           result |= (byte & 0x1f) << shift;
@@ -504,7 +546,8 @@ export default {
         } while (byte >= 0x20);
         const deltaLat = ((result & 1) ? ~(result >> 1) : (result >> 1));
         lat += deltaLat;
-        shift = 0; result = 0;
+        shift = 0;
+        result = 0;
         do {
           byte = str.charCodeAt(index++) - 63;
           result |= (byte & 0x1f) << shift;
@@ -564,34 +607,34 @@ export default {
     },
 
   },
-  computed:{
-      routeButtonDisabled(){
-        let firstCondition = !this.useCurrentLocation&&this.selectedStores.length > 1;
-        let secondCondition = this.useCurrentLocation&&this.selectedStores.length >0;
-        return !(firstCondition || secondCondition);
-      },
-      favoriteButtondisable(){
-        if(this.selectedStores.length>1)return false;
-        return true;
-      }
+  computed: {
+    routeButtonDisabled() {
+      let firstCondition = !this.useCurrentLocation && this.selectedStores.length > 1;
+      let secondCondition = this.useCurrentLocation && this.selectedStores.length > 0;
+      return !(firstCondition || secondCondition);
     },
+    favoriteButtondisable() {
+      if (this.selectedStores.length > 1) return false;
+      return true;
+    }
+  },
   mounted() {
     this.fetchBranchTypeList();
     this.getCountryCount();
-    
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          this.currentLocation = {
-            lat: position.coords.latitude,
-            lon: position.coords.longitude
-          };
-        },
-        (error) => {
-          console.error('위치 정보를 가져올 수 없습니다.', error);
-          this.currentLocation = null;
-          this.useCurrentLocation = false;
-        }
+          (position) => {
+            this.currentLocation = {
+              lat: position.coords.latitude,
+              lon: position.coords.longitude
+            };
+          },
+          (error) => {
+            console.error('위치 정보를 가져올 수 없습니다.', error);
+            this.currentLocation = null;
+            this.useCurrentLocation = false;
+          }
       );
     }
   }
@@ -748,11 +791,11 @@ export default {
     align-items: flex-start;
     gap: 0.75rem;
   }
-  
+
   .country-select-container {
     width: 100%;
   }
-  
+
   .search-container {
     margin-top: 0.75rem;
   }
@@ -818,8 +861,8 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 500px;  /* Increased from 300px */
-  max-height: 70vh;   /* Added max height for better control */
+  min-height: 500px; /* Increased from 300px */
+  max-height: 70vh; /* Added max height for better control */
 }
 
 .section-header {
@@ -834,6 +877,7 @@ export default {
   align-items: center;
   gap: 8px;
 }
+
 .legend-item {
   display: inline-flex;
   align-items: center;
@@ -842,6 +886,7 @@ export default {
   font-family: var(--sub-font);
   font-size: 0.8rem;
 }
+
 .legend-item img {
   width: 12px;
   height: 20px;
@@ -877,8 +922,8 @@ export default {
   overflow-y: auto;
   background-color: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
-  padding: 0.5rem;  /* Added padding for better spacing */
-  margin: 0.5rem 0;  /* Added margin for better separation */
+  padding: 0.5rem; /* Added padding for better spacing */
+  margin: 0.5rem 0; /* Added margin for better separation */
 }
 
 .location-item {
@@ -1065,7 +1110,7 @@ export default {
   display: flex;
   align-items: center;
   padding: 0.7rem 0.5rem;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--color1);
   font-size: 0.9rem;
   font-family: var(--main-font);
@@ -1190,11 +1235,11 @@ export default {
   .search-box {
     gap: 4px;
   }
-  
+
   .search-btn {
     padding: 8px 12px;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: flex-start;
@@ -1206,18 +1251,18 @@ export default {
   .route-content {
     gap: 0.5rem;
   }
-  
+
   .search-section,
   .store-section,
   .route-section,
   .selected-route-section {
     padding: 0.8rem;
   }
-  
+
   .store-item {
     padding: 0.6rem 1rem;
   }
-  
+
   .selected-stores li {
     padding: 0.6rem 0.3rem;
   }
