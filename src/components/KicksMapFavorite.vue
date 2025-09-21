@@ -1,13 +1,11 @@
 <template>
   <div class="favorite-content">
-
-    
     <!-- 경로 설정 -->
     <div class="route-settings-container">
-      <RouteTypeSelector 
-        :selected-type="selectedType"
-        @type-change="selectType"
-        @show-help="showRouteHelpModal"
+      <RouteTypeSelector
+          :selected-type="selectedType"
+          @type-change="selectType"
+          @show-help="showRouteHelpModal"
       />
       <!-- 현재 위치 시작 토글 -->
       <div class="location-toggle-section">
@@ -18,24 +16,24 @@
         </label>
       </div>
     </div>
-    
+
     <div v-if="favoriteCourses.length === 0" class="empty-placeholder">
       <p>저장된 즐겨찾기가 없습니다.</p>
     </div>
     <div v-else class="favorite-list">
-      <div 
-        v-for="(favorite, index) in favoriteCourses" 
-        :key="index"
-        class="favorite-item"
-        :class="{ active: currentCourseName === favorite.favoriteCourseName }"
+      <div
+          v-for="(favorite, index) in favoriteCourses"
+          :key="index"
+          class="favorite-item"
+          :class="{ active: currentCourseName === favorite.favoriteCourseName }"
       >
         <div class="favorite-header" @click="changeCurrentStores(favorite)">
           <h3 class="favorite-name">{{ favorite.favoriteCourseName }}</h3>
           <div class="favorite-actions" @click.stop>
-            <button 
-              class="delete-btn" 
-              @click="deleteFavorite(index)"
-              title="삭제"
+            <button
+                class="delete-btn"
+                @click="deleteFavorite(index)"
+                title="삭제"
             >
               🗑️
             </button>
@@ -49,10 +47,10 @@
           <span class="created-date">{{ formatDate(favorite.createdAt) }}</span>
         </div>
         <div class="store-preview">
-          <div 
-            v-for="(store, storeIndex) in favorite.stores.slice(0, 3)" 
-            :key="storeIndex"
-            class="store-preview-item"
+          <div
+              v-for="(store, storeIndex) in favorite.stores.slice(0, 3)"
+              :key="storeIndex"
+              class="store-preview-item"
           >
             <span class="store-order">{{ storeIndex + 1 }}</span>
             <span class="store-name">{{ store.storeKorNm }} {{ store.branchNm || '' }}</span>
@@ -63,21 +61,21 @@
         </div>
       </div>
     </div>
-    
+
     <CommonModal
-      :show="showRouteModal"
-      type="alert"
-      title="경로 안내"
-      :content="routeModalContent"
-      @close="closeRouteModal"
-      @confirm="closeRouteModal"
+        :show="showRouteModal"
+        type="alert"
+        title="경로 안내"
+        :content="routeModalContent"
+        @close="closeRouteModal"
+        @confirm="closeRouteModal"
     />
-    
+
     <CommonModal
-      :show="isShowRouteHelpModal"
-      type="alert"
-      title="경로 검색 방식 안내"
-      :htmlContent="`
+        :show="isShowRouteHelpModal"
+        type="alert"
+        title="경로 검색 방식 안내"
+        :htmlContent="`
         <div style='text-align: left; line-height: 1.8;'>
           <div style='margin-bottom: 1rem;'>
             <strong style='color: var(--color6); font-size: 1.1rem;'>🎯 최적경로</strong>
@@ -93,17 +91,17 @@
           </div>
         </div>
       `"
-      @close="closeRouteHelpModal"
-      @confirm="closeRouteHelpModal"
+        @close="closeRouteHelpModal"
+        @confirm="closeRouteHelpModal"
     />
-    
+
     <CommonModal
-      :show="showAlertModal"
-      type="alert"
-      :title="alertTitle"
-      :content="alertContent"
-      @close="closeAlertModal"
-      @confirm="closeAlertModal"
+        :show="showAlertModal"
+        type="alert"
+        :title="alertTitle"
+        :content="alertContent"
+        @close="closeAlertModal"
+        @confirm="closeAlertModal"
     />
   </div>
 </template>
@@ -113,7 +111,7 @@ import RouteTypeSelector from './RouteTypeSelector.vue';
 
 export default {
   name: 'KicksMapFavorite',
-  components: { CommonModal, RouteTypeSelector },
+  components: {CommonModal, RouteTypeSelector},
   emits: ['load-favorite', 'draw-route', 'add-stores'],
   data() {
     return {
@@ -127,7 +125,7 @@ export default {
       showAlertModal: false,
       alertTitle: '',
       alertContent: '',
-      currentStores:[],
+      currentStores: [],
       currentCourseName: null,
     }
   },
@@ -147,8 +145,8 @@ export default {
       },
       deep: true
     },
-    useCurrentLocation:{
-      handler(){
+    useCurrentLocation: {
+      handler() {
         if (Array.isArray(this.currentStores) && this.currentStores.length > 0) {
           this.findRoute();
         }
@@ -166,7 +164,7 @@ export default {
     selectType(type) {
       this.selectedType = type;
     },
-    changeCurrentStores(favorite){
+    changeCurrentStores(favorite) {
       this.currentStores = favorite.stores;
       this.currentCourseName = favorite.favoriteCourseName;
     },
@@ -179,14 +177,14 @@ export default {
         this.showAlert('경로 오류', '경로에 추가된 매장이 없습니다.');
         return;
       }
-      console.log("findRoutes",this.currentStores);
-      
+      console.log("findRoutes", this.currentStores);
+
       // this.currentStores를 selectedStores에 추가하도록 emit
       this.$emit('add-stores', this.currentStores);
-      
+
       let coords = null;
       let url = null;
-      
+
       if (this.selectedType === 'sequential') {
         // 순차 검색: 선택된 순서대로 방문
         if (this.useCurrentLocation) {
@@ -212,15 +210,15 @@ export default {
         }
         url = `https://router.project-osrm.org/trip/v1/foot/${coords}?roundtrip=false&source=first&destination=last&overview=full&geometries=polyline`;
       }
-      
+
       try {
         const res = await fetch(url);
         const data = await res.json();
-        
+
         if (data.code === 'Ok') {
           let routeData = null;
           let wayPoints = data.waypoints;
-          
+
           if (this.selectedType === 'sequential') {
             // 순차 검색의 경우 routes 배열 사용
             if (data.routes && data.routes.length > 0) {
@@ -232,7 +230,7 @@ export default {
               routeData = data.trips[0];
             }
           }
-          
+
           if (routeData) {
             const distKm = (routeData.distance / 1000).toFixed(2);
             this.routeModalContent = `경로 총 거리: ${distKm}km`;
@@ -254,7 +252,8 @@ export default {
       let index = 0, lat = 0, lng = 0, coordinates = [], shift = 0, result = 0, byte = null;
       const factor = Math.pow(10, precision);
       while (index < str.length) {
-        shift = 0; result = 0;
+        shift = 0;
+        result = 0;
         do {
           byte = str.charCodeAt(index++) - 63;
           result |= (byte & 0x1f) << shift;
@@ -262,7 +261,8 @@ export default {
         } while (byte >= 0x20);
         const deltaLat = ((result & 1) ? ~(result >> 1) : (result >> 1));
         lat += deltaLat;
-        shift = 0; result = 0;
+        shift = 0;
+        result = 0;
         do {
           byte = str.charCodeAt(index++) - 63;
           result |= (byte & 0x1f) << shift;
@@ -310,20 +310,20 @@ export default {
   },
   mounted() {
     this.loadFavoritesFromStorage();
-    
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          this.currentLocation = {
-            lat: position.coords.latitude,
-            lon: position.coords.longitude
-          };
-        },
-        (error) => {
-          console.error('위치 정보를 가져올 수 없습니다.', error);
-          this.currentLocation = null;
-          this.useCurrentLocation = false;
-        }
+          (position) => {
+            this.currentLocation = {
+              lat: position.coords.latitude,
+              lon: position.coords.longitude
+            };
+          },
+          (error) => {
+            console.error('위치 정보를 가져올 수 없습니다.', error);
+            this.currentLocation = null;
+            this.useCurrentLocation = false;
+          }
       );
     }
   }
@@ -337,11 +337,41 @@ export default {
   padding: 1rem;
 }
 
+@media (max-width: 768px) {
+  .favorite-content {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .favorite-content {
+    padding: 0.5rem;
+  }
+}
+
 .empty-placeholder {
   text-align: center;
   padding: 2rem;
   color: var(--color1);
   font-family: var(--main-font);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+  .empty-placeholder {
+    padding: 1.5rem;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .empty-placeholder {
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
 }
 
 .favorite-list {
@@ -350,151 +380,397 @@ export default {
   gap: 1rem;
 }
 
+@media (max-width: 768px) {
+  .favorite-list {
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .favorite-list {
+    gap: 0.5rem;
+  }
+}
+
 .favorite-item {
-  background-color: var(--color2);
-  border-radius: 8px;
-  padding: 1rem;
+  background: linear-gradient(135deg, var(--color2), rgba(0, 0, 0, 0.8));
+  border-radius: 12px;
+  padding: 1.25rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.favorite-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .favorite-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+.favorite-item:hover::before {
+  opacity: 1;
+}
+
 .favorite-item.active {
-  background-color: var(--color6);
+  background: linear-gradient(135deg, var(--color6), rgba(54, 150, 156, 0.8));
   border-color: var(--color6);
-  box-shadow: 0 0 12px rgba(52, 152, 219, 0.4);
+  box-shadow: 0 8px 25px rgba(54, 150, 156, 0.4);
+  transform: translateY(-2px);
 }
 
 .favorite-item.active .favorite-name {
   color: #fff;
   font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .favorite-item {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .favorite-item:hover {
+    transform: translateY(-1px);
+  }
+}
+
+@media (max-width: 480px) {
+  .favorite-item {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
 }
 
 .favorite-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .favorite-header {
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .favorite-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
 }
 
 .favorite-name {
   margin: 0;
   color: var(--color1);
   font-family: var(--sub-font);
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: bold;
+  line-height: 1.3;
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .favorite-name {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .favorite-name {
+    font-size: 1rem;
+    text-align: center;
+  }
 }
 
 .favorite-actions {
   display: flex;
   gap: 0.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 480px) {
+  .favorite-actions {
+    justify-content: center;
+  }
 }
 
 .load-btn,
 .delete-btn {
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   font-size: 1.2rem;
   cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  padding: 0.4rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .load-btn:hover {
-  background-color: var(--color6);
+  background: linear-gradient(135deg, var(--color6), rgba(54, 150, 156, 0.8));
+  border-color: var(--color6);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(54, 150, 156, 0.4);
 }
 
 .delete-btn:hover {
-  background-color: rgba(184, 92, 59, 0.8);
+  background: linear-gradient(135deg, rgba(184, 92, 59, 0.9), rgba(164, 72, 39, 0.8));
+  border-color: rgba(184, 92, 59, 0.8);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(184, 92, 59, 0.4);
+}
+
+@media (max-width: 768px) {
+  .load-btn,
+  .delete-btn {
+    padding: 0.35rem;
+    font-size: 1.1rem;
+    border-radius: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .load-btn,
+  .delete-btn {
+    padding: 0.3rem;
+    font-size: 1rem;
+    border-radius: 4px;
+  }
 }
 
 .favorite-description {
   color: var(--color1);
   font-family: var(--main-font);
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
-  opacity: 0.8;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.9;
+  line-height: 1.4;
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .favorite-description {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .favorite-description {
+    font-size: 0.85rem;
+    text-align: center;
+  }
 }
 
 .favorite-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.8rem;
-  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
   color: var(--color1);
-  opacity: 0.7;
+  opacity: 0.8;
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .favorite-info {
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .favorite-info {
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: center;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
 }
 
 .store-count {
-  font-weight: 500;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--color6), rgba(54, 150, 156, 0.8));
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 480px) {
+  .store-count {
+    align-self: center;
+  }
 }
 
 .created-date {
   font-family: var(--main-font);
+  font-style: italic;
 }
 
 .store-preview {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .store-preview {
+    gap: 0.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .store-preview {
+    gap: 0.3rem;
+  }
 }
 
 .store-preview-item {
   display: flex;
   align-items: center;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.store-preview-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+@media (max-width: 768px) {
+  .store-preview-item {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .store-preview-item {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.3rem;
+  }
 }
 
 .store-order {
-  background-color: var(--color6);
+  background: linear-gradient(135deg, var(--color6), rgba(54, 150, 156, 0.8));
   color: white;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: bold;
-  margin-right: 0.5rem;
+  margin-right: 0.75rem;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(54, 150, 156, 0.4);
+}
+
+@media (max-width: 768px) {
+  .store-order {
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    margin-right: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .store-order {
+    width: 16px;
+    height: 16px;
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+  }
 }
 
 .store-name {
   color: var(--color1);
   font-family: var(--main-font);
+  font-weight: 500;
+  flex: 1;
 }
 
 .more-stores {
   color: var(--color1);
   font-family: var(--main-font);
-  font-size: 0.8rem;
-  opacity: 0.6;
-  margin-left: 1.6rem;
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin-left: 2rem;
   font-style: italic;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+  .more-stores {
+    font-size: 0.8rem;
+    margin-left: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .more-stores {
+    font-size: 0.75rem;
+    margin-left: 1rem;
+    text-align: center;
+  }
 }
 
 @media screen and (max-width: 720px) {
   .favorite-content {
     padding: 0.5rem;
   }
-  
+
   .favorite-item {
     padding: 0.8rem;
   }
-  
+
   .favorite-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .favorite-actions {
     align-self: flex-end;
   }
@@ -503,23 +779,86 @@ export default {
 /* 경로 설정 컨테이너 */
 .route-settings-container {
   margin-bottom: 2rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+  .route-settings-container {
+    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .route-settings-container {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+  }
 }
 
 /* 위치 토글 섹션 */
 .location-toggle-section {
   display: flex;
-  justify-content: flex-end;
-  padding: 0.5rem 0;
-  margin-top: 0.5rem;
+  justify-content: center;
+  padding: 0.75rem 0;
+  margin-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+  .location-toggle-section {
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .location-toggle-section {
+    padding: 0.4rem 0;
+    margin-top: 0.4rem;
+  }
 }
 
 /* 현재 위치 시작 토글 */
 .current-location-toggle {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   cursor: pointer;
   user-select: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.current-location-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .current-location-toggle {
+    gap: 0.6rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .current-location-toggle {
+    gap: 0.5rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    flex-direction: column;
+    text-align: center;
+  }
 }
 
 .toggle-checkbox {
@@ -528,11 +867,12 @@ export default {
 
 .toggle-slider {
   position: relative;
-  width: 32px;
-  height: 16px;
+  width: 36px;
+  height: 18px;
   background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  transition: background-color 0.3s ease;
+  border-radius: 18px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .toggle-slider::before {
@@ -540,27 +880,79 @@ export default {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   background-color: white;
   border-radius: 50%;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .toggle-checkbox:checked + .toggle-slider {
-  background-color: var(--color6);
+  background: linear-gradient(135deg, var(--color6), rgba(54, 150, 156, 0.8));
+  box-shadow: 0 2px 8px rgba(54, 150, 156, 0.4);
 }
 
 .toggle-checkbox:checked + .toggle-slider::before {
-  transform: translateX(16px);
+  transform: translateX(18px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .toggle-slider {
+    width: 32px;
+    height: 16px;
+    border-radius: 16px;
+  }
+
+  .toggle-slider::before {
+    width: 12px;
+    height: 12px;
+  }
+
+  .toggle-checkbox:checked + .toggle-slider::before {
+    transform: translateX(16px);
+  }
+}
+
+@media (max-width: 480px) {
+  .toggle-slider {
+    width: 28px;
+    height: 14px;
+    border-radius: 14px;
+  }
+
+  .toggle-slider::before {
+    width: 10px;
+    height: 10px;
+  }
+
+  .toggle-checkbox:checked + .toggle-slider::before {
+    transform: translateX(14px);
+  }
 }
 
 .toggle-text {
   color: var(--color1);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-family: var(--sub-font);
   white-space: nowrap;
-  font-weight: 400;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .toggle-text {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .toggle-text {
+    font-size: 0.8rem;
+    white-space: normal;
+    text-align: center;
+  }
 }
 
 /* 즐겨찾기 헤더 클릭 가능하게 */

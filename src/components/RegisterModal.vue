@@ -5,7 +5,7 @@ import CommonModal from "./CommonModal.vue";
 import StoreRegistrationModal from "./StoreRegistrationModal.vue";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.css";
-import { Korean } from "flatpickr/dist/l10n/ko.js";
+import {Korean} from "flatpickr/dist/l10n/ko.js";
 
 export default {
   name: "RegisterModal",
@@ -23,7 +23,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
       isUpdatingFromSelectBrand: false,
       isUpdatingFromSelectStore: false,
       storeCd: "",
@@ -57,7 +56,7 @@ export default {
       cntryCd: "KR",
       offlineStoreTypeList: [],
       isStoreSelect: false,
-      isSearchStoreList:false,
+      isSearchStoreList: false,
       lastSelectedStore: null,
       showBrandModal: false,
       newBrand: {
@@ -66,8 +65,8 @@ export default {
         brandTypeCd: "",
       },
       brandTypes: [
-        { type: "한정판", typeCd: "00010001" },
-        { type: "상시", typeCd: "00010002" },
+        {type: "한정판", typeCd: "00010001"},
+        {type: "상시", typeCd: "00010002"},
       ],
       showCommonModal: false,
       commonModalMessage: "",
@@ -91,23 +90,13 @@ export default {
     };
   },
   methods: {
-    async apiWrapper(apiCall) {
-      this.isLoading = true;
-      try {
-        const result = await apiCall();
-        return result;
-      } finally {
-        this.isLoading = false;
-      }
-    },
     storeSearch() {
       this.isSearchStoreList = true;
-      this.isLoading = true;
 
       this.storeSearchTimeout = setTimeout(() => {
         if (
-          this.lastSelectedStore &&
-          this.lastSelectedStore.storeKorNm === this.storeKorNm
+            this.lastSelectedStore &&
+            this.lastSelectedStore.storeKorNm === this.storeKorNm
         ) {
           this.storeList = [];
           return;
@@ -116,10 +105,10 @@ export default {
         if (this.storeKorNm.trim()) {
           this.storeEngNm = "";
           this.getApi(
-            "/store/offline",
-            { name: this.storeKorNm, offlineStoreTypeCd: this.offlineStoreTypeCd },
-            this.storeSearchSuccess,
-            this.storeSearchFail
+              "/store/offline",
+              {name: this.storeKorNm, offlineStoreTypeCd: this.offlineStoreTypeCd},
+              this.storeSearchSuccess,
+              this.storeSearchFail
           );
         } else {
           this.storeList = [];
@@ -128,11 +117,9 @@ export default {
     },
     storeSearchSuccess(res) {
       this.storeList = res.data;
-      this.isLoading = false;
     },
     storeSearchFail() {
       this.storeList = [];
-      this.isLoading = false;
     },
     selectStore(store) {
       this.isUpdatingFromSelectStore = true;
@@ -143,14 +130,14 @@ export default {
       this.$nextTick(() => {
         this.isUpdatingFromSelectStore = false;
       });
-      this.isSearchStoreList=false;
+      this.isSearchStoreList = false;
     },
     srchCntryList() {
       this.getApi(
-        "/store/country/names",
-        { cntryKorNm: this.cntry },
-        this.srchCntrySucc,
-        this.srchCntryFail
+          "/store/country/names",
+          {cntryKorNm: this.cntry},
+          this.srchCntrySucc,
+          this.srchCntryFail
       );
     },
     srchCntrySucc(res) {
@@ -177,10 +164,10 @@ export default {
       this.addressSearchTimeout = setTimeout(() => {
         if (this.place.trim()) {
           this.getApi(
-            `/store/address/${this.place}`,
-            null,
-            this.searchAddressSuccess,
-            this.searchAddressFail
+              `/store/address/${this.place}`,
+              null,
+              this.searchAddressSuccess,
+              this.searchAddressFail
           );
         } else {
           this.addressList = [];
@@ -244,10 +231,10 @@ export default {
     searchUsualBrands() {
       if (this.usualBrandSearch.trim()) {
         this.getApi(
-          "/brand",
-          { name: this.usualBrandSearch },
-          this.searchUsualBrandsSuccess,
-          this.searchUsualBrandsFail
+            "/brand",
+            {name: this.usualBrandSearch},
+            this.searchUsualBrandsSuccess,
+            this.searchUsualBrandsFail
         );
       } else {
         this.usualBrandList = [];
@@ -262,10 +249,10 @@ export default {
     },
     addUsualBrand(brand) {
       if (
-        !this.usualBrands.some(
-          (b) =>
-            b.brandCd === brand.brandCd && b.brandTypeCd === brand.brandTypeCd
-        )
+          !this.usualBrands.some(
+              (b) =>
+                  b.brandCd === brand.brandCd && b.brandTypeCd === brand.brandTypeCd
+          )
       ) {
         this.usualBrands.push({
           brandCd: brand.brandCd,
@@ -279,7 +266,7 @@ export default {
     },
     removeUsualBrand(brand) {
       this.usualBrands = this.usualBrands.filter(
-        (b) => b.brandNo !== brand.brandNo
+          (b) => b.brandNo !== brand.brandNo
       );
     },
     addSingleBrand(brand) {
@@ -305,63 +292,58 @@ export default {
     },
     searchBrandsForShop() {
       this.isSearchBrandList = true;
-      this.isLoading = true;
       if (this.selectedBrandNmKor.trim()) {
         this.getApi(
-          "/brand",
-          { name: this.selectedBrandNmKor },
-          this.searchBrandsForShopSuccess,
-          this.searchBrandsForShopFail
+            "/brand",
+            {name: this.selectedBrandNmKor},
+            this.searchBrandsForShopSuccess,
+            this.searchBrandsForShopFail
         );
       } else {
         this.searchBrandList = [];
-        this.isLoading = false;
       }
     },
     searchBrandsForShopSuccess(res) {
       this.searchBrandList = res.data;
-      this.isLoading = false;
     },
     searchBrandsForShopFail(error) {
       console.error("Brand search failed:", error);
       this.searchBrandList = [];
-      this.isLoading = false;
     },
     async register() {
-      this.isLoading = true;
       if (this.offlineStoreTypeCd === "00030001") {
 
         if (!this.storeKorNm || !this.storeEngNm || !this.storeCd) {
           this.validationError = "등록된 스토어가 아니거나 스토어가 올바르게게 선택이 되지 않았습니다.";
           return;
         }
-        if ( !this.branchNm ) {
+        if (!this.branchNm) {
           this.validationError = "지점명을 입력해주세요.";
           return;
         }
-    
+
       } else if (this.offlineStoreTypeCd === "00030002") {
         if (!this.selectedBrandNmKor || !this.selectedBrandCd || !this.selectedBrandNmEng) {
           this.validationError = "등록된 브랜드가 아니거나 브랜드가 올바르게 선택되지 않았습니다.";
           return;
         }
-        if ( !this.branchNm ) {
+        if (!this.branchNm) {
           this.validationError = "지점명을 입력해주세요.";
           return;
         }
       } else if (this.offlineStoreTypeCd === "00030003") {
         if (!this.storeCd || !this.storeEngNm || !this.storeKorNm || !this.selectedBrandCd ||
-            !this.strtDt || !this.endDt || !this.selectedAddress.branchRoadAddr || 
-            !this.selectedAddress.branchAddr || !this.selectedAddress.lon || 
+            !this.strtDt || !this.endDt || !this.selectedAddress.branchRoadAddr ||
+            !this.selectedAddress.branchAddr || !this.selectedAddress.lon ||
             !this.selectedAddress.lat) {
           this.validationError = "필수 입력값을 모두 입력해주세요.";
           return;
         }
       }
       if (!this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
-          this.validationError = "주소를 입력해주세요.";
-          return;
-        }
+        this.validationError = "주소를 입력해주세요.";
+        return;
+      }
 
       this.validationError = "";
 
@@ -420,22 +402,20 @@ export default {
           offlineStoreTypeCd: this.offlineStoreTypeCd,
         };
       }
-      
+
       this.postApi(
-        "/store/offline-branch/registration",
-        branchData,
-        this.registerSuccess,
-        this.registerFail
+          "/store/offline-branch/registration",
+          branchData,
+          this.registerSuccess,
+          this.registerFail
       );
     },
     registerSuccess(res) {
-      this.isLoading = false;
       this.commonModalMessage = res.data;
       this.commonModalType = "alert";
       this.showCommonModal = true;
     },
     registerFail(error) {
-      this.isLoading = false;
       this.commonModalMessage = error.message;
       this.commonModalType = "alert";
       this.showCommonModal = true;
@@ -443,11 +423,11 @@ export default {
     handleCommonModalConfirm() {
       this.showCommonModal = false;
       if (
-        this.commonModalType === "alert" &&
-        this.commonModalMessage &&
-        !this.commonModalMessage.includes("실패") &&
-        !this.commonModalMessage.includes("오류") &&
-        !this.commonModalMessage.toLowerCase().includes("fail")
+          this.commonModalType === "alert" &&
+          this.commonModalMessage &&
+          !this.commonModalMessage.includes("실패") &&
+          !this.commonModalMessage.includes("오류") &&
+          !this.commonModalMessage.toLowerCase().includes("fail")
       ) {
         this.closeModal();
       }
@@ -459,7 +439,7 @@ export default {
       this.offlineStoreTypeCd = type.commCdDtl;
       this.showTypeDropdown = false;
       this.showFeeDropdown = false; // 요금 드롭다운도 닫기
-      
+
       // 모든 변수 초기화
       this.storeCd = "";
       this.storeKorNm = "";
@@ -496,7 +476,7 @@ export default {
       this.feeYn = "N";
       this.reservationLink = "";
       this.description = "";
-      
+
       // 팝업샵(00030003)을 선택했을 때 날짜 선택기 초기화
       if (type.commCdDtl === '00030003') {
         this.$nextTick(() => {
@@ -521,10 +501,10 @@ export default {
     },
     fetchOfflineStoreTypeList() {
       this.getApi(
-        "/comm-cd/detail",
-        { commCd: "0003" },
-        this.handleOfflineStoreTypeListSuccess,
-        this.handleOfflineStoreTypeListFail
+          "/comm-cd/detail",
+          {commCd: "0003"},
+          this.handleOfflineStoreTypeListSuccess,
+          this.handleOfflineStoreTypeListFail
       );
     },
     handleOfflineStoreTypeListSuccess(res) {
@@ -581,13 +561,13 @@ export default {
     },
     handleStoreRegistration(result) {
       this.closeStoreModal();
-      
+
       if (result.success) {
         // 스토어 등록 성공 시 CommonModal로 성공 메시지 표시
         this.commonModalMessage = result.message;
         this.commonModalType = "alert";
         this.showCommonModal = true;
-        
+
         // 성공적으로 등록된 스토어 정보를 현재 입력 필드에 설정
         if (result.data) {
           this.storeCd = result.data.storeCd;
@@ -648,11 +628,7 @@ export default {
 
 <template>
   <div class="modal-overlay" @click="closeModal">
-    <div class="loading-overlay" v-if="isLoading">
-      <div class="loading-spinner"></div>
-      <div class="loading-text">로딩 중...</div>
-    </div>
-    <div class="register-modal" @click.stop :class="{ 'blur-content': isLoading }">
+    <div class="register-modal" @click.stop>
       <div>
         <div>
           <span>유형</span>
@@ -660,35 +636,36 @@ export default {
             <div class="custom-select-selected" @click="toggleTypeDropdown">
               {{
                 offlineStoreTypeList.find(
-                  (t) => t.commCdDtl === offlineStoreTypeCd
+                    (t) => t.commCdDtl === offlineStoreTypeCd
                 )?.commCdDtlNm || "선택"
               }}
               <span class="custom-select-arrow">▼</span>
             </div>
             <ul v-if="showTypeDropdown" class="custom-select-options">
               <li
-                v-for="type in offlineStoreTypeList"
-                :key="type.commCdDtl"
-                :class="{ selected: type.commCdDtl === offlineStoreTypeCd }"
-                @click="selectType(type)"
+                  v-for="type in offlineStoreTypeList"
+                  :key="type.commCdDtl"
+                  :class="{ selected: type.commCdDtl === offlineStoreTypeCd }"
+                  @click="selectType(type)"
               >
                 {{ type.commCdDtlNm }}
               </li>
             </ul>
           </div>
         </div>
-        <div v-if="['00030002','00030003'].includes(offlineStoreTypeCd)"> 
+        <div v-if="['00030002','00030003'].includes(offlineStoreTypeCd)">
           <label class="form-label">브랜드명<span class="required-star">*</span></label>
           <div class="brand-search-container">
-            <input class="form-input brand-search-input" type="text" v-model="selectedBrandNmKor" @keyup.enter="searchBrandsForShop" placeholder="브랜드명을 입력하세요" />
+            <input class="form-input brand-search-input" type="text" v-model="selectedBrandNmKor"
+                   @keyup.enter="searchBrandsForShop" placeholder="브랜드명을 입력하세요"/>
             <button class="search-button" @click="searchBrandsForShop">검색</button>
           </div>
           <div v-if="isSearchBrandList&&searchBrandList.length > 0" class="search-list">
             <div
-              v-for="brand in searchBrandList"
-              :key="brand.brandCd"
-              @click="selectBrandForShop(brand)"
-              class="search-item"
+                v-for="brand in searchBrandList"
+                :key="brand.brandCd"
+                @click="selectBrandForShop(brand)"
+                class="search-item"
             >
               {{ brand.brandNmKor }}({{ brand.brandNmEng }})
             </div>
@@ -700,12 +677,12 @@ export default {
           </div>
         </div>
 
-        <div v-if="['00030002'].includes(offlineStoreTypeCd)"> 
+        <div v-if="['00030002'].includes(offlineStoreTypeCd)">
           <label class="form-label">
-              브랜드명(영어)<span class="required-star">*</span>
-            </label>
-            <input class="form-input" type="text" v-model="selectedBrandNmEng" placeholder="영어 브랜드명을 입력하세요" />
-          </div>
+            브랜드명(영어)<span class="required-star">*</span>
+          </label>
+          <input class="form-input" type="text" v-model="selectedBrandNmEng" placeholder="영어 브랜드명을 입력하세요"/>
+        </div>
 
         <div>
           <div v-if="['00030001','00030003'].includes(offlineStoreTypeCd)">
@@ -713,15 +690,16 @@ export default {
               {{ offlineStoreTypeCd === '00030001' ? '스토어명(한글)' : '스토어명' }}<span class="required-star">*</span>
             </label>
             <div class="brand-search-container">
-              <input class="form-input brand-search-input" type="text" v-model="storeKorNm" @keyup.enter="storeSearch" placeholder="스토어명을 입력하세요" />
+              <input class="form-input brand-search-input" type="text" v-model="storeKorNm" @keyup.enter="storeSearch"
+                     placeholder="스토어명을 입력하세요"/>
               <button class="search-button" @click="storeSearch">검색</button>
             </div>
             <div v-if="isSearchStoreList&&storeList.length > 0" class="search-list">
               <div
-                v-for="store in storeList"
-                :key="store.storeId"
-                @click="selectStore(store)"
-                class="search-item"
+                  v-for="store in storeList"
+                  :key="store.storeId"
+                  @click="selectStore(store)"
+                  class="search-item"
               >
                 {{ store.storeKorNm }}({{ store.storeEngNm }})
               </div>
@@ -734,17 +712,17 @@ export default {
           </div>
         </div>
         <div v-if="offlineStoreTypeCd === '00030001'">
-            <label class="form-label">
-              스토어명(영어)<span class="required-star">*</span>
-            </label>
-            <input class="form-input" type="text" v-model="storeEngNm" placeholder="영어 스토어명을 입력하세요" />
-          </div>
+          <label class="form-label">
+            스토어명(영어)<span class="required-star">*</span>
+          </label>
+          <input class="form-input" type="text" v-model="storeEngNm" placeholder="영어 스토어명을 입력하세요"/>
+        </div>
         <div v-if="['00030001', '00030002'].includes(offlineStoreTypeCd)">
           <label class="form-label">
             지점명
             <span class="required-star">*</span>
           </label>
-          <input class="form-input" type="text" v-model="branchNm" placeholder="지점명을 입력하세요" />
+          <input class="form-input" type="text" v-model="branchNm" placeholder="지점명을 입력하세요"/>
         </div>
         <!-- <div v-if="['00030001', '00030002'].includes(offlineStoreTypeCd)">
           <label class="form-label">국가</label>
@@ -771,49 +749,49 @@ export default {
             검색하기
           </button>
           <AddressSearchModal
-            v-if="showAddressModal"
-            @close="showAddressModal = false"
-            @select="handleAddressSelect"
+              v-if="showAddressModal"
+              @close="showAddressModal = false"
+              @select="handleAddressSelect"
           />
         </div>
-        
+
         <!-- 팝업샵(00030003) 전용 항목들 -->
         <div v-if="['00030003'].includes(offlineStoreTypeCd)">
           <label class="form-label">
             시작일<span class="required-star">*</span>
           </label>
           <div class="date-input-wrapper">
-            <input 
-              id="startDate" 
-              class="form-input date-input" 
-              type="text" 
-              v-model="strtDt" 
-              placeholder="YYYY-MM-DD"
-              readonly
-              @click="startDatePicker && startDatePicker.open()"
+            <input
+                id="startDate"
+                class="form-input date-input"
+                type="text"
+                v-model="strtDt"
+                placeholder="YYYY-MM-DD"
+                readonly
+                @click="startDatePicker && startDatePicker.open()"
             />
             <span class="calendar-icon" @click="startDatePicker && startDatePicker.open()">📅</span>
           </div>
         </div>
-        
+
         <div v-if="['00030003'].includes(offlineStoreTypeCd)">
           <label class="form-label">
             종료일<span class="required-star">*</span>
           </label>
           <div class="date-input-wrapper">
-            <input 
-              id="endDate" 
-              class="form-input date-input" 
-              type="text" 
-              v-model="endDt" 
-              placeholder="YYYY-MM-DD"
-              readonly
-              @click="endDatePicker && endDatePicker.open()"
+            <input
+                id="endDate"
+                class="form-input date-input"
+                type="text"
+                v-model="endDt"
+                placeholder="YYYY-MM-DD"
+                readonly
+                @click="endDatePicker && endDatePicker.open()"
             />
             <span class="calendar-icon" @click="endDatePicker && endDatePicker.open()">📅</span>
           </div>
         </div>
-        
+
         <div v-if="['00030003'].includes(offlineStoreTypeCd)">
           <label class="form-label">
             요금
@@ -825,49 +803,50 @@ export default {
             </div>
             <ul v-if="showFeeDropdown" class="custom-select-options">
               <li
-                :class="{ selected: feeYn === 'N' }"
-                @click="selectFee('N')"
+                  :class="{ selected: feeYn === 'N' }"
+                  @click="selectFee('N')"
               >
                 무료
               </li>
               <li
-                :class="{ selected: feeYn === 'Y' }"
-                @click="selectFee('Y')"
+                  :class="{ selected: feeYn === 'Y' }"
+                  @click="selectFee('Y')"
               >
                 유료
               </li>
             </ul>
           </div>
         </div>
-        
+
         <div v-if="['00030003'].includes(offlineStoreTypeCd)">
           <label class="form-label">예약 링크</label>
-          <input 
-            class="form-input" 
-            type="text" 
-            v-model="reservationLink" 
-            placeholder="예약 링크를 입력하세요"
+          <input
+              class="form-input"
+              type="text"
+              v-model="reservationLink"
+              placeholder="예약 링크를 입력하세요"
           />
         </div>
-        
+
         <div v-if="['00030003'].includes(offlineStoreTypeCd)">
           <label class="form-label">설명</label>
-          <textarea 
-            class="form-textarea" 
-            v-model="description" 
-            placeholder="팝업샵에 대한 설명을 입력하세요"
-            rows="3"
+          <textarea
+              class="form-textarea"
+              v-model="description"
+              placeholder="팝업샵에 대한 설명을 입력하세요"
+              rows="3"
           ></textarea>
         </div>
-        <div v-if="['00030001'].includes(offlineStoreTypeCd)"> 
+        <div v-if="['00030001'].includes(offlineStoreTypeCd)">
           <label class="form-label">취급 브랜드</label>
-          <input class="form-input" type="text" v-model="usualBrandSearch" @input="searchUsualBrands" placeholder="취급 브랜드명을 입력하세요" />
+          <input class="form-input" type="text" v-model="usualBrandSearch" @input="searchUsualBrands"
+                 placeholder="취급 브랜드명을 입력하세요"/>
           <div v-if="usualBrandList.length > 0" class="search-list">
             <div
-              v-for="brand in usualBrandList"
-              :key="brand.brandCd"
-              @click="addUsualBrand(brand)"
-              class="search-item"
+                v-for="brand in usualBrandList"
+                :key="brand.brandCd"
+                @click="addUsualBrand(brand)"
+                class="search-item"
             >
               {{ brand.brandNmKor }}
             </div>
@@ -879,9 +858,9 @@ export default {
           </div>
           <div class="selected-brands">
             <div
-              v-for="brand in usualBrands"
-              :key="brand.brandCd"
-              class="selected-brand"
+                v-for="brand in usualBrands"
+                :key="brand.brandCd"
+                class="selected-brand"
             >
               {{ brand.brandNmKor }}
               <span class="remove-brand" @click="removeUsualBrand(brand)">×</span>
@@ -890,11 +869,11 @@ export default {
         </div>
         <div>
           <label class="form-label">연락처</label>
-          <input class="form-input" type="text" v-model="contactInfo" placeholder="연락처를 입력하세요" />
+          <input class="form-input" type="text" v-model="contactInfo" placeholder="연락처를 입력하세요"/>
         </div>
         <div>
           <label class="form-label">비고</label>
-          <input class="form-input" type="text" v-model="shopDescription" placeholder="추가 정보나 특이사항을 입력하세요" />
+          <input class="form-input" type="text" v-model="shopDescription" placeholder="추가 정보나 특이사항을 입력하세요"/>
         </div>
         <!-- <div v-if="branchTypeCd !== '00030001'">
           <span>웹사이트 주소 입력</span>
@@ -927,7 +906,7 @@ export default {
         </div> -->
       </div>
       <div class="required-guide">*은 <b>필수 입력값</b>입니다.</div>
-      
+
       <div v-if="validationError" class="validation-error">
         {{ validationError }}
       </div>
@@ -941,72 +920,33 @@ export default {
 
   <!-- Brand Registration Modal -->
   <BrandRegistrationModal
-    v-if="showBrandModal"
-    :show="showBrandModal"
-    :searchText="offlineStoreTypeCd === '00030002' ? selectedBrandNmKor : usualBrandSearch"
-    @close="closeBrandModal"
-    @register="handleBrandRegistration"
+      v-if="showBrandModal"
+      :show="showBrandModal"
+      :searchText="offlineStoreTypeCd === '00030002' ? selectedBrandNmKor : usualBrandSearch"
+      @close="closeBrandModal"
+      @register="handleBrandRegistration"
   />
 
   <!-- Store Registration Modal -->
   <StoreRegistrationModal
-    v-if="showStoreModal"
-    :show="showStoreModal"
-    :searchText="storeKorNm"
-    @close="closeStoreModal"
-    @register="handleStoreRegistration"
+      v-if="showStoreModal"
+      :show="showStoreModal"
+      :searchText="storeKorNm"
+      @close="closeStoreModal"
+      @register="handleStoreRegistration"
   />
 
   <!-- Common Modal -->
   <CommonModal
-    v-if="showCommonModal"
-    :show="showCommonModal"
-    :content="commonModalMessage"
-    :type="commonModalType"
-    @confirm="handleCommonModalConfirm"
+      v-if="showCommonModal"
+      :show="showCommonModal"
+      :content="commonModalMessage"
+      :type="commonModalType"
+      @confirm="handleCommonModalConfirm"
   />
 </template>
 
 <style scoped>
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(141, 141, 141, 0.3);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 10px;
-}
-
-.loading-text {
-  color: #333;
-  font-size: 16px;
-  font-weight: bold;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.blur-content {
-  filter: blur(2px);
-  pointer-events: none;
-}
 
 .brand-search-container {
   display: flex;
@@ -1270,6 +1210,7 @@ export default {
   width: 100%;
   outline: none;
 }
+
 .custom-select-selected {
   width: 100%;
   padding: 8px;
@@ -1285,10 +1226,12 @@ export default {
   justify-content: space-between;
   transition: all 0.2s ease;
 }
+
 .custom-select-arrow {
   margin-left: 8px;
   font-size: 0.8em;
 }
+
 .custom-select-options {
   position: absolute;
   top: 100%;
@@ -1303,6 +1246,7 @@ export default {
   list-style: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
+
 .custom-select-options li {
   padding: 8px;
   color: var(--color1);
@@ -1311,10 +1255,12 @@ export default {
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .custom-select-options li:hover {
   background-color: var(--color6);
   color: #fff;
 }
+
 .required-guide {
   color: #b85c3b;
   font-size: 0.92rem;
@@ -1322,6 +1268,7 @@ export default {
   margin: 1.2rem 0 0.2rem 0;
   text-align: left;
 }
+
 .form-label {
   white-space: nowrap;
   display: inline-flex;
@@ -1332,6 +1279,7 @@ export default {
   margin-bottom: 0.2em;
   color: var(--color1);
 }
+
 .form-input {
   width: 100%;
   padding: 8px;
@@ -1344,14 +1292,17 @@ export default {
   font-family: var(--main-font);
   transition: all 0.2s ease;
 }
+
 .form-input:focus {
   outline: none;
   border-color: var(--color6);
   background-color: rgba(255, 255, 255, 0.15);
 }
+
 .form-input::placeholder {
   color: rgba(255, 244, 204, 0.5);
 }
+
 .required-star {
   color: #b85c3b;
   margin-left: 2px;

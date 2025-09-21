@@ -31,16 +31,27 @@ export default {
       navList: [
         {itemNm: "쇼핑코스", imgSrc: "/assets/map/route.png"},
         {itemNm: "즐겨찾기", imgSrc: "/assets/map/favorite.png"},
+        {itemNm: "스토어 등록", imgSrc: "/assets/map/store.png"},
+        {itemNm: "문의하기", imgSrc: "/assets/map/qmark.png"},
       ],
       storeMarkers: [],
       routePolyline: null, // 경로 폴리라인
       waypointMarkers: [], // 웨이포인트 마커들
       showContent: true, // content 표시 여부
-      contentWidth: 400, // content 너비
+      contentWidth: 500, // content 너비
       isResizing: false, // 리사이징 중인지 여부
       minContentWidth: 300, // 최소 content 너비
       maxContentWidth: 800, // 최대 content 너비
       regionStoreList: [],
+      isMobileMenuOpen: false, // 모바일 메뉴 열림 상태
+      // 모바일 바텀시트 상태
+      bottomSheetHeight: 20, // 현재 바텀시트 높이 (%). 0~100
+      isDraggingSheet: false,
+      dragStartY: 0,
+      dragCurrentY: 0,
+      sheetMin: 8,
+      sheetMax: 85,
+      isMobileView: false,
     }
   },
   computed: {
@@ -85,7 +96,7 @@ export default {
 
             const marker = L.marker([store.lat, store.lon], {icon, zIndexOffset: isSelected ? 900 : 0})
                 .addTo(this.map)
-                // .bindPopup(`${store.storeKorNm} ${store.branchNm}`);
+            // .bindPopup(`${store.storeKorNm} ${store.branchNm}`);
             marker.on('click', () => {
               this.onStoreMarkerClick(store, district, city);
             });
@@ -123,35 +134,35 @@ export default {
       }
     },
     onDrawRoute(coordsArr, wayPoints) {
-      
+
       // 기존 경로 폴리라인 제거
       if (this.routePolyline) {
         this.map.removeLayer(this.routePolyline);
         this.routePolyline = null;
       }
-      
+
       // 기존 웨이포인트 마커들 제거
       this.clearWaypointMarkers();
-      
+
       // Leaflet은 [lat, lng] 순서 필요
       this.routePolyline = L.polyline(coordsArr, {
         color: '#2a7a7f', // 진한 청록
         weight: 6,
         opacity: 0.85
       }).addTo(this.map);
-      
+
       // 웨이포인트 마커들 추가
       if (wayPoints && Array.isArray(wayPoints)) {
         wayPoints.forEach((waypoint) => {
           // location 배열에서 [경도, 위도] -> [위도, 경도]로 변환
           const lat = waypoint.location[1];
           const lng = waypoint.location[0];
-                    
+
           const waypointMarker = L.marker([lat, lng], {
             icon: this.createNumberedIcon(waypoint.waypoint_index + 1),
             zIndexOffset: 10000
           }).addTo(this.map);
-          
+
           // 팝업에 웨이포인트 정보 표시
           waypointMarker.bindPopup(`
             <div>
@@ -160,11 +171,11 @@ export default {
               <small>거리: ${waypoint.distance.toFixed(2)}m</small>
             </div>
           `);
-          
+
           this.waypointMarkers.push(waypointMarker);
         });
       }
-      
+
       // 경로가 보이도록 지도 영역 fit
       this.map.fitBounds(this.routePolyline.getBounds(), {padding: [30, 30]});
     },
@@ -191,50 +202,50 @@ export default {
     },
     clearAllMarkersAndResetLocation() {
       if (!this.map) return;
-      
+
       // 모든 매장 마커 제거
       if (this.storeMarkers) {
         this.storeMarkers.forEach(marker => this.map.removeLayer(marker));
         this.storeMarkers = [];
       }
-      
+
       // 선택된 매장 마커 제거
       if (this.selectedStoreMarkers) {
         this.selectedStoreMarkers.forEach(marker => this.map.removeLayer(marker));
         this.selectedStoreMarkers = [];
       }
-      
+
       // 웨이포인트 마커 제거
       this.clearWaypointMarkers();
-      
+
       // 경로 폴리라인 제거
       if (this.routePolyline) {
         this.map.removeLayer(this.routePolyline);
         this.routePolyline = null;
       }
-      
+
       // 현재 위치 마커 제거 후 재설정
       if (this.marker) {
         this.map.removeLayer(this.marker);
         this.marker = null;
       }
-      
+
       // 현재 위치 재설정
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            this.marker = L.marker([lat, lon], {icon: this.icon});
-            this.marker.addTo(this.map);
-            this.map.setView([lat, lon], 13);
-          },
-          () => {
-            // 위치 정보 못 가져오면 기본 위치에 마커
-            this.marker = L.marker([37.566734, 126.978236], {icon: this.icon});
-            this.marker.addTo(this.map);
-            this.map.setView([37.566734, 126.978236], 13);
-          }
+            (position) => {
+              const lat = position.coords.latitude;
+              const lon = position.coords.longitude;
+              this.marker = L.marker([lat, lon], {icon: this.icon});
+              this.marker.addTo(this.map);
+              this.map.setView([lat, lon], 13);
+            },
+            () => {
+              // 위치 정보 못 가져오면 기본 위치에 마커
+              this.marker = L.marker([37.566734, 126.978236], {icon: this.icon});
+              this.marker.addTo(this.map);
+              this.map.setView([37.566734, 126.978236], 13);
+            }
         );
       } else {
         // 브라우저가 geolocation 지원 안하면 기본 위치
@@ -244,13 +255,42 @@ export default {
       }
     },
     onTabChange(idx) {
-      // 같은 탭을 다시 클릭하면 content 토글
-      if (this.activeNavIndex === idx) {
-        this.showContent = !this.showContent;
-      } else {
-        // 다른 탭을 클릭하면 해당 탭으로 변경하고 content 표시
+      const isMobile = this.isMobileView;
+      const itemName = this.navList[idx] && this.navList[idx].itemNm;
+
+      // 특별한 기능들 처리 - 이름 기반으로 안전 처리
+      if (itemName === '스토어 등록') {
+        this.openRegisterModal();
+        this.isMobileMenuOpen = false;
+        return;
+      }
+      if (itemName === '내 위치') {
+        this.goToCurrentLocation();
+        this.isMobileMenuOpen = false;
+        return;
+      }
+      if (itemName === '문의하기') {
+        this.commonModalMessage = '문의해 주셔서 감사합니다. 메일: support@kickstory.example 또는 커뮤니티에서 문의를 남겨주세요.';
+        this.showCommonModal = true;
+        this.isMobileMenuOpen = false;
+        return;
+      }
+
+      if (isMobile) {
         this.activeNavIndex = idx;
-        this.showContent = true;
+        this.isMobileMenuOpen = false; // 메뉴 선택 후 닫기
+        // 바텀시트 열기
+        this.openSheetIfNeeded();
+      } else {
+        // 데스크톱에서는 기존 로직 유지 (탭 컨텐츠는 쇼핑코스/즐겨찾기만)
+        if (idx < 2) {
+          if (this.activeNavIndex === idx) {
+            this.showContent = !this.showContent;
+          } else {
+            this.activeNavIndex = idx;
+            this.showContent = true;
+          }
+        }
       }
 
       // map 재렌더링
@@ -260,8 +300,35 @@ export default {
         }
       });
     },
+    goToCurrentLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const lat = position.coords.latitude;
+              const lon = position.coords.longitude;
+              this.map.setView([lat, lon], 16);
+            },
+            () => {
+              this.commonModalMessage = '현재 위치를 가져올 수 없습니다.';
+              this.showCommonModal = true;
+            }
+        );
+      } else {
+        this.commonModalMessage = '위치 서비스를 지원하지 않는 브라우저입니다.';
+        this.showCommonModal = true;
+      }
+    },
+    toggleMobileMenu() {
+      this.isMobileMenuOpen = !this.isMobileMenuOpen;
+    },
+    closeMobileMenu() {
+      this.isMobileMenuOpen = false;
+    },
     closeOverlay() {
-      if (this.showContent) {
+      // 모바일에서는 closeOverlay 비활성화 (항상 content 표시)
+      const isMobile = window.innerWidth <= 768;
+
+      if (!isMobile && this.showContent) {
         this.showContent = false;
         this.$nextTick(() => {
           if (this.map) {
@@ -277,9 +344,9 @@ export default {
     },
     handleAddStore(store) {
       if (this.offlineStoreType != "00030003" && !this.selectedStores.find(s => s.branchCd === store.branchCd)) {
-        this.selectedStores.push({offlineStoreType:this.offlineStoreType,...store});
+        this.selectedStores.push({offlineStoreType: this.offlineStoreType, ...store});
       } else if (this.offlineStoreType == "00030003" && !this.selectedStores.find(s => s.storeCd === store.storeCd)) {
-        this.selectedStores.push({offlineStoreType:this.offlineStoreType,...store});
+        this.selectedStores.push({offlineStoreType: this.offlineStoreType, ...store});
       }
     },
     handleRemoveStore(store) {
@@ -327,6 +394,62 @@ export default {
       this.isResizing = false;
       document.removeEventListener('mousemove', this.handleResize);
       document.removeEventListener('mouseup', this.stopResize);
+    },
+
+    // =====================
+    // 모바일 바텀시트 드래그
+    // =====================
+    startSheetDrag(e) {
+      this.isDraggingSheet = true;
+      this.dragStartY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+      this.dragCurrentY = this.dragStartY;
+      document.addEventListener('mousemove', this.handleSheetDrag, {passive: false});
+      document.addEventListener('mouseup', this.endSheetDrag);
+      document.addEventListener('touchmove', this.handleSheetDrag, {passive: false});
+      document.addEventListener('touchend', this.endSheetDrag);
+      if (e.cancelable) e.preventDefault();
+    },
+    handleSheetDrag(e) {
+      if (!this.isDraggingSheet) return;
+      const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+      const deltaY = this.dragStartY - clientY; // 위로 드래그하면 양수
+      const vh = window.innerHeight;
+      const deltaPercent = (deltaY / vh) * 100;
+      let next = this.bottomSheetHeight + deltaPercent;
+      next = Math.max(this.sheetMin, Math.min(this.sheetMax, next));
+      this.bottomSheetHeight = next;
+      this.dragStartY = clientY; // 점진 업데이트로 바운싱 줄임
+      if (e.cancelable) e.preventDefault();
+    },
+    endSheetDrag() {
+      if (!this.isDraggingSheet) return;
+      this.isDraggingSheet = false;
+      // 스냅 포인트 적용 (하단, 중간, 상단)
+      const snaps = [this.sheetMin, 30, 60, this.sheetMax];
+      let nearest = snaps[0];
+      let mind = Math.abs(this.bottomSheetHeight - snaps[0]);
+      for (let i = 1; i < snaps.length; i += 1) {
+        const d = Math.abs(this.bottomSheetHeight - snaps[i]);
+        if (d < mind) {
+          mind = d;
+          nearest = snaps[i];
+        }
+      }
+      this.bottomSheetHeight = nearest;
+      document.removeEventListener('mousemove', this.handleSheetDrag);
+      document.removeEventListener('mouseup', this.endSheetDrag);
+      document.removeEventListener('touchmove', this.handleSheetDrag);
+      document.removeEventListener('touchend', this.endSheetDrag);
+    },
+    // 탭 전환 시 콘텐츠만 변경하고, 바텀시트는 적당히 열기
+    openSheetIfNeeded() {
+      if (this.bottomSheetHeight < 30) this.bottomSheetHeight = 60;
+    },
+    minimizeSheet() {
+      this.bottomSheetHeight = this.sheetMin;
+    },
+    maximizeSheet() {
+      this.bottomSheetHeight = this.sheetMax;
     },
   },
   mounted() {
@@ -445,6 +568,13 @@ export default {
       this.addStoreMarkers();
     }
 
+    // 반응형 플래그 초기화 및 리스너 등록
+    const updateIsMobile = () => {
+      this.isMobileView = window.innerWidth <= 768;
+    };
+    updateIsMobile();
+    window.addEventListener('resize', updateIsMobile);
+
     // map 로드 완료 후 content가 제대로 보이도록 보장
     this.$nextTick(() => {
       if (this.showContent) {
@@ -455,6 +585,8 @@ export default {
         });
       }
     });
+    // 저장: 언마운트에서 해제 위해 참조 보관
+    this._updateIsMobile = updateIsMobile;
   },
   watch: {
     selectedStores: {
@@ -474,7 +606,8 @@ export default {
     // 이벤트 리스너 정리
     document.removeEventListener('mousemove', this.handleResize);
     document.removeEventListener('mouseup', this.stopResize);
-    
+    if (this._updateIsMobile) window.removeEventListener('resize', this._updateIsMobile);
+
     // 웨이포인트 마커들 정리
     this.clearWaypointMarkers();
   }
@@ -484,7 +617,8 @@ export default {
 <template>
   <div class="map-wrapper">
     <div class="navbar">
-      <ul class="navbar-list">
+      <!-- 데스크톱 네비게이션 -->
+      <ul class="navbar-list desktop-nav">
         <li class="navbar-item" v-for="(item, idx) in navList" :class="idx === activeNavIndex ? 'active' : ''"
             :key="item.itemNm" @click="onTabChange(idx)">
           <div class="nav-icon">
@@ -493,6 +627,27 @@ export default {
           </div>
         </li>
       </ul>
+
+      <!-- 모바일 햄버거 메뉴 -->
+      <div class="mobile-nav">
+        <button class="hamburger-btn" @click="toggleMobileMenu" :class="{ active: isMobileMenuOpen }">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <!-- 모바일 드롭다운 메뉴 -->
+        <div class="mobile-dropdown" v-show="isMobileMenuOpen" @click.stop>
+          <div class="mobile-menu-item"
+               v-for="(item, idx) in navList"
+               :key="item.itemNm"
+               :class="idx === activeNavIndex ? 'active' : ''"
+               @click="onTabChange(idx)">
+            <img :src="item.imgSrc" :alt="item.itemNm"/>
+            <span>{{ item.itemNm }}</span>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="map-container">
       <div id="map"></div>
@@ -512,9 +667,38 @@ export default {
           <span>선택된 경로</span>
         </div>
       </div>
-      <div class="content-overlay" v-show="showContent" @click="closeOverlay">
+      <!-- 데스크톱 content-overlay -->
+      <div class="content-overlay desktop-content" v-show="showContent" @click="closeOverlay">
         <div class="content" :style="{ width: contentWidth + 'px' }" @click.stop>
           <div class="resize-handle" @mousedown="startResize"></div>
+          <KicksMapRoute
+              v-if="activeNavIndex === 0"
+              :selected-stores="selectedStores"
+              :offline-store-type="offlineStoreType"
+              @open-register-modal="openRegisterModal"
+              @draw-route="onDrawRoute"
+              @update-region-list="handleUpdateregionStoreList"
+              @store-type-change="handleStoreTypeChange"
+              @add-store="handleAddStore"
+              @remove-store="handleRemoveStore"
+          />
+          <KicksMapFavorite v-if="activeNavIndex === 1" @add-stores="handleAddStores" @draw-route="onDrawRoute"/>
+        </div>
+      </div>
+
+      <!-- 모바일 바텀시트: 하단 도킹 + 드래그로 열기/닫기 -->
+      <div class="mobile-bottom-sheet" v-show="isMobileView" :style="{ height: bottomSheetHeight + '%' }">
+        <div class="sheet-grabber" @mousedown="startSheetDrag" @touchstart="startSheetDrag">
+          <div class="grabber-bar"></div>
+        </div>
+        <div class="sheet-header">
+          <div class="sheet-title">{{ navList[activeNavIndex]?.itemNm || '메뉴' }}</div>
+          <div class="sheet-actions">
+            <button class="sheet-btn" @click.stop="minimizeSheet" title="내리기">▾</button>
+            <button class="sheet-btn" @click.stop="maximizeSheet" title="올리기">▴</button>
+          </div>
+        </div>
+        <div class="sheet-content" @mousedown.stop @touchstart.stop>
           <KicksMapRoute
               v-if="activeNavIndex === 0"
               :selected-stores="selectedStores"
@@ -542,643 +726,5 @@ export default {
 </template>
 
 <style scoped>
-.map-wrapper {
-  display: flex;
-  height: calc(100vh - 4rem);
-  width: 100%;
-  background-color: var(--color2);
-  padding: 1rem;
-  gap: 1rem;
-}
-
-.navbar {
-  width: 60px;
-  min-width: 60px;
-  height: 90vh;
-  display: flex;
-  gap: 0;
-  z-index: 20;
-}
-
-.navbar-list {
-  width: 60px;
-  min-width: 60px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  background-color: rgb(164, 155, 123);
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
-  flex-shrink: 0;
-}
-
-.content {
-  background-color: rgb(204, 195, 163);
-  padding: 1rem;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh;
-  overflow-y: auto;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
-  position: relative;
-  transition: width 0.1s ease;
-}
-
-.resize-handle {
-  position: absolute;
-  right: -8px;
-  top: 0;
-  width: 16px;
-  height: 100%;
-  cursor: ew-resize;
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.1));
-  border-radius: 0 8px 8px 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1001;
-}
-
-.resize-handle::before {
-  content: '⋮⋮';
-  color: rgba(0, 0, 0, 0.3);
-  font-size: 12px;
-  font-weight: bold;
-  letter-spacing: -2px;
-  transform: rotate(90deg);
-}
-
-.resize-handle:hover {
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.2));
-}
-
-.resize-handle:hover::before {
-  color: rgba(0, 0, 0, 0.5);
-}
-
-.navbar-item {
-  height: 60px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.nav-icon {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.navbar-item img {
-  width: 20px;
-  height: 20px;
-  filter: brightness(0);
-}
-
-.navbar-item span {
-  color: var(--color1);
-  font-size: 0.7rem;
-  font-family: var(--main-font);
-}
-
-.navbar-item.active {
-  background-color: rgb(204, 195, 163);
-  border-right: 4px solid var(--color6);
-}
-
-.navbar-item.active img {
-  filter: brightness(0);
-}
-
-.search-box {
-  background-color: var(--color2);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-}
-
-.search-container {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 1rem;
-  flex-wrap: nowrap;
-}
-
-.search-select {
-  width: 90px;
-  min-width: 90px;
-  padding: 8px;
-  border: none;
-  background-color: white;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-family: var(--main-font);
-}
-
-.search-input {
-  flex: 1;
-  min-width: 100px;
-  padding: 8px;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-family: var(--main-font);
-}
-
-.search-btn {
-  padding: 8px 16px;
-  background-color: var(--color6);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-family: var(--sub-font);
-  white-space: nowrap;
-}
-
-.register-btn {
-  width: 100%;
-  padding: 8px;
-  background-color: var(--color6);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-family: var(--sub-font);
-}
-
-.tab-container {
-  margin-bottom: 1rem;
-}
-
-.tab-list {
-  display: flex;
-  background-color: var(--color2);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.tab-item {
-  flex: 1;
-  padding: 12px;
-  background-color: transparent;
-  border: none;
-  color: var(--color1);
-  font-family: var(--sub-font);
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tab-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.tab-item.active {
-  background-color: var(--color6);
-  color: white;
-}
-
-.country-select-container {
-  padding: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.country-select {
-  width: 100%;
-  padding: 8px;
-  border: none;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: var(--color1);
-  font-size: 0.9rem;
-  font-family: var(--main-font);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.country-select:focus {
-  outline: none;
-  border-color: var(--color6);
-  background-color: rgba(255, 255, 255, 0.15);
-}
-
-.country-select option {
-  background-color: var(--color2);
-  color: var(--color1);
-  font-family: var(--main-font);
-}
-
-.location-list {
-  background-color: var(--color2);
-  border-radius: 8px;
-  overflow: hidden;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.location-item {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.city-header {
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  color: var(--color1);
-  cursor: pointer;
-  font-family: var(--sub-font);
-  font-size: 1rem;
-}
-
-.arrow {
-  color: var(--color1);
-  transition: transform 0.3s ease;
-}
-
-.arrow.expanded {
-  transform: rotate(90deg);
-}
-
-.store-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  background-color: var(--color5);
-}
-
-.store-item {
-  padding: 0.8rem 2rem;
-  color: var(--color1);
-  font-size: 0.9rem;
-  font-family: var(--main-font);
-  cursor: pointer;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.store-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.store-item.active {
-  background-color: var(--color6);
-  color: #fff;
-  font-weight: bold;
-}
-
-.online-content {
-  background-color: var(--color2);
-  border-radius: 8px;
-  overflow: hidden;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.online-placeholder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  color: var(--color1);
-  font-family: var(--main-font);
-  font-size: 0.9rem;
-}
-
-.map-container {
-  flex: 1;
-  border-radius: 8px;
-  overflow: hidden;
-  min-height: 700px;
-  height: 90vh;
-  position: relative;
-}
-
-.map-legend {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 6px;
-  padding: 8px 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 500;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 4px 0;
-}
-
-.legend-item img {
-  width: 16px;
-  height: 26px;
-  object-fit: contain;
-}
-
-.legend-item img.legend-active {
-  width: 20px;
-  height: 32px;
-}
-
-.legend-item span {
-  color: #333;
-  font-size: 0.8rem;
-  font-family: var(--main-font);
-}
-
-#map {
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  position: relative;
-}
-
-.content-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  border-radius: 8px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
-  padding: 1rem;
-}
-
-@media screen and (max-width: 1024px) {
-  .map-wrapper {
-    height: calc(100vh - 12rem);
-    padding: 0.5rem;
-    gap: 0.5rem;
-  }
-}
-
-@media screen and (max-width: 720px) {
-  .map-wrapper {
-    flex-direction: column;
-    height: auto;
-    padding: 0.5rem;
-  }
-
-  .navbar {
-    width: 100%;
-    min-width: auto;
-  }
-
-  .navbar-list {
-    border-radius: 8px 0 0 8px;
-  }
-
-  .content {
-    border-radius: 0 8px 8px 0;
-  }
-
-  .content-overlay {
-    left: 0;
-    width: 100%;
-    padding: 0.5rem;
-  }
-
-  .map-container {
-    height: 400px;
-    min-height: auto;
-  }
-}
-
-.register-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgb(204, 195, 163);
-  border-radius: 8px;
-  padding: 1.5rem;
-  width: 90%;
-  max-width: 500px;
-  z-index: 1000;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.register-modal > div:first-child {
-  background-color: var(--color2);
-  border-radius: 8px;
-  padding: 1.5rem;
-}
-
-.register-modal > div:first-child > div {
-  margin-bottom: 1.2rem;
-}
-
-.register-modal > div:first-child > div:last-child {
-  margin-bottom: 0;
-}
-
-.register-modal span {
-  display: block;
-  font-family: var(--main-font);
-  font-size: 0.9rem;
-  color: var(--color1);
-  margin-bottom: 0.5rem;
-}
-
-.register-modal input {
-  width: 100%;
-  padding: 8px;
-  border: none;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: var(--color1);
-  font-size: 0.9rem;
-  font-family: var(--main-font);
-  transition: all 0.2s ease;
-}
-
-.register-modal input:focus {
-  outline: none;
-  border-color: var(--color6);
-  background-color: rgba(255, 255, 255, 0.15);
-}
-
-.register-modal input::placeholder {
-  color: rgba(255, 244, 204, 0.5);
-}
-
-.register-modal > div:last-child {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.8rem;
-  margin-top: 1.5rem;
-}
-
-.register-modal button {
-  padding: 8px 1.5rem;
-  border: none;
-  border-radius: 4px;
-  font-family: var(--sub-font);
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.register-modal button:first-child {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--color1);
-}
-
-.register-modal button:first-child:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.register-modal button:last-child {
-  background-color: var(--color6);
-  color: white;
-}
-
-.register-modal button:last-child:hover {
-  background-color: #2a7a7f;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  z-index: 999;
-}
-
-@media screen and (max-width: 720px) {
-  .register-modal {
-    width: 95%;
-    padding: 1rem;
-  }
-
-  .register-modal > div:first-child {
-    padding: 1rem;
-  }
-
-  .register-modal button {
-    padding: 8px 1rem;
-  }
-}
-
-.district-list {
-  padding-left: 1.5rem;
-}
-
-.district-header {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  padding: 0.7rem 0;
-}
-
-.district-header span {
-  color: var(--color1);
-}
-
-.store-more-btn {
-  margin-left: 1rem;
-  padding: 4px 10px;
-  background: var(--color6);
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.store-more-btn:hover {
-  background: #2a7a7f;
-}
-
-.city-header span.arrow,
-.district-header span.arrow {
-  margin-right: 0;
-}
-
-.my-locate-btn {
-  width: 26px;
-  height: 26px;
-  line-height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  border-bottom: 1px solid #ccc;
-  color: var(--color6);
-  text-decoration: none;
-  cursor: pointer;
-  font: bold 18px 'Lucida Console', Monaco, monospace;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-.my-locate-btn:last-child {
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
-}
-
-.my-locate-btn:hover {
-  background: #e6f7ff;
-}
-
-.my-locate-btn svg {
-  width: 18px;
-  height: 18px;
-}
-
-/* 웨이포인트 마커 스타일 */
-.waypoint-marker {
-  background: transparent !important;
-  border: none !important;
-}
-
-.waypoint-number {
-  width: 35px;
-  height: 35px;
-  background: #ff1744;
-  border: 4px solid #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 16px;
-  color: white;
-  box-shadow: 0 4px 12px rgba(255, 23, 68, 0.6);
-  font-family: var(--sub-font);
-  z-index: 10000;
-  position: relative;
-}
+@import '../css/map.css';
 </style>

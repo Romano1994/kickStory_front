@@ -15,8 +15,11 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faComment, faEye, faFlag, faClock } from '@fortawesome/free-solid-svg-icons'
 import auth from './js/auth';
+
 // import leaflet from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
+import './registerServiceWorker'
 
 const app = createApp(App);
 const COMMON_COMPONENTS=[];

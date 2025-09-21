@@ -4,11 +4,13 @@ import card from "@/css/card.css";
 import slide from "@/css/slide.css";
 import hstryEditor from "@/css/hstryEditor.css";
 import map from '@/css/map.css';
+import mainHeader from '@/css/mainHeader.css';
 export default{
      main,
      common,
      card,
      slide,
      hstryEditor,
-     map
+     map,
+     mainHeader
 };
