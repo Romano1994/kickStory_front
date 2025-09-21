@@ -138,7 +138,6 @@ export default {
       return true;
     },
     handleRegisterSuccess(res) {
-      console.log(res.data);
       this.showSuccessModal = true;
       this.message = res.data.message;
       this.isSuccess = true;

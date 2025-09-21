@@ -23,6 +23,9 @@ export default {
   },
   data() {
     return {
+      isLoading: false,
+      isUpdatingFromSelectBrand: false,
+      isUpdatingFromSelectStore: false,
       storeCd: "",
       storeKorNm: "",
       storeEngNm: "",
@@ -49,10 +52,12 @@ export default {
       usualBrandSearch: "",
       usualBrandList: [],
       searchBrandList: [],
+      isSearchBrandList: false,
       countryList: [],
-      cntryCd: "",
+      cntryCd: "KR",
       offlineStoreTypeList: [],
       isStoreSelect: false,
+      isSearchStoreList:false,
       lastSelectedStore: null,
       showBrandModal: false,
       newBrand: {
@@ -86,10 +91,18 @@ export default {
     };
   },
   methods: {
-    storeSearch() {
-      if (this.storeSearchTimeout) {
-        clearTimeout(this.storeSearchTimeout);
+    async apiWrapper(apiCall) {
+      this.isLoading = true;
+      try {
+        const result = await apiCall();
+        return result;
+      } finally {
+        this.isLoading = false;
       }
+    },
+    storeSearch() {
+      this.isSearchStoreList = true;
+      this.isLoading = true;
 
       this.storeSearchTimeout = setTimeout(() => {
         if (
@@ -115,16 +128,22 @@ export default {
     },
     storeSearchSuccess(res) {
       this.storeList = res.data;
+      this.isLoading = false;
     },
     storeSearchFail() {
       this.storeList = [];
+      this.isLoading = false;
     },
     selectStore(store) {
-      this.lastSelectedStore = store;
+      this.isUpdatingFromSelectStore = true;
       this.storeCd = store.storeCd;
       this.storeKorNm = store.storeKorNm;
       this.storeEngNm = store.storeEngNm;
       this.storeList = [];
+      this.$nextTick(() => {
+        this.isUpdatingFromSelectStore = false;
+      });
+      this.isSearchStoreList=false;
     },
     srchCntryList() {
       this.getApi(
@@ -271,13 +290,21 @@ export default {
       this.selectedBrand = null;
     },
     selectBrandForShop(brand) {
+      this.isUpdatingFromSelectBrand = true;
       this.selectedBrand = brand;
+      this.selectedBrandNmKor = brand.brandNmKor;
       this.selectedBrandCd = brand.brandCd;
       this.selectedBrandNmEng = brand.brandNmEng;
-      this.selectedBrandNmKor = brand.brandNmKor;
       this.searchBrandList = [];
+      this.isSearchBrandList = false;
+      // Reset the flag after the current tick to ensure it doesn't affect other operations
+      this.$nextTick(() => {
+        this.isUpdatingFromSelectBrand = false;
+      });
     },
     searchBrandsForShop() {
+      this.isSearchBrandList = true;
+      this.isLoading = true;
       if (this.selectedBrandNmKor.trim()) {
         this.getApi(
           "/brand",
@@ -287,26 +314,38 @@ export default {
         );
       } else {
         this.searchBrandList = [];
+        this.isLoading = false;
       }
     },
     searchBrandsForShopSuccess(res) {
       this.searchBrandList = res.data;
+      this.isLoading = false;
     },
     searchBrandsForShopFail(error) {
       console.error("Brand search failed:", error);
       this.searchBrandList = [];
+      this.isLoading = false;
     },
-    register() {
+    async register() {
+      this.isLoading = true;
       if (this.offlineStoreTypeCd === "00030001") {
-        if (!this.storeKorNm || !this.storeEngNm || !this.branchNm || !this.storeCd ||
-            !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
-          this.validationError = "필수 입력값을 모두 입력해주세요.";
+
+        if (!this.storeKorNm || !this.storeEngNm || !this.storeCd) {
+          this.validationError = "등록된 스토어가 아니거나 스토어가 올바르게게 선택이 되지 않았습니다.";
           return;
         }
+        if ( !this.branchNm ) {
+          this.validationError = "지점명을 입력해주세요.";
+          return;
+        }
+    
       } else if (this.offlineStoreTypeCd === "00030002") {
-        if (!this.selectedBrandNmKor || !this.branchNm || 
-            !this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
-          this.validationError = "필수 입력값을 모두 입력해주세요.";
+        if (!this.selectedBrandNmKor || !this.selectedBrandCd || !this.selectedBrandNmEng) {
+          this.validationError = "등록된 브랜드가 아니거나 브랜드가 올바르게 선택되지 않았습니다.";
+          return;
+        }
+        if ( !this.branchNm ) {
+          this.validationError = "지점명을 입력해주세요.";
           return;
         }
       } else if (this.offlineStoreTypeCd === "00030003") {
@@ -318,7 +357,11 @@ export default {
           return;
         }
       }
-      
+      if (!this.selectedAddress.branchRoadAddr || !this.selectedAddress.branchAddr) {
+          this.validationError = "주소를 입력해주세요.";
+          return;
+        }
+
       this.validationError = "";
 
       let branchData = null;
@@ -385,12 +428,14 @@ export default {
       );
     },
     registerSuccess(res) {
+      this.isLoading = false;
       this.commonModalMessage = res.data;
       this.commonModalType = "alert";
       this.showCommonModal = true;
     },
     registerFail(error) {
-      this.commonModalMessage =error.message;
+      this.isLoading = false;
+      this.commonModalMessage = error.message;
       this.commonModalType = "alert";
       this.showCommonModal = true;
     },
@@ -560,9 +605,22 @@ export default {
   },
   watch: {
     selectedBrandNmKor() {
-      this.selectedBrand = null;
-      this.selectedBrandCd = "";
-      this.selectedBrandNmEng = "";
+      // Only reset if not updating from selectBrandForShop
+      if (!this.isUpdatingFromSelectBrand) {
+        this.selectedBrand = null;
+        this.selectedBrandCd = "";
+        this.selectedBrandNmEng = "";
+        this.searchBrandList = [];
+        this.isSearchBrandList = false;
+      }
+    },
+    storeKorNm() {
+      // Only reset if not updating from selectStore
+      if (!this.isUpdatingFromSelectStore) {
+        this.storeCd = "";
+        this.storeEngNm = "";
+        this.storeList = [];
+      }
     },
     offlineStoreTypeCd() {
       // 유형이 변경될 때마다 날짜 선택기 재초기화
@@ -588,7 +646,11 @@ export default {
 
 <template>
   <div class="modal-overlay" @click="closeModal">
-    <div class="register-modal" @click.stop>
+    <div class="loading-overlay" v-if="isLoading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">로딩 중...</div>
+    </div>
+    <div class="register-modal" @click.stop :class="{ 'blur-content': isLoading }">
       <div>
         <div>
           <span>유형</span>
@@ -615,9 +677,11 @@ export default {
         </div>
         <div v-if="['00030002','00030003'].includes(offlineStoreTypeCd)"> 
           <label class="form-label">브랜드명<span class="required-star">*</span></label>
-         
-          <input class="form-input" type="text" v-model="selectedBrandNmKor" @input="searchBrandsForShop" placeholder="브랜드명을 입력하세요" />
-          <div v-if="searchBrandList.length > 0" class="search-list">
+          <div class="brand-search-container">
+            <input class="form-input brand-search-input" type="text" v-model="selectedBrandNmKor" @keyup.enter="searchBrandsForShop" placeholder="브랜드명을 입력하세요" />
+            <button class="search-button" @click="searchBrandsForShop">검색</button>
+          </div>
+          <div v-if="isSearchBrandList&&searchBrandList.length > 0" class="search-list">
             <div
               v-for="brand in searchBrandList"
               :key="brand.brandCd"
@@ -627,7 +691,7 @@ export default {
               {{ brand.brandNmKor }}({{ brand.brandNmEng }})
             </div>
           </div>
-          <div v-else-if="selectedBrandNmKor.trim() && !selectedBrand" class="search-list">
+          <div v-else-if="isSearchBrandList&&selectedBrandNmKor.trim() && !selectedBrand" class="search-list">
             <div class="search-item" @click="showBrandRegistrationModal">
               등록하기
             </div>
@@ -646,8 +710,11 @@ export default {
             <label class="form-label">
               {{ offlineStoreTypeCd === '00030001' ? '스토어명(한글)' : '스토어명' }}<span class="required-star">*</span>
             </label>
-            <input class="form-input" type="text" v-model="storeKorNm" @input="storeSearch" placeholder="스토어명을 입력하세요" />
-            <div v-if="storeList.length > 0" class="search-list">
+            <div class="brand-search-container">
+              <input class="form-input brand-search-input" type="text" v-model="storeKorNm" @keyup.enter="storeSearch" placeholder="스토어명을 입력하세요" />
+              <button class="search-button" @click="storeSearch">검색</button>
+            </div>
+            <div v-if="isSearchStoreList&&storeList.length > 0" class="search-list">
               <div
                 v-for="store in storeList"
                 :key="store.storeId"
@@ -657,7 +724,7 @@ export default {
                 {{ store.storeKorNm }}({{ store.storeEngNm }})
               </div>
             </div>
-            <div v-else-if="storeKorNm.trim() && !storeCd" class="search-list">
+            <div v-else-if="isSearchStoreList&&storeKorNm.trim() && !storeCd" class="search-list">
               <div class="search-item" @click="showStoreRegistrationModal">
                 등록하기
               </div>
@@ -899,6 +966,72 @@ export default {
 </template>
 
 <style scoped>
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+.loading-text {
+  color: #333;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.blur-content {
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.brand-search-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.brand-search-input {
+  flex: 1;
+}
+
+.search-button {
+  padding: 10px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+  transition: background-color 0.3s;
+}
+
+.search-button:hover {
+  background-color: #45a049;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;

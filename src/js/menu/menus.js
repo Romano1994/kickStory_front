@@ -23,7 +23,7 @@ const menus = [
     },
     {
         path: "/",
-        name: "KicksMap",//컴포넌트명
+        name: "Shopping Map",//컴포넌트명
         componentPath:"KicksMap",//실제 컴포넌트 경로
         depth:1,
         meta: {requiresAuth:true}
@@ -44,7 +44,7 @@ const menus = [
     // },
     {
         path: "/kc",
-        name: "KicksCommunity",//컴포넌트명
+        name: "Community",//컴포넌트명
         componentPath:"KicksCommunity",//실제 컴포넌트 경로
         depth:1,
         meta: {requiresAuth:true}
