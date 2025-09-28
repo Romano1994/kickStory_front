@@ -1961,19 +1961,21 @@
    ===================== */
 
 .footer-container {
-  border: 1px solid var(--color1);
-  grid-column: 2/3;
+  width: 100%;
   padding: 2rem 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.1) 100%);
-  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, var(--color2) 0%, rgba(0, 0, 0, 0.8) 100%);
+  border-top: 1px solid var(--color1);
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .footer-content {
   text-align: center;
-  max-width: 400px;
+  max-width: 600px;
+  width: 100%;
 }
 
 .footer-title {
@@ -1981,30 +1983,29 @@
   font-family: var(--main-font);
   font-size: 1.2rem;
   font-weight: 600;
-  margin-bottom: 1rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  margin: 0 0 0.8rem 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .contact-email {
   color: var(--color6);
   text-decoration: none;
   font-family: var(--main-font);
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 500;
-  padding: 0.8rem 1.5rem;
-  border: 2px solid var(--color6);
-  border-radius: 25px;
-  background: rgba(255, 160, 0, 0.1);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color6);
+  border-radius: 8px;
   display: inline-block;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(255, 160, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(255, 160, 0, 0.2);
 }
 
 .contact-email:hover {
   background: var(--color6);
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 160, 0, 0.4);
+  box-shadow: 0 4px 16px rgba(255, 160, 0, 0.4);
   text-decoration: none;
 }
 

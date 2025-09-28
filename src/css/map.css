@@ -1,3 +1,8 @@
+/* 웹 화면에서 mobile-nav 숨김 (기본값) */
+.mobile-nav {
+    display: none;
+}
+
 .route-content {
     display: flex;
     flex-direction: column;
