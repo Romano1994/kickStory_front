@@ -58,11 +58,14 @@
                     class="store-item"
                     v-for="store in district.offlineBranchList"
                     :key="store.branchCd"
-                    @click="openStoreDetail(store)"
+                
                     :class="{ active: activeStore === store.branchNm }"
                 >
                   <span>{{ store.storeKorNm }} {{ store.branchNm }}</span>
-                  <button class="add-btn" @click="addStoreToRoute(store)">추가</button>
+                  <div class="store-actions">
+                    <button class="view-btn" @click="openStoreDetail(store)">보기</button>
+                    <button class="add-btn" @click="addStoreToRoute(store)">추가</button>
+                  </div>
                 </li>
 
               </ul>
@@ -71,11 +74,14 @@
                     class="store-item"
                     v-for="store in district.offlineBranchList"
                     :key="store.storeCd"
-                    @click="openStoreDetail(store)"
+                    
                     :class="{ active: activeStore === store.storeCd }"
                 >
                   <span>{{ store.storeKorNm }}</span>
-                  <button class="add-btn" @click="addStoreToRoute(store)">추가</button>
+                  <div class="store-actions">
+                    <button class="view-btn" @click="openStoreDetail(store)">보기</button>
+                    <button class="add-btn" @click="addStoreToRoute(store)">추가</button>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -186,17 +192,25 @@
         @close="closeAlertModal"
         @confirm="closeAlertModal"
     />
+    
+    <StoreDetailModal
+        :show="showStoreDetailModal"
+        :store="storeDetailData || {}"
+        :offlineStoreType="offlineStoreType"
+        @close="closeStoreDetailModal"
+    />
   </div>
 </template>
 <script>
 import CommonModal from './CommonModal.vue';
 import FavoriteRegisterModal from './FavoriteRegisterModal.vue';
 import RouteTypeSelector from './RouteTypeSelector.vue';
+import StoreDetailModal from './StoreDetailModal.vue';
 import api from '@/js/menu/mixins/api/api-call';
 
 export default {
   name: 'KicksMapRoute',
-  components: {CommonModal, FavoriteRegisterModal, RouteTypeSelector},
+  components: {CommonModal, FavoriteRegisterModal, RouteTypeSelector, StoreDetailModal},
   emits: [
     'draw-route',
     'open-register-modal',
@@ -239,7 +253,9 @@ export default {
       showFavoriteModal: false,
       showAlertModal: false,
       alertTitle: '',
-      alertContent: ''
+      alertContent: '',
+      showStoreDetailModal: false,
+      storeDetailData: null
     }
   },
   methods: {
@@ -277,6 +293,13 @@ export default {
         this.activeStore = store.storeCd;
       }
       //TODO : 스토어 상세페이지 열기
+      const storeCd = store && store.storeCd;
+      console.log(store);
+      if (!storeCd) {
+        this.showAlert('', '스토어 정보보가 없습니다.');
+        return;
+      }
+      this.getApi('/branch', {storeCd:store.storeCd, branchCd:store.branchCd, offlineStoreTypeCd:this.offlineStoreType}, this.openStoreDetailSuccess, this.openStoreDetailFail);
     },
     removeStore(store) {
       this.$emit('remove-store', store);
@@ -285,7 +308,7 @@ export default {
       const placeholders = {
         '00030001': '편집샵 검색 (예: 웍스아웃, 카시나)',
         '00030002': '브랜드샵 검색 (예: 나이키, 아디다스)',
-        '00030003': '팝업샵 검색 (예: 귀멸의 칼날 팝업업)'
+        '00030003': '팝업샵 검색 (예: 귀멸의 칼날 팝업)'
       };
       return placeholders[this.offlineStoreType] || '스토어 검색';
     },
@@ -579,6 +602,21 @@ export default {
       this.showAlert('성공', '즐겨찾기에 추가되었습니다!');
       this.closeFavoriteModal();
     },
+    openStoreDetailSuccess(res) {
+      const data = res && res.data != null ? res.data : res;
+      if (!data) {
+        this.showAlert('상세 오류', '스토어 정보를 불러오지 못했습니다.');
+        return;
+      }
+      this.storeDetailData = data;
+      this.showStoreDetailModal = true;
+    },
+    openStoreDetailFail(err) {
+      const serverMessage = err && err.response && err.response.data && (err.response.data.message || err.response.data.msg || err.response.data.error || err.response.data.statusMessage);
+      const fallback = err && (err.message || '스토어 정보를 불러오지 못했습니다.');
+      this.showAlert('상세 오류', serverMessage || fallback);
+      console.error('openStoreDetailFail:', err);
+    },
     showAlert(title, content) {
       this.alertTitle = title;
       this.alertContent = content;
@@ -588,6 +626,10 @@ export default {
       this.showAlertModal = false;
       this.alertTitle = '';
       this.alertContent = '';
+    },
+    closeStoreDetailModal() {
+      this.showStoreDetailModal = false;
+      this.storeDetailData = null;
     },
   },
   watch: {

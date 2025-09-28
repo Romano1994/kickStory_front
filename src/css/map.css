@@ -301,6 +301,29 @@
     background: #2a7a7f;
 }
 
+/* View button style distinct from add */
+.view-btn {
+    padding: 4px 8px;
+    background: #6c5ce7; /* purple */
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.view-btn:hover {
+    background: #5947d7;
+}
+
+/* Store item actions container to keep buttons side-by-side */
+.store-actions {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+}
+
 /* 스토어 섹션 */
 .store-section {
     background-color: var(--color2);
