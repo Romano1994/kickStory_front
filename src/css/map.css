@@ -1557,6 +1557,17 @@
         padding: 0.75rem;
     }
 
+    /* Minimized state: only show the grabber at the very bottom */
+    .mobile-bottom-sheet.is-minimized {
+        height: 3% !important; /* ensure small height */
+        min-height: 22px; /* grabber height */
+    }
+
+    .mobile-bottom-sheet.is-minimized .sheet-header,
+    .mobile-bottom-sheet.is-minimized .sheet-content {
+        display: none;
+    }
+
     /* Leaflet controls above bottom sheet */
     .map-container .leaflet-bottom.leaflet-right {
         bottom: 200px;

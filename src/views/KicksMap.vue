@@ -49,7 +49,7 @@ export default {
       isDraggingSheet: false,
       dragStartY: 0,
       dragCurrentY: 0,
-      sheetMin: 8,
+      sheetMin: 3,
       sheetMax: 85,
       isMobileView: false,
     }
@@ -687,7 +687,7 @@ export default {
       </div>
 
       <!-- 모바일 바텀시트: 하단 도킹 + 드래그로 열기/닫기 -->
-      <div class="mobile-bottom-sheet" v-show="isMobileView" :style="{ height: bottomSheetHeight + '%' }">
+      <div class="mobile-bottom-sheet" v-show="isMobileView" :class="{ 'is-minimized': bottomSheetHeight <= sheetMin + 0.1 }" :style="{ height: bottomSheetHeight + '%' }">
         <div class="sheet-grabber" @mousedown="startSheetDrag" @touchstart="startSheetDrag">
           <div class="grabber-bar"></div>
         </div>
