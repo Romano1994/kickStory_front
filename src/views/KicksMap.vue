@@ -40,8 +40,8 @@ export default {
       showContent: true, // content 표시 여부
       contentWidth: 500, // content 너비
       isResizing: false, // 리사이징 중인지 여부
-      minContentWidth: 300, // 최소 content 너비
-      maxContentWidth: 800, // 최대 content 너비
+      minContentWidth: 450, // 최소 content 너비 (HTML 깨짐 방지)
+      maxContentWidth: 1000, // 최대 content 너비
       regionStoreList: [],
       isMobileMenuOpen: false, // 모바일 메뉴 열림 상태
       // 모바일 바텀시트 상태
