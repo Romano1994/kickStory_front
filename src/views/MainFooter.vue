@@ -1,6 +1,11 @@
 <template lang="">
     <div class="footer-container">
-        MainFooter
+        <div class="footer-content">
+            <h3 class="footer-title">문의 및 요청</h3>
+            <a href="mailto:kickstory.user@gmail.com" class="contact-email">
+                kickstory.user@gmail.com
+            </a>
+        </div>
     </div>
 </template>
 <script>
@@ -8,15 +13,3 @@ export default {
     
 }
 </script>
-<style>
-    .footer-container{
-        border: 1px solid var(--color1);
-        grid-column:2/3;
-    }
-@media screen and (max-width:720px) {
-    .footer-container{
-        grid-column:1/2;
-    }
-    
-}
-</style>
