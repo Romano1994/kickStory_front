@@ -20,6 +20,16 @@ const routes = [
     props:true,
     children: mainRoutes, // Hompage 주소 '/'를 고정값으로 가지고 있는다
   },
+  {
+    path: "/404",
+    name: "ErrorPage",
+    component: () => import("@/views/ErrorPage.vue"),
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: () => import("@/views/ErrorPage.vue"),
+  },
 ];
 
 //로그인 확인 여부 : 네비게이션 가드 필요
