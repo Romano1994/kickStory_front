@@ -10,7 +10,17 @@
         </keep-alive>
       </router-view>
     </div>
-    <!-- <MainFooter></MainFooter> -->
+    <MainFooter></MainFooter>
+    
+    <!-- 모바일 전용 Footer -->
+    <div class="mobile-footer" :class="{ 'shopping-map-active': isShoppingMap }">
+      <div class="mobile-footer-content">
+        <h3 class="mobile-footer-title">문의 및 요청</h3>
+        <a href="mailto:kickstory.user@gmail.com" class="mobile-footer-email">
+          kickstory.user@gmail.com
+        </a>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -24,6 +34,12 @@ export default {
     MainHeader,
     MainFooter,
     MenuBar
+  },
+  computed: {
+    isShoppingMap() {
+      const r = this.$route;
+      return !!r && (r.name === 'Shopping Map' || r.path === '/');
+    }
   },
   methods: {}
 

@@ -32,7 +32,7 @@ export default {
         {itemNm: "쇼핑코스", imgSrc: "/assets/map/route.png"},
         {itemNm: "즐겨찾기", imgSrc: "/assets/map/favorite.png"},
         {itemNm: "스토어 등록", imgSrc: "/assets/map/store.png"},
-        {itemNm: "문의하기", imgSrc: "/assets/map/qmark.png"},
+        // {itemNm: "문의하기", imgSrc: "/assets/map/qmark.png"},
       ],
       storeMarkers: [],
       routePolyline: null, // 경로 폴리라인
@@ -40,8 +40,8 @@ export default {
       showContent: true, // content 표시 여부
       contentWidth: 500, // content 너비
       isResizing: false, // 리사이징 중인지 여부
-      minContentWidth: 300, // 최소 content 너비
-      maxContentWidth: 800, // 최대 content 너비
+      minContentWidth: 450, // 최소 content 너비 (HTML 깨짐 방지)
+      maxContentWidth: 1000, // 최대 content 너비
       regionStoreList: [],
       isMobileMenuOpen: false, // 모바일 메뉴 열림 상태
       // 모바일 바텀시트 상태
@@ -49,7 +49,7 @@ export default {
       isDraggingSheet: false,
       dragStartY: 0,
       dragCurrentY: 0,
-      sheetMin: 8,
+      sheetMin: 3,
       sheetMax: 85,
       isMobileView: false,
     }
@@ -69,6 +69,16 @@ export default {
     },
     closeRegisterModal() {
       this.showRegisterModal = false
+      // RegisterModal이 닫힐 때 KicksMapRoute의 데이터 새로고침
+      this.$nextTick(() => {
+        if (this.activeNavIndex === 0) {
+          // KicksMapRoute 컴포넌트가 활성화되어 있을 때만 새로고침
+          const kicksMapRoute = this.$refs.kicksMapRoute;
+          if (kicksMapRoute && kicksMapRoute.getCountryCount) {            
+            kicksMapRoute.getCountryCount();
+          }
+        }
+      });
     },
     onStoreClick(store) {
       if (store.lat && store.lon && this.map) {
@@ -672,6 +682,7 @@ export default {
         <div class="content" :style="{ width: contentWidth + 'px' }" @click.stop>
           <div class="resize-handle" @mousedown="startResize"></div>
           <KicksMapRoute
+              ref="kicksMapRoute"
               v-if="activeNavIndex === 0"
               :selected-stores="selectedStores"
               :offline-store-type="offlineStoreType"
@@ -687,7 +698,7 @@ export default {
       </div>
 
       <!-- 모바일 바텀시트: 하단 도킹 + 드래그로 열기/닫기 -->
-      <div class="mobile-bottom-sheet" v-show="isMobileView" :style="{ height: bottomSheetHeight + '%' }">
+      <div class="mobile-bottom-sheet" v-show="isMobileView" :class="{ 'is-minimized': bottomSheetHeight <= sheetMin + 0.1 }" :style="{ height: bottomSheetHeight + '%' }">
         <div class="sheet-grabber" @mousedown="startSheetDrag" @touchstart="startSheetDrag">
           <div class="grabber-bar"></div>
         </div>
@@ -700,6 +711,7 @@ export default {
         </div>
         <div class="sheet-content" @mousedown.stop @touchstart.stop>
           <KicksMapRoute
+              ref="kicksMapRoute"
               v-if="activeNavIndex === 0"
               :selected-stores="selectedStores"
               :offline-store-type="offlineStoreType"

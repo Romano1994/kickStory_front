@@ -59,7 +59,7 @@ export default {
         this.postApi('/brand/registration', this.brand, this.handleRegisterSuccess, this.handleRegisterFail);
       } else {
         // 다른 유형일 때는 스토어 등록 API 호출
-        this.postApi('store/offline/registration', this.store, this.handleRegisterSuccess, this.handleRegisterFail);
+        this.postApi('/store/offline/registration', this.store, this.handleRegisterSuccess, this.handleRegisterFail);
       }
     },
     validateStoreData() {
