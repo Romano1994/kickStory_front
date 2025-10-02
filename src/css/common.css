@@ -232,6 +232,13 @@
   color: var(--color6);
 }
 
+.comment-header {display: flex; flex-direction: column; justify-content: space-between; gap: 0.3rem; width: 9rem;}
+
+.comment-modify { border: none; padding: 0.55rem 1rem; cursor: pointer; border-radius: 10px; background: dimgrey; color: papayawhip; font-size: 0.95rem; font-family: var(--sub-font); font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.2); transition: all 0.2s ease; }
+.comment-modify:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.comment-modify:disabled { opacity: 0.6; cursor: not-allowed; transform: none; filter: none; }
+
+
 .comment-badge {
   display: flex;
   align-items: center;
