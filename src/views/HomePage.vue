@@ -4,7 +4,7 @@
     <MainHeader></MainHeader>
     <div class="body-container">
       <MenuBar></MenuBar>
-      <router-view v-slot="{Component}">
+      <router-view v-slot="{Component}"  :key="$route.fullPath">
         <keep-alive>
           <component :is="Component"></component>
         </keep-alive>

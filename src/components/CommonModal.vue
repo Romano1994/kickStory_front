@@ -24,6 +24,32 @@ export default {
       validator: function(value) {
         return ['confirm', 'alert', 'delete', 'warning', 'registration'].indexOf(value) !== -1
       }
+    },
+    useInput: {
+      type: Boolean,
+      default: false
+    },
+    modelValue: {
+      type: String,
+      default: ''
+    }
+  },
+  emits:  ['update:modelValue', 'close', 'confirm'],
+  data(){
+    return {
+      inputValue: this.modelValue
+    }
+  },
+  watch: {
+    modelValue: {
+      immediate: true,
+      handler(val) { this.inputValue = val }
+    },
+    show(val) {
+      if (val) this.inputValue = this.modelValue
+    },
+    inputValue(val) {
+      this.$emit('update:modelValue', val)
     }
   },
   methods: {
@@ -43,6 +69,9 @@ export default {
         default: // confirm
           return { cancel: '취소', confirm: '확인' };
       }
+    },
+    confirmAction() {
+      this.$emit('confirm', this.inputValue);
     }
   }
 }
@@ -57,6 +86,9 @@ export default {
       <div class="modal-content">
         <div v-if="htmlContent" class="content-text" v-html="htmlContent"></div>
         <div v-else-if="content" class="content-text">{{ content }}</div>
+        <div v-if="useInput" class="content-text">
+          <input class="form-input" type="password" v-model="inputValue"/>
+        </div>
         <slot></slot>
       </div>
       <div class="modal-footer">
@@ -70,7 +102,7 @@ export default {
               'delete-button': type === 'delete',
               'registration-button': type === 'registration'
             }"
-            @click="$emit('confirm')"
+            @click="confirmAction"
           >
             {{ getButtonText().confirm }}
           </button>
@@ -191,6 +223,19 @@ export default {
 
 .registration-button:hover {
   background-color: #388E3C !important;
+}
+
+.form-input {
+  width: 50%;
+  padding: 8px;
+border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--color1);
+  font-size: 0.9rem;
+  font-family: var(--main-font);
+  transition: all 0.2s ease;
 }
 
 @media screen and (max-width: 720px) {

@@ -25,11 +25,11 @@
         </div>
       </div>
 
-      <div class="form-group" style="display:none;">
+      <div class="form-group horizontal">
         <label class="form-label" for="password">비밀번호</label>
         <div class="input-wrap">
           <span class="input-icon"><font-awesome-icon :icon="['fas', 'lock']" /></span>
-          <input id="password" v-model="password" type="password" placeholder="비밀번호" class="text-input" />
+          <input id="password" v-model="password" type="password" :disabled="isPasswordLocked" placeholder="비밀번호" class="text-input" />
         </div>
       </div>
 
@@ -66,9 +66,10 @@ import {nextTick, onActivated, onMounted, ref, onUnmounted} from "vue";
 import axios from 'axios';
 import CommonModal from "@/components/CommonModal.vue";
 import router from "@/js/router";
+import { useRoute } from "vue-router";
 
 Quill.register('modules/imageResize', ImageResize);
-
+const route = useRoute();
 const title = ref("");
 const content = ref("");
 const nickname = ref("");
@@ -77,6 +78,8 @@ const pstNo = ref("");
 const showConfirmModal = ref(false);
 const quill = ref(null);
 const alertMsg = ref("");
+const isEdit = ref(false);
+const isPasswordLocked = ref(false);
 
 function resetForm() {
   title.value = "";
@@ -100,6 +103,20 @@ function resetForm() {
   });
 }
 
+async function fetchPost(id) {
+  try {
+    const res = await axios.get(`/psts/${id}`);
+    const post = res.data;
+    title.value = post.pstTitl;
+    content.value = post.pstCntnt;
+    nickname.value = post.id;
+    pstNo.value = post.pstNo;
+  } catch (e) {
+    console.error(e);
+    handleAlert("글을 불러오지 못했습니다");
+  }
+}
+
 function handleAlert(msg) {
   alertMsg.value = msg;
   showConfirmModal.value = true;
@@ -107,12 +124,23 @@ function handleAlert(msg) {
 
 // 라우트 진입 시(초회) 초기화
 onMounted(() => {
-  resetForm();
+  if (route.params.id) {
+    isEdit.value = true;
+    const histState = window.history.state || {}
+    password.value = histState.verifiedPassword
+    isPasswordLocked.value = true
+    history.replaceState({}, "")
+    fetchPost(route.params.id); // 기존 글 가져오기
+  }else{
+    resetForm();
+  }
 });
 
 // keep-alive로 캐시된 화면이면 재진입 때도 초기화
 onActivated(() => {
-  resetForm();
+  if (!route.params.id) {
+    resetForm();
+  }
 });
 
 // mobile detection (replace media queries)
@@ -159,27 +187,41 @@ async function submitPost() {
     handleAlert("닉네임을 입력하세요");
     return;
   }
-  // if (!password.value.trim()) {
-  //   handleAlert("비밀번호를 입력하세요");
-  //   return;
-  // }
+
+  console.log(password.value);
+
+  if (!password.value.trim()) {
+    handleAlert("비밀번호를 입력하세요");
+    return;
+  }
 
   try {
-    const res = await axios.post("/psts", {
-      pstTitl: title.value,
-      pstCntnt: content.value,
-      regNm: nickname.value,
-      pstPwd: password.value,
-      pstTypeCd: "F",
-    });
+    if(isEdit.value){
+      console.log(password.value);
+      await axios.patch(`/psts/${pstNo.value}`, {
+        pstNo: pstNo.value,
+        pstTitl: title.value,
+        pstCntnt: content.value,
+        regNm: nickname.value,
+        pstPwd: password.value,
+      });
+      handleAlert("수정되었습니다");
+    }else{
+      const res = await axios.post("/psts", {
+        pstTitl: title.value,
+        pstCntnt: content.value,
+        regNm: nickname.value,
+        pstPwd: password.value,
+        pstTypeCd: "F",
+      });
 
-    const no = res.data?.pstNo;   // ✅ 바디에서 꺼냄
-    if (no) {
-      pstNo.value = no;
+      const no = res.data?.pstNo;   // ✅ 바디에서 꺼냄
+      if (no) {
+        pstNo.value = no;
+      }
+      localStorage.setItem("nickname", nickname.value);
+      handleAlert("등록 되었습니다");
     }
-    localStorage.setItem("nickname", nickname.value);
-    handleAlert("등록 되었습니다");
-
   } catch (err) {
     console.error(err);
 
@@ -189,7 +231,8 @@ async function submitPost() {
 
 function handleConfirm() {
   if(pstNo.value != null && pstNo.value != "") {
-    router.push("/kc/"+pstNo.value);
+    showConfirmModal.value = false;
+    router.push({ path: `/kc/${pstNo.value}`, query: { t: Date.now() } })
   }else{
     showConfirmModal.value = false;
   }
@@ -200,5 +243,15 @@ function handleConfirm() {
 @import '../css/main.css';
 @import '../css/common.css';
 
-/* styles moved to common.css under Community New (Write) */
+.new-post-container :deep(.quill-wrap) {
+  background: #121212;
+}
+
+.new-post-container :deep(.ql-container.ql-snow) {
+  background: #121212;
+}
+
+.new-post-container :deep(.ql-editor) {
+  background: #121212;
+}
 </style>

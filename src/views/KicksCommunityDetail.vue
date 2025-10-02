@@ -19,6 +19,12 @@
       <div class="detail-content ql-snow">
         <div class="ql-editor content" v-html="safeHtml(post.pstCntnt)"></div>
       </div>
+      <div class="form-actions">
+        <div class="form-actions" style="gap : 0.3rem;">
+          <button @click="passwordModal('updatePst')" class="comment-modify">수정</button>
+          <button @click="passwordModal('deletePst')" class="comment-modify">삭제</button>
+        </div>
+      </div>
     </div>
 
     <div class="comments-card fade-in-up">
@@ -33,7 +39,10 @@
       <!-- 댓글 작성 (상단) -->
       <div class="comment-form top-form" v-if="activeReplyToId === null">
         <div class="form-row">
-          <input class="comment-nickname" placeholder="닉네임" v-model="nickname"/>
+          <div class="comment-header">
+            <input class="comment-nickname" placeholder="닉네임" v-model="nickname"/>
+            <input class="comment-nickname" type="password" placeholder="비밀번호" v-model="password"/>
+          </div>
           <textarea class="comment-textarea" v-model="newComment" placeholder="사이좋게 지내요. 서로를 배려하는 댓글을 남겨주세요."></textarea>
         </div>
         <div class="form-actions">
@@ -49,60 +58,119 @@
           class="comment"
           :class="{ 'reply-comment': comment.prtId }"
         >
-          <div class="comment-left">
-            <div class="avatar">{{ (comment.id || '?').toString().charAt(0).toUpperCase() }}</div>
-          </div>
-          <div class="comment-right">
-            <div class="comment-meta">
-              <span class="comment-writer">{{ comment.id }}</span>
-              <span class="comment-time"><font-awesome-icon :icon="['fas', 'clock']" /> {{ formatDate(comment.regDtt) }}</span>
+          <template v-if="comment.cmtUseYn === 'N'">
+            <div class="comment-left">
             </div>
-            <div class="comment-body">
-              <template v-if="comment.prtId">
-                <span class="mention">@{{ comment.prtId }}</span>
-              </template>
-              {{ comment.cmtCntnt }}
-            </div>
-            <div class="comment-actions">
-              <button class="reply-btn" @click="toggleReply(comment.cmtNo)">{{ activeReplyToId === comment.cmtNo ? '답글 숨기기' : '답글' }}</button>
-            </div>
-            <div v-if="activeReplyToId === comment.cmtNo" class="reply-form">
-              <div class="form-row">
-                <input class="comment-nickname" placeholder="닉네임" v-model="nickname"/>
-                <textarea class="comment-textarea" v-model="newComment" placeholder="사이좋게 지내요. 서로를 배려하는 댓글을 남겨주세요."></textarea>
-              </div>
-              <div class="form-actions">
-                <button @click="submitReply(comment.cmtNo)" class="comment-submit" :disabled="!nickname || !nickname.trim() || !newComment || !newComment.trim()">등록</button>
+            <div class="comment-right">
+              <div class="comment-body deleted">
+                삭제된 댓글입니다.
               </div>
             </div>
-          </div>
+          </template>
+          <template v-else-if="comment.isEditing">
+            <div class="comment-left">
+              <!-- 아바타는 비워두거나 회색 처리 -->
+              <div class="avatar">{{ (comment.id || '?').toString().charAt(0).toUpperCase() }}</div>
+            </div>
+            <div class="comment-right">
+              <div class="reply-form">
+                <div class="form-row">
+                  <div class="comment-header">
+                    <input class="comment-nickname" v-model="comment.editNickname" />
+                    <input class="comment-nickname" type="password" placeholder="비밀번호" disabled v-model="comment.editPassword" />
+                  </div>
+                  <textarea
+                      class="comment-textarea"
+                      v-model="comment.editContent"
+                      placeholder="댓글을 수정하세요"
+                  ></textarea>
+                </div>
+                <div class="form-actions" style="display: flex; gap:0.4rem;">
+                  <button
+                      @click="saveEdit(comment)"
+                      class="comment-submit"
+                      :disabled="!comment.editContent || !comment.editContent.trim()  || !comment.editNickname || !comment.editNickname.trim()"
+                  >
+                    저장
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <div class="comment-left">
+              <div class="avatar">{{ (comment.id || '?').toString().charAt(0).toUpperCase() }}</div>
+            </div>
+            <div class="comment-right">
+              <div class="comment-meta">
+                <span class="comment-writer">{{ comment.id }}</span>
+                <span class="comment-time"><font-awesome-icon :icon="['fas', 'clock']" /> {{ formatDate(comment.regDtt) }}</span>
+              </div>
+              <div class="comment-body">
+                <template v-if="comment.prtId">
+                  <span class="mention">@{{ comment.prtId }}</span>
+                </template>
+                {{ comment.cmtCntnt }}
+              </div>
+              <div class="comment-actions">
+                <button class="reply-btn" @click="toggleReply(comment.cmtNo)">{{ activeReplyToId === comment.cmtNo ? '답글 숨기기' : '답글' }}</button>
+                <button class="reply-btn" @click="passwordModal('updateCmt', comment)">수정</button>
+                <button class="reply-btn" @click="passwordModal('deleteCmt', comment.cmtNo)">삭제</button>
+              </div>
+              <div v-if="activeReplyToId === comment.cmtNo" class="reply-form">
+                <div class="form-row">
+                  <div class="comment-header">
+                    <input class="comment-nickname" placeholder="닉네임" v-model="nickname"/>
+                    <input class="comment-nickname" type="password" placeholder="비밀번호" v-model="password"/>
+                  </div>
+                  <textarea class="comment-textarea" v-model="newComment" placeholder="사이좋게 지내요. 서로를 배려하는 댓글을 남겨주세요."></textarea>
+                </div>
+                <div class="form-actions">
+                  <button @click="submitReply(comment.cmtNo)" class="comment-submit" :disabled="!nickname || !nickname.trim() || !newComment || !newComment.trim() || !password || !password.trim()">등록</button>
+                </div>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
     </div>
 
     <CommonModal :show="showConfirmModal" :content="alertMsg" type="alert" @confirm="handleConfirm" />
+    <CommonModal :show="showPasswordModal"
+                 :useInput="true"
+                 v-model="passwordInput"
+                 content="비밀번호를 입력하세요"
+                 type="confirm"
+                 @confirm="handlePasswordConfirm"
+                 @close="closePasswordModal"
+    />
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref, watch, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import CommonModal from "@/components/CommonModal.vue";
-// import router from "@/js/router";
-// import auth from "@/js/auth";
 import DOMPurify from "dompurify";
 
 const route = useRoute()
+const router = useRouter()
 const post = ref({})
 const nickname = ref("")
+const password = ref("")
 const comments = ref([])
 const newComment = ref("")
 const activeReplyToId = ref(null)
 const alertMsg = ref("")
+const modifyFlag = ref(null);
+const modifyCmt = ref(null);
+const redirectAfterConfirm = ref(null);
 
-const showConfirmModal = ref(false);
+const showConfirmModal = ref(false)
+const showPasswordModal = ref(false)
+const passwordInput = ref("")
 
 // function closeConfirmModal() {
 //   showConfirmModal.value = false;
@@ -110,6 +178,11 @@ const showConfirmModal = ref(false);
 
 function handleConfirm(){
   showConfirmModal.value = false;
+
+  if (redirectAfterConfirm.value) {
+    router.push(redirectAfterConfirm.value)
+    redirectAfterConfirm.value = null
+  }
 }
 
 // function openConfirmModal(){
@@ -131,7 +204,144 @@ function toggleReply(commentId) {
   }
 }
 
+function passwordModal(flag, cmt = null){
+  modifyFlag.value = flag;
+  console.log(cmt);
+  modifyCmt.value = cmt;
+  showPasswordModal.value = true;
+}
 
+function closePasswordModal(){
+  modifyFlag.value = null;
+  modifyCmt.value = null;
+  showPasswordModal.value = false;
+}
+
+function handlePasswordConfirm(password){
+  if (!password || !password.trim()) {
+    handleAlert("비밀번호를 입력하세요");
+    return;
+  }
+
+  if (modifyFlag.value === 'updatePst') {
+    updatePst(password);
+  } else if (modifyFlag.value === 'deletePst') {
+    deletePst(password);
+  } else if (modifyFlag.value === 'updateCmt') {
+    verifyCmtPassword(password);
+  } else if (modifyFlag.value === 'deleteCmt') {
+    deleteCmt(password);
+  }
+}
+
+async function verifyCmtPassword(password) {
+  try {
+    const { id } = route.params
+    const cmt = modifyCmt.value
+    // 서버에 비밀번호 검증 API 호출
+    const res = await axios.post(`/psts/${id}/cmts/${cmt.cmtNo}/checkPassword`, { password })
+    if (res.data?.valid) {
+      // 편집모드 진입
+      cmt.isEditing = true
+      cmt.editContent = cmt.cmtCntnt
+      cmt.editPassword = password
+      cmt.editNickname = cmt.id
+    } else {
+      handleAlert("비밀번호가 일치하지 않습니다.")
+    }
+  } catch (e) {
+    console.error(e)
+    if(e.response?.status === 401){
+      handleAlert("비밀번호가 일치하지 않습니다.")
+    }else{
+      handleAlert("비밀번호 확인 중 오류가 발생했습니다.")
+    }
+  } finally {
+    passwordInput.value = ""
+    closePasswordModal();
+  }
+}
+async function updatePst(password) {
+  try {
+    const { id } = route.params
+    // 서버에 비밀번호 검증 API 호출
+    const res = await axios.post(`/psts/${id}/checkPassword`, { password })
+    if (res.data?.valid) {
+      router.push({
+        name: 'KicksCommunityEdit',  // 라우터에서 edit 화면 name
+        params: { id },
+        state: { verifiedPassword: password }
+      })
+    }
+  } catch (e) {
+    console.error(e)
+    if(e.response?.status === 401){
+      handleAlert("비밀번호가 일치하지 않습니다.")
+    }else{
+      handleAlert("비밀번호 확인 중 오류가 발생했습니다.")
+    }
+  } finally {
+    passwordInput.value = ""
+    closePasswordModal();
+  }
+}
+async function deletePst(password) {
+  try {
+    const { id } = route.params
+    await axios.delete(`/psts/${id}`, {
+      data: { password }
+    })
+
+    handleAlert("게시글이 삭제되었습니다.","/kc");
+  } catch (e) {
+    console.error(e)
+    if (e.response?.status === 401) {
+      handleAlert("비밀번호가 일치하지 않습니다.");
+    } else {
+      handleAlert("삭제 중 오류가 발생했습니다.");
+    }
+  } finally {
+    passwordInput.value = "";
+    closePasswordModal();
+  }
+}
+async function saveEdit(comment) {
+  try {
+    await axios.patch(`/psts/${route.params.id}/comments/${comment.cmtNo}`, {
+      cmtCntnt: comment.editContent,
+      regNm: comment.editNickname,     // ← 닉네임도 업데이트
+      password: comment.editPassword
+    })
+    handleAlert("댓글이 수정되었습니다.");
+    await fetchComments();
+  } catch (e) {
+    handleAlert("수정 중 오류가 발생했습니다.")
+  } finally {
+    passwordInput.value = "";
+    closePasswordModal();
+  }
+}
+async function deleteCmt(password) {
+  try {
+    const { id } = route.params
+    await axios.delete(`/psts/${id}/comments/`+modifyCmt.value, {
+      data: { password }
+    })
+
+    handleAlert("댓글이 삭제되었습니다");
+    await fetchComments();
+  } catch (e) {
+    console.error(e)
+    if (e.response?.status === 401) {
+      handleAlert("비밀번호가 일치하지 않습니다.");
+    } else {
+      handleAlert("삭제 중 오류가 발생했습니다.");
+    }
+  } finally {
+    passwordInput.value = "";
+    closePasswordModal();
+  }
+}
 async function submitReply(cmtNo) {
   try {
 
@@ -150,10 +360,15 @@ async function submitReply(cmtNo) {
       handleAlert("댓글을 입력하세요");
       return;
     }
+    if (!password.value.trim()) {
+      handleAlert("비밀번호를 입력하세요");
+      return;
+    }
 
     await axios.post(`/psts/${route.params.id}/cmts`, {
       prtCmtNo: cmtNo,
       cmtCntnt: newComment.value,
+      cmtPwd: password.value,
       regNm: nickname.value
     })
     newComment.value = ''
@@ -171,9 +386,11 @@ function setNickName(){
   }
 }
 
-function handleAlert(msg) {
+function handleAlert(msg, redirectPath = null) {
   alertMsg.value = msg;
+  redirectAfterConfirm.value = redirectPath;
   showConfirmModal.value = true;
+
 }
 
 const fetchPost = async () => {
@@ -185,8 +402,13 @@ const fetchPost = async () => {
 const fetchComments = async () => {
   const { id } = route.params
   const res = await axios.get(`/psts/${id}/comments`)
-  console.log(res)
-  comments.value = res.data
+  comments.value = res.data.map(c => ({
+    ...c,
+    isEditing: false,
+    editContent: "",
+    editPassword: "",
+    editNickname: c.id
+  }))
 }
 
 const formatDate = (utc) => {
@@ -225,4 +447,9 @@ watch(
 <style scoped>
 @import '../css/main.css';
 @import '../css/common.css';
+.deleted {
+  color: #888;
+  font-style: italic;
+  width: 100%;
+}
 </style>
