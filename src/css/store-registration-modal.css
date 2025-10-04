@@ -1,0 +1,62 @@
+/* StoreRegistrationModal Styles */
+
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
+  outline: none;
+}
+
+.custom-select-selected {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color1);
+  font-size: 0.9rem;
+  font-family: var(--main-font);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.custom-select-arrow {
+  margin-left: 8px;
+  font-size: 0.8em;
+}
+
+.custom-select-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #222;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  z-index: 1002;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.custom-select-options li {
+  padding: 8px;
+  color: var(--color1);
+  font-family: var(--main-font);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.custom-select-options li:hover {
+  background-color: var(--color6);
+  color: #fff;
+}
+
+.custom-select-options li.selected {
+  background-color: var(--color6);
+  color: #fff;
+}

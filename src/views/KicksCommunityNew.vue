@@ -188,7 +188,6 @@ async function submitPost() {
     return;
   }
 
-  console.log(password.value);
 
   if (!password.value.trim()) {
     handleAlert("비밀번호를 입력하세요");
@@ -197,7 +196,6 @@ async function submitPost() {
 
   try {
     if(isEdit.value){
-      console.log(password.value);
       await axios.patch(`/psts/${pstNo.value}`, {
         pstNo: pstNo.value,
         pstTitl: title.value,

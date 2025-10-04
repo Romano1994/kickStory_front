@@ -199,7 +199,6 @@ export default {
       e.target.src = "../assets/jordan1.webp";
     },
     openSlide(e, itemCd) {
-      console.log("들어왓음");
       this.currCard = itemCd;
       this.isShowSlide = true;
       e.stopPropagation();

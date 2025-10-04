@@ -74,29 +74,23 @@ export default {
     
     // 확인 처리
     handleConfirm() {
-      console.log('Confirm modal confirmed')
       this.closeConfirmModal()
     },
     handleAlert() {
-      console.log('Alert modal confirmed')
       this.closeAlertModal()
     },
     handleDelete() {
-      console.log('Delete modal confirmed')
       this.closeDeleteModal()
     },
     handleWarning() {
-      console.log('Warning modal confirmed')
       this.closeWarningModal()
     },
     handleRegistration() {
-      console.log('Registration modal confirmed')
       this.closeRegistrationModal()
     },
     
     handleInput(value) {
       this.inputValue = value
-      console.log('Input value:', value)
     }
   }
 }

@@ -358,14 +358,6 @@ export default {
 
       // 지도 중심으로 이동하는 이벤트 emit
       this.$emit('move-to-store', store);
-
-      console.log('스토어 선택:', {
-        storeName: store.storeKorNm,
-        branchName: store.branchNm,
-        storeId: storeId,
-        localActiveStore: this.localActiveStore,
-        coordinates: {lat: store.lat, lon: store.lon}
-      });
     },
     openStoreDetail(store) {
       let activeStoreId = null;
@@ -841,7 +833,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-@import '../css/main.css';
-@import '../css/map.css';
-</style> 

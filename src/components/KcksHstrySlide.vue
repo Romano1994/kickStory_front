@@ -219,7 +219,3 @@ export default {
                         :kcksHstryMdfctnVer="kcksHstryMdfctnVer"></KcksHstryMergeEditor>
   <!--  <KcksHstryEditor :hstryContent="hstryContent" @update:hstryContent="updateContent" :currCard="currCard"></KcksHstryEditor>-->
 </template>
-
-<style scoped>
-
-</style>

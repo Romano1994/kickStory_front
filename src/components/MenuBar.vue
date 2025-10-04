@@ -9,6 +9,8 @@
 </template>
 <script>
 import menus from '@/js/menu/menus';
+import '@/css/menu-bar.css';
+
 export default {
     computed:{
         filteredMenus(){
@@ -22,28 +24,3 @@ export default {
     }
 }
 </script>
-<style>
-.menu-container{
-    display:flex;
-    justify-content:space-evenly ;
-}
-.menu-item{
-    border:1px solid rgb(255, 244, 204);
-    flex-basis: 100%;
-    text-align: center;
-    align-content: center;
-    min-height: 2.5rem;
-    font-weight: 1000;
-}
-.menu-item-link{
-    color:rgb(255, 244, 204);
-    text-decoration: none;
-}
-.menu-item-link:hover{
-    color:white;
-    font-size: larger;
-}
-.menu-router{
-  text-decoration: none;
-}
-</style>

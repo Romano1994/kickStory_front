@@ -422,21 +422,70 @@
 
   .detail-header {
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
     align-items: flex-start;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1.5rem;
   }
 
   .detail-title {
-    font-size: 1.6rem;
-    line-height: 1.3;
+    font-size: 1.5rem;
+    line-height: 1.4;
     word-break: break-word;
+    margin-bottom: 0.75rem;
+    color: var(--color1);
+    font-weight: 600;
   }
 
   .detail-meta {
-    font-size: 1rem;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
+    font-size: 0.9rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .detail-meta .meta-item {
+    font-size: 0.85rem;
+  }
+
+  .title-underline {
+    margin: 0.5rem 0 1rem 0;
+    height: 2px;
+  }
+
+  /* Comment Header 모바일 스타일 */
+  .comment-header {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+    margin-bottom: 0.75rem;
+  }
+
+  .comment-header .comment-nickname {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color1);
+    transition: all 0.2s ease;
+  }
+
+  .comment-header .comment-nickname:focus {
+    outline: none;
+    border-color: var(--color6);
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .comment-header .comment-nickname::placeholder {
+    color: rgba(255, 244, 204, 0.6);
+    font-size: 0.85rem;
   }
 
   .detail-content .content {
