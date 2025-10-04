@@ -40,7 +40,7 @@
         </div>
       </div>
 
-      <div v-if="regionStoreList.length" class="location-list">
+      <div v-if="regionStoreList.length" class="location-list" ref="locationListRef">
         <div class="location-item" v-for="city in regionStoreList" :key="city.admSidoNm">
           <div class="city-header" @click="toggleCity(city.admSidoNm)">
             <span>{{ city.admSidoNm }}</span>
@@ -58,8 +58,8 @@
                     class="store-item"
                     v-for="store in district.offlineBranchList"
                     :key="store.branchCd"
-                
-                    :class="{ active: activeStore === store.branchNm }"
+                    :class="{ active: localActiveStore === store.branchCd }"
+                    @click="selectStore(store, $event)"
                 >
                   <span>{{ store.storeKorNm }} {{ store.branchNm }}</span>
                   <div class="store-actions">
@@ -74,8 +74,8 @@
                     class="store-item"
                     v-for="store in district.offlineBranchList"
                     :key="store.storeCd"
-                    
-                    :class="{ active: activeStore === store.storeCd }"
+                    :class="{ active: localActiveStore === store.storeCd }"
+                    @click="selectStore(store, $event)"
                 >
                   <span>{{ store.storeKorNm }}</span>
                   <div class="store-actions">
@@ -125,7 +125,7 @@
             <span class="store-order">📍</span>
             <span class="store-name">현재 위치</span>
           </li>
-          <li v-for="(store, index) in selectedStores" :key="store.branchNm">
+          <li v-for="(store, index) in selectedStores" :key="store.branchCd || store.storeCd">
             <!-- <span class="store-order">{{ index + 1 }}</span> -->
             <span class="store-order">{{ useCurrentLocation ? index + 2 : index + 1 }}</span>
             <span class="store-name">{{ store.storeKorNm }} {{ store.branchNm }}</span>
@@ -218,7 +218,11 @@ export default {
     'update-region-list',
     'add-store',
     'remove-store',
-    'store-type-change'
+    'store-type-change',
+    'update-active-store',
+    'update-expanded-cities',
+    'update-expanded-districts',
+    'move-to-store'
   ],
   props: {
     selectedStores: {
@@ -228,6 +232,18 @@ export default {
     offlineStoreType: {
       type: String,
       default: '00030001'
+    },
+    activeStore: {
+      type: [String, Number],
+      default: null
+    },
+    expandedCities: {
+      type: Object,
+      default: () => ({})
+    },
+    expandedDistricts: {
+      type: Object,
+      default: () => ({})
     }
   },
   data() {
@@ -246,16 +262,14 @@ export default {
       countryList: [],
       regionStoreList: [],
       originalStoreList: [], // 원본 스토어 데이터 저장용
-      expandedCities: {},
-      expandedDistricts: {},
-      activeStore: null,
       searchKeyword: '',
       showFavoriteModal: false,
       showAlertModal: false,
       alertTitle: '',
       alertContent: '',
       showStoreDetailModal: false,
-      storeDetailData: null
+      storeDetailData: null,
+      localActiveStore: null // 로컬 active store 상태 추가
     }
   },
   methods: {
@@ -272,26 +286,96 @@ export default {
       this.getBranches(this.selectedCountry);
     },
     toggleCity(city) {
-      this.expandedCities = {
+      const newExpandedCities = {
         ...this.expandedCities,
         [city]: !this.expandedCities[city]
       };
+      
+      // 도시를 접을 때 하위 구/군도 함께 접기
+      if (!newExpandedCities[city]) {
+        const newExpandedDistricts = {...this.expandedDistricts};
+        // 해당 도시의 모든 구/군을 찾아서 접기
+        this.regionStoreList.forEach(cityData => {
+          if (cityData.admSidoNm === city) {
+            cityData.admSggList.forEach(district => {
+              delete newExpandedDistricts[district.admRginCd];
+              // 해당 구/군의 스토어가 active 상태라면 초기화
+              district.offlineBranchList.forEach(store => {
+                const storeId = this.offlineStoreType !== '00030003' ? store.branchCd : store.storeCd;
+                if (this.activeStore === storeId) {
+                  this.$emit('update-active-store', null);
+                }
+              });
+            });
+          }
+        });
+        this.$emit('update-expanded-districts', newExpandedDistricts);
+      }
+      
+      this.$emit('update-expanded-cities', newExpandedCities);
     },
     toggleDistrict(district) {
-      this.expandedDistricts = {
+      const newExpandedDistricts = {
         ...this.expandedDistricts,
         [district]: !this.expandedDistricts[district]
       };
+      
+      // 구/군을 접을 때 해당 구/군의 스토어가 active 상태라면 초기화
+      if (!newExpandedDistricts[district]) {
+        this.regionStoreList.forEach(cityData => {
+          cityData.admSggList.forEach(districtData => {
+            if (districtData.admRginCd === district) {
+              districtData.offlineBranchList.forEach(store => {
+                const storeId = this.offlineStoreType !== '00030003' ? store.branchCd : store.storeCd;
+                if (this.activeStore === storeId) {
+                  this.$emit('update-active-store', null);
+                }
+              });
+            }
+          });
+        });
+      }
+      
+      this.$emit('update-expanded-districts', newExpandedDistricts);
     },
     addStoreToRoute(store) {
       this.$emit('add-store', store);
     },
-    openStoreDetail(store) {
-      if (this.offlineStoreType !== '00030003') {
-        this.activeStore = store.branchCd;
-      } else {
-        this.activeStore = store.storeCd;
+    selectStore(store, event) {
+      // 클릭 이벤트 전파 중지
+      if (event) {
+        event.stopPropagation();
       }
+      
+      // 해당 스토어의 ID 결정
+      const storeId = this.offlineStoreType !== '00030003' ? store.branchCd : store.storeCd;
+      
+      // 로컬 active store 상태 업데이트
+      this.localActiveStore = storeId;
+      
+      // 부모 컴포넌트에도 전달
+      this.$emit('update-active-store', storeId);
+      
+      // 지도 중심으로 이동하는 이벤트 emit
+      this.$emit('move-to-store', store);
+      
+      console.log('스토어 선택:', {
+        storeName: store.storeKorNm,
+        branchName: store.branchNm,
+        storeId: storeId,
+        localActiveStore: this.localActiveStore,
+        coordinates: { lat: store.lat, lon: store.lon }
+      });
+    },
+    openStoreDetail(store) {
+      let activeStoreId = null;
+      if (this.offlineStoreType !== '00030003') {
+        activeStoreId = store.branchCd;
+      } else {
+        activeStoreId = store.storeCd;
+      }
+      this.$emit('update-active-store', activeStoreId);
+      
       //TODO : 스토어 상세페이지 열기
       const storeCd = store && store.storeCd;
       if (!storeCd) {
@@ -302,6 +386,10 @@ export default {
     },
     removeStore(store) {
       this.$emit('remove-store', store);
+      // Remove active state if this store was active
+      if (this.activeStore === (store.branchCd || store.storeCd)) {
+        this.$emit('update-active-store', null);
+      }
     },
     getSearchPlaceholder() {
       const placeholders = {
@@ -382,6 +470,12 @@ export default {
       this.originalStoreList = JSON.parse(JSON.stringify(res.data)); // 깊은 복사로 원본 데이터 저장
       this.regionStoreList = res.data;
       this.$emit('update-region-list', this.regionStoreList);
+      // 새로운 데이터 로드 시 active 상태와 expanded 상태 초기화
+      this.$emit('update-active-store', null);
+      this.$emit('update-expanded-cities', {});
+      this.$emit('update-expanded-districts', {});
+      // 검색어도 초기화
+      this.searchKeyword = '';
     },
     filterStores() {
       const keyword = (this.searchKeyword || '').trim().toLowerCase();
@@ -393,10 +487,15 @@ export default {
         // 검색어가 없으면 원본 데이터로 복원하고 모든 도시/구/군 접기
         this.regionStoreList = JSON.parse(JSON.stringify(this.originalStoreList));
         // 모든 도시와 구/군 접기
-        this.expandedCities = {};
-        this.expandedDistricts = {};
+        this.$emit('update-expanded-cities', {});
+        this.$emit('update-expanded-districts', {});
+        // active 상태도 초기화
+        this.$emit('update-active-store', null);
         return;
       }
+
+      let newExpandedCities = {...this.expandedCities};
+      let newExpandedDistricts = {...this.expandedDistricts};
 
       this.regionStoreList = this.originalStoreList.map(city => {
         // 도시 레벨에서 필터링
@@ -419,10 +518,7 @@ export default {
 
           // 검색어가 있으면 해당 구/군 확장
           if (keyword && filteredDistrict.offlineBranchList.length > 0) {
-            this.expandedDistricts = {
-              ...this.expandedDistricts,
-              [district.admRginCd]: true
-            };
+            newExpandedDistricts[district.admRginCd] = true;
           }
 
           return filteredDistrict;
@@ -430,14 +526,17 @@ export default {
 
         // 검색어가 있으면 해당 도시 확장
         if (keyword && filteredCity.admSggList.length > 0) {
-          this.expandedCities = {
-            ...this.expandedCities,
-            [city.admSidoNm]: true
-          };
+          newExpandedCities[city.admSidoNm] = true;
         }
 
         return filteredCity;
       }).filter(city => city.admSggList.length > 0); // 구/군이 없는 도시는 제거
+
+      // 한 번에 emit
+      this.$emit('update-expanded-cities', newExpandedCities);
+      this.$emit('update-expanded-districts', newExpandedDistricts);
+      // 검색 시 active 상태 초기화
+      this.$emit('update-active-store', null);
     },
     getBranchesFail(error) {
       console.error('지역별 매장 수 조회 실패:', error);
@@ -553,7 +652,6 @@ export default {
       const serverMessage = err && err.response && err.response.data && (err.response.data.message || err.response.data.msg || err.response.data.error || err.response.data.statusMessage);
       const fallback = err && (err.message || '경로를 찾는 중 오류가 발생하였습니다.');
       this.showAlert('경로 오류', serverMessage || fallback);
-      console.error('findRouteFail:', err);
     },
     decodePolyline(str, precision = 5) {
       let index = 0, lat = 0, lng = 0, coordinates = [], shift = 0, result = 0, byte = null;
@@ -614,7 +712,6 @@ export default {
       const serverMessage = err && err.response && err.response.data && (err.response.data.message || err.response.data.msg || err.response.data.error || err.response.data.statusMessage);
       const fallback = err && (err.message || '스토어 정보를 불러오지 못했습니다.');
       this.showAlert('상세 오류', serverMessage || fallback);
-      console.error('openStoreDetailFail:', err);
     },
     showAlert(title, content) {
       this.alertTitle = title;
@@ -629,6 +726,55 @@ export default {
     closeStoreDetailModal() {
       this.showStoreDetailModal = false;
       this.storeDetailData = null;
+    },
+    scrollToActiveStore() {
+      this.$nextTick(() => {
+        // Vue ref를 사용하여 location-list 요소 찾기
+        const locationList = this.$refs.locationListRef;
+        if (!locationList) return;
+        
+        // active store-item 찾기
+        const activeStoreElement = locationList.querySelector('.store-item.active');
+        if (!activeStoreElement) return;
+        
+        // 1단계: location-list 내부 스크롤
+        const locationListRect = locationList.getBoundingClientRect();
+        const storeItemRect = activeStoreElement.getBoundingClientRect();
+        
+        // store-item이 location-list 내부에서의 상대적 위치 계산
+        const relativeTop = storeItemRect.top - locationListRect.top;
+        const currentScrollTop = locationList.scrollTop;
+        const targetScrollTop = currentScrollTop + relativeTop;
+        
+        // location-list를 스크롤
+        locationList.scrollTo({
+          top: targetScrollTop,
+          behavior: 'smooth'
+        });
+        
+        // 2단계: sheet-content 스크롤 (location-list가 최상단으로 오도록)
+        setTimeout(() => {
+          // 부모 컴포넌트의 sheet-content ref에 접근
+          const parentComponent = this.$parent;
+          if (parentComponent && parentComponent.$refs.sheetContentRef) {
+            const sheetContent = parentComponent.$refs.sheetContentRef;
+            
+            // location-list가 sheet-content 내부에서의 위치 계산
+            const locationListRectAfter = locationList.getBoundingClientRect();
+            const sheetContentRect = sheetContent.getBoundingClientRect();
+            
+            const locationRelativeTop = locationListRectAfter.top - sheetContentRect.top;
+            const currentSheetScrollTop = sheetContent.scrollTop;
+            const targetSheetScrollTop = currentSheetScrollTop + locationRelativeTop - 20; // 여유 공간
+            
+            sheetContent.scrollTo({
+              top: targetSheetScrollTop,
+              behavior: 'smooth'
+            });
+          }
+        }, 300); // location-list 스크롤 완료 후
+
+      });
     },
   },
   watch: {
@@ -646,7 +792,17 @@ export default {
       },
       immediate: true
     },
-
+    activeStore: {
+      handler(newActiveStore) {
+        // 부모에서 전달받은 activeStore를 로컬 상태와 동기화
+        this.localActiveStore = newActiveStore;
+        
+        if (newActiveStore) {
+          this.scrollToActiveStore();
+        }
+      },
+      immediate: true
+    }
   },
   computed: {
     routeButtonDisabled() {

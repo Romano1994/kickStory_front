@@ -1,8 +1,32 @@
+const TerserPlugin = require('terser-webpack-plugin');
+
 module.exports = {
+    configureWebpack: config => {
+        if (process.env.NODE_ENV === 'production') {
+            // 운영환경에서 콘솔 로그 제거
+            config.optimization.minimizer.push(
+                new TerserPlugin({
+                    terserOptions: {
+                        compress: {
+                            drop_console: true,
+                            drop_debugger: true,
+                        },
+                    },
+                })
+            );
+        }
+    },
     pwa: {
         name: 'LookUP',
         themeColor: '#000000',
         msTileColor: '#000000',
+        iconPaths: {
+          favicon32: 'favicon.png',
+          favicon16: 'favicon.png',
+          appleTouchIcon: 'favicon.png',
+          maskIcon: 'favicon.png',
+          msTileImage: 'favicon.png'
+        },
         appleMobileWebAppCapable: 'yes',
         appleMobileWebAppStatusBarStyle: 'black',
         manifestOptions: {

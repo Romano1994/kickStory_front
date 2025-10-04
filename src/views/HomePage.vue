@@ -3,7 +3,7 @@
   <div class="main-container">
     <MainHeader></MainHeader>
     <div class="body-container">
-      <MenuBar></MenuBar>
+      <MenuBar v-show="!isMobile"></MenuBar>
       <router-view v-slot="{Component}"  :key="$route.fullPath">
         <keep-alive>
           <component :is="Component"></component>
@@ -35,13 +35,29 @@ export default {
     MainFooter,
     MenuBar
   },
+  data() {
+    return {
+      isMobile: false
+    }
+  },
   computed: {
     isShoppingMap() {
       const r = this.$route;
       return !!r && (r.name === 'Shopping Map' || r.path === '/');
     }
   },
-  methods: {}
+  mounted() {
+    this.checkMobile();
+    window.addEventListener('resize', this.checkMobile);
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.checkMobile);
+  },
+  methods: {
+    checkMobile() {
+      this.isMobile = window.innerWidth <= 768;
+    }
+  }
 
 }
 </script>

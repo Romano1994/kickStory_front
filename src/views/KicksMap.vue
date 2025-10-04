@@ -52,6 +52,8 @@ export default {
       sheetMin: 3,
       sheetMax: 85,
       isMobileView: false,
+      expandedCities: {},
+      expandedDistricts: {},
     }
   },
   computed: {
@@ -99,12 +101,19 @@ export default {
             //TODO : 팝업샵 선택된 경로 전체 활성화 오류 수정 필요
             const isSelected = this.offlineStoreType != "00030003" ? Array.isArray(this.selectedStores) && this.selectedStores.some(s => s.branchCd === store.branchCd) :
                 Array.isArray(this.selectedStores) && this.selectedStores.some(s => s.storeCd === store.storeCd);
+            
+            // active 상태 확인
+            const isActive = this.offlineStoreType != "00030003" ? this.activeStore === store.branchCd : this.activeStore === store.storeCd;
+            
             let icon = this.storeIcon;
             if (isSelected) {
               icon = this.selectedStoreIcon;
+            } else if (isActive) {
+              // active 상태인 마커는 크게 만들기
+              icon = this.activeStoreIcon;
             }
 
-            const marker = L.marker([store.lat, store.lon], {icon, zIndexOffset: isSelected ? 900 : 0})
+            const marker = L.marker([store.lat, store.lon], {icon, zIndexOffset: isSelected ? 900 : (isActive ? 800 : 0)})
                 .addTo(this.map)
             // .bindPopup(`${store.storeKorNm} ${store.branchNm}`);
             marker.on('click', () => {
@@ -135,13 +144,42 @@ export default {
     onStoreMarkerClick(store, district, city) {
       this.expandedCities = {...this.expandedCities, [city.admSidoNm]: true};
       this.expandedDistricts = {...this.expandedDistricts, [district.admRginCd]: true};
-      this.map.setView([store.lat, store.lon], 16);
-      this.addStoreMarkers();
+      
+      if (this.isMobileView) {
+        this.bottomSheetHeight = 35; // 바텀시트를 35%로 설정
+        
+        // 바텀시트가 올라간 후 마커를 지도 정중앙에 위치
+        this.$nextTick(() => {
+          setTimeout(() => {
+            // 마커를 지도 정중앙에 위치
+            this.map.setView([store.lat, store.lon], 16);
+          }, 300); // 바텀시트 애니메이션 완료 후 지도 이동
+        });
+      } else {
+        // 데스크톱에서는 기존 로직 유지
+        this.map.setView([store.lat, store.lon], 16);
+      }
+      
+      // activeStore를 먼저 설정
       if (this.offlineStoreType != "00030003") {
         this.activeStore = store.branchCd;
       } else {
         this.activeStore = store.storeCd;
       }
+      
+      // 그 다음에 마커 업데이트
+      this.addStoreMarkers();
+      
+      // 스크롤을 위해 약간의 지연 추가
+      this.$nextTick(() => {
+        setTimeout(() => {
+          // KicksMapRoute 컴포넌트의 스크롤 메서드 호출
+          const kicksMapRoute = this.$refs.kicksMapRoute;
+          if (kicksMapRoute && kicksMapRoute.scrollToActiveStore) {
+            kicksMapRoute.scrollToActiveStore();
+          }
+        }, this.isMobileView ? 400 : 200); // 모바일에서는 더 긴 지연
+      });
     },
     onDrawRoute(coordsArr, wayPoints) {
 
@@ -334,19 +372,6 @@ export default {
     closeMobileMenu() {
       this.isMobileMenuOpen = false;
     },
-    closeOverlay() {
-      // 모바일에서는 closeOverlay 비활성화 (항상 content 표시)
-      const isMobile = window.innerWidth <= 768;
-
-      if (!isMobile && this.showContent) {
-        this.showContent = false;
-        this.$nextTick(() => {
-          if (this.map) {
-            this.map.invalidateSize();
-          }
-        });
-      }
-    },
     handleUpdateregionStoreList(list) {
       this.regionStoreList = list || [];
       this.addStoreMarkers();
@@ -360,14 +385,39 @@ export default {
       }
     },
     handleRemoveStore(store) {
-      this.selectedStores = this.selectedStores.filter(s => s.branchCd !== store.branchCd);
+      if (this.offlineStoreType !== "00030003") {
+        this.selectedStores = this.selectedStores.filter(s => s.branchCd !== store.branchCd);
+      } else {
+        this.selectedStores = this.selectedStores.filter(s => s.storeCd !== store.storeCd);
+      }
     },
     handleStoreTypeChange(newType) {
       this.offlineStoreType = newType;
-      // Reset active store when type changes
+      // Reset active store and expanded states when type changes
       this.activeStore = null;
+      this.expandedCities = {};
+      this.expandedDistricts = {};
       this.addStoreMarkers();
       this.addSelectedStoreMarkers();
+    },
+    handleUpdateActiveStore(activeStoreId) {
+      this.activeStore = activeStoreId;
+      // 마커 즉시 업데이트
+      this.$nextTick(() => {
+        this.addStoreMarkers();
+      });
+    },
+    handleUpdateExpandedCities(expandedCities) {
+      this.expandedCities = expandedCities;
+    },
+    handleUpdateExpandedDistricts(expandedDistricts) {
+      this.expandedDistricts = expandedDistricts;
+    },
+    handleMoveToStore(store) {
+      // 해당 매장 마커를 지도 중심으로 이동
+      if (store.lat && store.lon && this.map) {
+        this.map.setView([store.lat, store.lon], 16);
+      }
     },
     handleAddStores(stores) {
       // 기존 selectedStores 초기화 후 새로운 stores 추가
@@ -463,6 +513,7 @@ export default {
     },
   },
   mounted() {
+    console.log('KicksMap mounted');
     //map 객체 반환
     //[coordinate],zoom level
     this.map = L.map('map', {
@@ -609,6 +660,17 @@ export default {
     activeNavIndex: {
       handler() {
         this.clearAllMarkersAndResetLocation();
+        // Reset active store when switching tabs
+        this.activeStore = null;
+        this.expandedCities = {};
+        this.expandedDistricts = {};
+      }
+    },
+    activeStore: {
+      handler(newActiveStore, oldActiveStore) {
+        console.log('activeStore 변경:', { newActiveStore, oldActiveStore });
+        // activeStore가 변경될 때마다 마커를 다시 그려서 크기 업데이트
+        this.addStoreMarkers();
       }
     }
   },
@@ -678,20 +740,27 @@ export default {
         </div>
       </div>
       <!-- 데스크톱 content-overlay -->
-      <div class="content-overlay desktop-content" v-show="showContent" @click="closeOverlay">
-        <div class="content" :style="{ width: contentWidth + 'px' }" @click.stop>
+      <div class="content-overlay desktop-content" v-show="showContent">
+        <div class="content" :style="{ width: contentWidth + 'px' }">
           <div class="resize-handle" @mousedown="startResize"></div>
           <KicksMapRoute
               ref="kicksMapRoute"
               v-if="activeNavIndex === 0"
               :selected-stores="selectedStores"
               :offline-store-type="offlineStoreType"
+              :active-store="activeStore"
+              :expanded-cities="expandedCities"
+              :expanded-districts="expandedDistricts"
               @open-register-modal="openRegisterModal"
               @draw-route="onDrawRoute"
               @update-region-list="handleUpdateregionStoreList"
               @store-type-change="handleStoreTypeChange"
               @add-store="handleAddStore"
               @remove-store="handleRemoveStore"
+              @update-active-store="handleUpdateActiveStore"
+              @update-expanded-cities="handleUpdateExpandedCities"
+              @update-expanded-districts="handleUpdateExpandedDistricts"
+              @move-to-store="handleMoveToStore"
           />
           <KicksMapFavorite v-if="activeNavIndex === 1" @add-stores="handleAddStores" @draw-route="onDrawRoute"/>
         </div>
@@ -709,18 +778,25 @@ export default {
             <button class="sheet-btn" @click.stop="maximizeSheet" title="올리기">▴</button>
           </div>
         </div>
-        <div class="sheet-content" @mousedown.stop @touchstart.stop>
+        <div class="sheet-content" ref="sheetContentRef" @mousedown.stop @touchstart.stop>
           <KicksMapRoute
               ref="kicksMapRoute"
               v-if="activeNavIndex === 0"
               :selected-stores="selectedStores"
               :offline-store-type="offlineStoreType"
+              :active-store="activeStore"
+              :expanded-cities="expandedCities"
+              :expanded-districts="expandedDistricts"
               @open-register-modal="openRegisterModal"
               @draw-route="onDrawRoute"
               @update-region-list="handleUpdateregionStoreList"
               @store-type-change="handleStoreTypeChange"
               @add-store="handleAddStore"
               @remove-store="handleRemoveStore"
+              @update-active-store="handleUpdateActiveStore"
+              @update-expanded-cities="handleUpdateExpandedCities"
+              @update-expanded-districts="handleUpdateExpandedDistricts"
+              @move-to-store="handleMoveToStore"
           />
           <KicksMapFavorite v-if="activeNavIndex === 1" @add-stores="handleAddStores" @draw-route="onDrawRoute"/>
         </div>
