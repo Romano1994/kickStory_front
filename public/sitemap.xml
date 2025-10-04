@@ -1,33 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- LookUP 패션 매장 정보 검색 플랫폼 사이트맵 -->
+<!-- 생성일: 2025-10-04 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd
+        http://www.google.com/schemas/sitemap-image/1.1
+        http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd">
 
+    <!-- 홈페이지 -->
     <url>
-        <loc>https://lookup.kickstory.com/</loc>
-        <lastmod>2025-10-01</lastmod>
+        <loc>https://trylookup.com/</loc>
+        <lastmod>2025-10-04</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
+        <image:image>
+            <image:loc>https://trylookup.com/img/kickstory.b4cbb090.webp</image:loc>
+            <image:title>LookUP | Shopping Map</image:title>
+            <image:caption>국내 패션 매장, 편집샵, 브랜드 매장, 팝업 매장들의 위치 정보를 공유하는 스마트한 매장 검색 서비스</image:caption>
+        </image:image>
     </url>
 
+    <!-- 매장 찾기 페이지 -->
     <url>
-        <loc>https://lookup.kickstory.com/map</loc>
-        <lastmod>2025-10-01</lastmod>
+        <loc>https://trylookup.com/</loc>
+        <lastmod>2025-10-04</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
+        <image:image>
+            <image:loc>https://trylookup.com/img/map-preview.jpg</image:loc>
+            <image:title>LookUP | Shopping Map</image:title>
+            <image:caption>전국 패션 매장 위치를 지도에서 확인하고 최적의 경로로 여러 매장을 방문하세요</image:caption>
+        </image:image>
     </url>
 
+    <!-- 커뮤니티 페이지 -->
     <url>
-        <loc>https://lookup.kickstory.com/community</loc>
-        <lastmod>2025-10-01</lastmod>
+        <loc>https://trylookup.com/kc</loc>
+        <lastmod>2025-10-04</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.8</priority>
+        <image:image>
+            <image:loc>https://trylookup.com/img/community-preview.jpg</image:loc>
+            <image:title>LookUP | Community</image:title>
+            <image:caption>패션과 스타일에 대한 정보를 공유하고 소통하는 커뮤니티</image:caption>
+        </image:image>
     </url>
 
+    <!-- 글쓰기 페이지 -->
     <url>
-        <loc>https://lookup.kickstory.com/community/write</loc>
-        <lastmod>2025-10-01</lastmod>
+        <loc>https://trylookup.com/kc/new</loc>
+        <lastmod>2025-10-04</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>

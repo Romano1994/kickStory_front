@@ -1,21 +1,7 @@
 const TerserPlugin = require('terser-webpack-plugin');
+const PrerenderSPAPlugin = require('prerender-spa-plugin');
 
 module.exports = {
-    configureWebpack: config => {
-        if (process.env.NODE_ENV === 'production') {
-            // 운영환경에서 콘솔 로그 제거
-            config.optimization.minimizer.push(
-                new TerserPlugin({
-                    terserOptions: {
-                        compress: {
-                            drop_console: true,
-                            drop_debugger: true,
-                        },
-                    },
-                })
-            );
-        }
-    },
     pwa: {
         name: 'LookUP',
         themeColor: 'rgb(36, 32, 28)',
@@ -88,6 +74,91 @@ module.exports = {
         workboxOptions: {
             skipWaiting: true,
             clientsClaim: true
+        }
+    },
+    configureWebpack: config => {
+        if (process.env.NODE_ENV === 'production') {
+            // 운영환경 최적화는 아래에서 처리
+            
+            // 성능 최적화 설정
+            config.optimization.splitChunks = {
+                chunks: 'all',
+                cacheGroups: {
+                    vendor: {
+                        test: /[\\/]node_modules[\\/]/,
+                        name: 'vendors',
+                        chunks: 'all',
+                    },
+                    common: {
+                        name: 'common',
+                        minChunks: 2,
+                        chunks: 'all',
+                        enforce: true
+                    }
+                }
+            };
+            
+            // 압축 설정 개선
+            config.optimization.minimizer.push(
+                new TerserPlugin({
+                    terserOptions: {
+                        compress: {
+                            drop_console: true,
+                            drop_debugger: true,
+                            pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn']
+                        },
+                        mangle: {
+                            safari10: true
+                        }
+                    }
+                })
+            );
+            
+            // 크롤링 방지 헤더 추가
+            config.plugins.push({
+                apply: (compiler) => {
+                    compiler.hooks.emit.tapAsync('CrawlerBlockingPlugin', (compilation, callback) => {
+                        // HTML 파일에 크롤링 방지 메타 태그 추가
+                        Object.keys(compilation.assets).forEach(filename => {
+                            if (filename.endsWith('.html')) {
+                                const asset = compilation.assets[filename];
+                                let source = asset.source();
+                                
+                                // 크롤링 방지 메타 태그 추가
+                                const antiCrawlerMeta = `
+    <!-- 크롤링 방지 -->
+    <meta name="robots" content="noindex, nofollow, nosnippet, noarchive">
+    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="bingbot" content="noindex, nofollow">
+    <meta name="slurp" content="noindex, nofollow">
+    <meta name="duckduckbot" content="noindex, nofollow">
+    <meta name="baiduspider" content="noindex, nofollow">
+    <meta name="yandexbot" content="noindex, nofollow">
+    <meta name="facebookexternalhit" content="noindex, nofollow">
+    <meta name="twitterbot" content="noindex, nofollow">
+    <meta name="linkedinbot" content="noindex, nofollow">
+    <meta name="whatsapp" content="noindex, nofollow">
+    <meta name="telegrambot" content="noindex, nofollow">
+    <meta name="applebot" content="noindex, nofollow">
+    <meta name="msnbot" content="noindex, nofollow">
+    <meta name="slurp" content="noindex, nofollow">
+`;
+                                
+                                source = source.replace('</head>', antiCrawlerMeta + '\n</head>');
+                                compilation.assets[filename] = {
+                                    source: () => source,
+                                    size: () => source.length
+                                };
+                            }
+                        });
+                        
+                        callback();
+                    });
+                }
+            });
+            
+            // Prerendering 설정 (현재 비활성화 - 복잡한 설정 필요)
+            // 향후 필요시 별도 스크립트로 구현 예정
         }
     }
 }

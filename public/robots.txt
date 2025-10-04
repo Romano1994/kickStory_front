@@ -1,18 +1,189 @@
+# LookUP - 패션 매장 정보 검색 플랫폼 robots.txt
+# 최종 업데이트: 2025-10-04
+
+# 기본 정책: 모든 크롤러 차단
 User-agent: *
-Allow: /
+Disallow: /
 
-# Sitemap
-Sitemap: https://lookup.kickstory.com/sitemap.xml
+# 데이터 보호: API 및 민감한 경로 차단
+Disallow: /api/
+Disallow: /admin/
+Disallow: /user/
+Disallow: /data/
+Disallow: /store/
+Disallow: /database/
+Disallow: /backup/
+Disallow: /logs/
+Disallow: /config/
+Disallow: /*.json$
+Disallow: /*.xml$
+Disallow: /*.csv$
+Disallow: /*.sql$
+Disallow: /*.db$
+Disallow: /*?*utm_*
+Disallow: /*?*ref=*
+Disallow: /*?*fbclid=*
+Disallow: /*?*gclid=*
+Disallow: /*?*token=*
+Disallow: /*?*key=*
+Disallow: /*?*secret=*
 
-# Crawl-delay
+# SEO에 중요한 정적 리소스 허용
+Allow: /css/
+Allow: /js/
+Allow: /img/
+Allow: /assets/
+Allow: /fonts/
+
+# 크롤링 지연 설정 (서버 부하 방지)
 Crawl-delay: 1
 
-# Specific rules for search engines
+# 허용된 검색엔진만 선택적 허용
 User-agent: Googlebot
-Allow: /
+Allow: /$
+Allow: /map$
+Allow: /community$
+Disallow: /api/
+Disallow: /admin/
+Disallow: /user/
+Disallow: /data/
+Crawl-delay: 2
 
 User-agent: Bingbot
-Allow: /
+Allow: /$
+Allow: /map$
+Allow: /community$
+Disallow: /api/
+Disallow: /admin/
+Disallow: /user/
+Disallow: /data/
+Crawl-delay: 3
+
+# 네이버봇 설정 (한국 사용자 고려)
+User-agent: Yeti
+Allow: /$
+Allow: /map$
+Allow: /community$
+Disallow: /api/
+Disallow: /admin/
+Disallow: /user/
+Disallow: /data/
+Crawl-delay: 3
+
+# 카카오봇 설정 (한국 사용자 고려)
+User-agent: KakaoBot
+Allow: /$
+Allow: /map$
+Allow: /community$
+Disallow: /api/
+Disallow: /admin/
+Disallow: /user/
+Disallow: /data/
+Crawl-delay: 3
+
+# 허용된 봇들 외 모든 크롤러 차단
+
+# SEO 도구
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: ScreamingFrogSEOSpider
+Disallow: /
+
+User-agent: SiteAuditBot
+Disallow: /
+
+# 해외 검색엔진
+User-agent: YandexBot
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: DuckDuckBot
+Disallow: /
+
+User-agent: Applebot
+Disallow: /
+
+User-agent: MSNBot
+Disallow: /
 
 User-agent: Slurp
-Allow: /
+Disallow: /
+
+# 소셜 미디어
+User-agent: facebookexternalhit
+Disallow: /
+
+User-agent: Twitterbot
+Disallow: /
+
+User-agent: LinkedInBot
+Disallow: /
+
+User-agent: WhatsApp
+Disallow: /
+
+User-agent: TelegramBot
+Disallow: /
+
+User-agent: SkypeUriPreview
+Disallow: /
+
+User-agent: DiscordBot
+Disallow: /
+
+User-agent: SlackBot
+Disallow: /
+
+# 자동화 도구
+User-agent: curl
+Disallow: /
+
+User-agent: wget
+Disallow: /
+
+User-agent: python-requests
+Disallow: /
+
+User-agent: Scrapy
+Disallow: /
+
+User-agent: Java
+Disallow: /
+
+User-agent: Go-http-client
+Disallow: /
+
+User-agent: PHP
+Disallow: /
+
+User-agent: Node
+Disallow: /
+
+# 헤드리스 브라우저
+User-agent: headlesschrome
+Disallow: /
+
+User-agent: phantomjs
+Disallow: /
+
+User-agent: selenium
+Disallow: /
+
+# 기타 모든 봇 (허용된 4개 봇 외)
+User-agent: *
+Disallow: /
+
+# 사이트맵 위치
+Sitemap: https://lookup.kickstory.com/sitemap.xml

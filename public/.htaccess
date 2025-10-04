@@ -1,0 +1,79 @@
+# LookUP 크롤링 방지 및 보안 설정
+
+# 크롤러 차단 설정
+<RequireAll>
+    Require all granted
+    
+    # 악성 크롤러 User-Agent 차단
+    Require not env badbot
+    Require not env badreferer
+</RequireAll>
+
+# 악성 크롤러 User-Agent 차단
+SetEnvIfNoCase User-Agent "AhrefsBot" badbot
+SetEnvIfNoCase User-Agent "MJ12bot" badbot
+SetEnvIfNoCase User-Agent "SemrushBot" badbot
+SetEnvIfNoCase User-Agent "DotBot" badbot
+SetEnvIfNoCase User-Agent "YandexBot" badbot
+SetEnvIfNoCase User-Agent "Baiduspider" badbot
+SetEnvIfNoCase User-Agent "facebookexternalhit" badbot
+SetEnvIfNoCase User-Agent "Twitterbot" badbot
+SetEnvIfNoCase User-Agent "LinkedInBot" badbot
+SetEnvIfNoCase User-Agent "WhatsApp" badbot
+SetEnvIfNoCase User-Agent "TelegramBot" badbot
+SetEnvIfNoCase User-Agent "Scrapy" badbot
+SetEnvIfNoCase User-Agent "curl" badbot
+SetEnvIfNoCase User-Agent "wget" badbot
+SetEnvIfNoCase User-Agent "python-requests" badbot
+SetEnvIfNoCase User-Agent "Java" badbot
+SetEnvIfNoCase User-Agent "Go-http-client" badbot
+
+# API 경로 보호
+<LocationMatch "^/(api|admin|user|data|store|database|backup|logs|config)/">
+    Order Deny,Allow
+    Deny from all
+    
+    # 허용된 IP만 접근 (필요시 수정)
+    Allow from 127.0.0.1
+    Allow from ::1
+    
+    # 개발팀 IP 허용 (예시)
+    # Allow from 192.168.1.0/24
+</LocationMatch>
+
+# 민감한 파일 확장자 차단
+<FilesMatch "\.(json|xml|csv|sql|db|log|bak|backup|config|conf|ini|env)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Rate Limiting (요청 제한)
+<IfModule mod_evasive24.c>
+    DOSHashTableSize    2048
+    DOSPageCount        3
+    DOSSiteCount        50
+    DOSPageInterval     1
+    DOSSiteInterval     1
+    DOSBlockingPeriod   3600
+</IfModule>
+
+# 추가 보안 헤더
+<IfModule mod_headers.c>
+    Header always set X-Robots-Tag "noindex, nofollow, nosnippet, noarchive"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# 캐시 설정
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+</IfModule>

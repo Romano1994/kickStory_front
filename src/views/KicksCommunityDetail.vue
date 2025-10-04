@@ -21,6 +21,7 @@
       </div>
       <div class="form-actions">
         <div class="form-actions" style="gap : 0.3rem;">
+          <button @click="goToList" class="back-button">목록으로</button>
           <button @click="passwordModal('updatePst')" class="comment-modify">수정</button>
           <button @click="passwordModal('deletePst')" class="comment-modify">삭제</button>
         </div>
@@ -390,7 +391,10 @@ function handleAlert(msg, redirectPath = null) {
   alertMsg.value = msg;
   redirectAfterConfirm.value = redirectPath;
   showConfirmModal.value = true;
+}
 
+function goToList() {
+  router.push('/kc');
 }
 
 const fetchPost = async () => {
@@ -447,9 +451,5 @@ watch(
 <style scoped>
 @import '../css/main.css';
 @import '../css/common.css';
-.deleted {
-  color: #888;
-  font-style: italic;
-  width: 100%;
-}
+@import '../css/kicksCommunityDetail.css';
 </style>

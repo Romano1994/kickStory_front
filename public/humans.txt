@@ -1,0 +1,15 @@
+# LookUP - 패션 매장 정보 검색 플랫폼
+
+/* TEAM */
+개발자: LookUP Development Team
+컨택트: contact@kickstory.com
+위치: 대한민국
+
+/* THANKS */
+Vue.js, Leaflet, Bootstrap, Font Awesome
+
+/* SITE */
+Last update: 2025/10/04
+Standards: HTML5, CSS3, ES6+
+Components: Vue.js 3, Vue Router, Vuex
+IDE: WebStorm, VS Code

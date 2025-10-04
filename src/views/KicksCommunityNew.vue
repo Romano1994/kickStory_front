@@ -44,6 +44,7 @@
       </div>
 
       <div class="actions">
+        <button class="back-button" @click="goToList">목록으로</button>
         <button class="write-button" @click="submitPost">등록</button>
       </div>
     </div>
@@ -235,21 +236,15 @@ function handleConfirm() {
     showConfirmModal.value = false;
   }
 }
+
+function goToList() {
+  router.push('/kc');
+}
 </script>
 
 <style scoped>
 @import '../css/main.css';
 @import '../css/common.css';
 
-.new-post-container :deep(.quill-wrap) {
-  background: #121212;
-}
-
-.new-post-container :deep(.ql-container.ql-snow) {
-  background: #121212;
-}
-
-.new-post-container :deep(.ql-editor) {
-  background: #121212;
-}
+@import '../css/kicksCommunityNew.css';
 </style>
