@@ -131,7 +131,23 @@
 
 .footer-top {
   display: flex;
-  justify-content: flex-start;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.location-permission-info {
+  background: rgba(54, 150, 156, 0.1);
+  border: 1px solid rgba(54, 150, 156, 0.3);
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.location-permission-info small {
+  color: var(--color1);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  display: block;
 }
 
 .footer-bottom {

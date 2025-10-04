@@ -113,7 +113,7 @@
         </div>
         <div class="route-header-right">
           <label class="current-location-toggle">
-            <input type="checkbox" v-model="useCurrentLocation" class="toggle-checkbox">
+            <input type="checkbox" v-model="useCurrentLocation" class="toggle-checkbox" @change="handleCurrentLocationToggle">
             <span class="toggle-slider"></span>
             <span class="toggle-text">현재 위치 시작</span>
           </label>
@@ -541,7 +541,7 @@ export default {
     },
     findRoute() {
       if (this.useCurrentLocation && !this.currentLocation) {
-        this.showAlert('위치 오류', '현재 위치 정보를 가져올 수 없습니다.');
+        this.showAlert('위치 권한 필요', '현재 위치를 사용하려면 브라우저에서 위치 권한을 허용해주세요. 브라우저 주소창 옆의 위치 아이콘을 클릭하여 권한을 허용할 수 있습니다.');
         return;
       }
       if (this.selectedStores.length === 0) {
@@ -810,26 +810,33 @@ export default {
       if (this.selectedStores.length > 1) return false;
       return true;
     }
-  },
-  mounted() {
-    this.fetchBranchTypeList();
-    this.getCountryCount();
+    },
+    handleCurrentLocationToggle() {
+      if (this.useCurrentLocation && !this.currentLocation) {
+        this.showAlert('위치 권한 필요', '현재 위치를 사용하려면 브라우저에서 위치 권한을 허용해주세요. 브라우저 주소창 옆의 위치 아이콘을 클릭하여 권한을 허용할 수 있습니다.');
+        this.useCurrentLocation = false;
+        return;
+      }
+    },
+    mounted() {
+      this.fetchBranchTypeList();
+      this.getCountryCount();
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-          (position) => {
-            this.currentLocation = {
-              lat: position.coords.latitude,
-              lon: position.coords.longitude
-            };
-          },
-          (error) => {
-            console.error('위치 정보를 가져올 수 없습니다.', error);
-            this.currentLocation = null;
-            this.useCurrentLocation = false;
-          }
-      );
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+              this.currentLocation = {
+                lat: position.coords.latitude,
+                lon: position.coords.longitude
+              };
+            },
+            (error) => {
+              console.error('위치 정보를 가져올 수 없습니다.', error);
+              this.currentLocation = null;
+              this.useCurrentLocation = false;
+            }
+        );
+      }
     }
-  }
 }
 </script>

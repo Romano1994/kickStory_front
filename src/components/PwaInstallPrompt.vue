@@ -3,18 +3,21 @@
     <div class="pwa-prompt">
       <div class="pwa-prompt-header">
         <div class="pwa-icon">
-          <img src="@/assets/logo.png" alt="로고" />
+          <img src="@/assets/lookup_logo.png" alt="로고" />
         </div>
         <h3>앱으로 설치하기</h3>
         <button class="close-btn" @click="closePrompt">×</button>
       </div>
-      <div class="pwa-prompt-footer">
-        <div class="footer-top">
-          <label class="dont-show-checkbox">
-            <input type="checkbox" v-model="dontShowAgain" />
-            <span>다시 보지 않음</span>
-          </label>
-        </div>
+               <div class="pwa-prompt-footer">
+                 <div class="footer-top">
+                   <div class="location-permission-info">
+                     <small>💡 앱 설치 후 현재 위치 기능을 사용하려면 브라우저 설정에서 위치 권한을 허용해주세요.</small>
+                   </div>
+                   <label class="dont-show-checkbox">
+                     <input type="checkbox" v-model="dontShowAgain" />
+                     <span>다시 보지 않음</span>
+                   </label>
+                 </div>
         <div class="footer-bottom">
           <button class="cancel-btn" @click="closePrompt">닫기</button>
           <button class="install-btn" @click="installApp" :disabled="!canInstall">

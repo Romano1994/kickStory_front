@@ -86,7 +86,7 @@ export default {
         <h3>{{ title }}</h3>
       </div>
       <div class="modal-content">
-        <div v-if="htmlContent" class="content-text" v-html="htmlContent"></div>
+        <div v-if="htmlContent" class="content-html" v-html="htmlContent"></div>
         <div v-else-if="content" class="content-text">{{ content }}</div>
         <div v-if="useInput" class="content-text">
           <input class="form-input" type="password" v-model="inputValue"/>

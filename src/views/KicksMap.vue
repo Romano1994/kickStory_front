@@ -351,9 +351,29 @@ export default {
               const lon = position.coords.longitude;
               this.map.setView([lat, lon], 16);
             },
-            () => {
-              this.commonModalMessage = '현재 위치를 가져올 수 없습니다.';
+            (error) => {
+              let errorMessage = '';
+              switch(error.code) {
+                case error.PERMISSION_DENIED:
+                  errorMessage = 'PWA에서 위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.';
+                  break;
+                case error.POSITION_UNAVAILABLE:
+                  errorMessage = '위치 정보를 사용할 수 없습니다. GPS가 켜져 있는지 확인해주세요.';
+                  break;
+                case error.TIMEOUT:
+                  errorMessage = '위치 요청 시간이 초과되었습니다. 다시 시도해주세요.';
+                  break;
+                default:
+                  errorMessage = '현재 위치를 사용하려면 브라우저에서 위치 권한을 허용해주세요.';
+                  break;
+              }
+              this.commonModalMessage = errorMessage;
               this.showCommonModal = true;
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 60000
             }
         );
       } else {
@@ -545,7 +565,7 @@ export default {
                 map.setView([lat, lon], 16);
               },
               () => {
-                this.commonModalMessage = '지도를 구성하던 중 오류가 발생하였습니다.';
+                this.commonModalMessage = '현재 위치를 사용하려면 브라우저에서 위치 권한을 허용해주세요. 브라우저 주소창 옆의 위치 아이콘을 클릭하여 권한을 허용할 수 있습니다.';
                 this.showCommonModal = true;
               }
           );
@@ -608,7 +628,7 @@ export default {
           },
           () => {
             // 위치 정보 못 가져오면 기본 위치에 마커
-            this.commonModalMessage = '현재 위치를 가져오지 못하였습니다.';
+            this.commonModalMessage = '현재 위치를 사용하려면 브라우저에서 위치 권한을 허용해주세요. 브라우저 주소창 옆의 위치 아이콘을 클릭하여 권한을 허용할 수 있습니다.';
             this.showCommonModal = true;
             this.marker = L.marker([37.566734, 126.978236], {icon: this.icon});
             this.marker.addTo(this.map);

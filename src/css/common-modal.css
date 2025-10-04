@@ -20,7 +20,7 @@
   transform: translate(-50%, -50%);
   background-color: rgb(204, 195, 163);
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 1rem;
   width: 90%;
   max-width: 500px;
   z-index: 1001;
@@ -28,7 +28,7 @@
 }
 
 .modal-header {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   text-align: center;
 }
 
@@ -42,22 +42,53 @@
 .modal-content {
   background-color: var(--color2);
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 1rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  min-height: 60px;
+}
+
+/* 스크롤바 스타일링 */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: rgba(255, 244, 204, 0.1);
+  border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 244, 204, 0.3);
+  border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 244, 204, 0.5);
 }
 
 .content-text {
-  text-align: center;
+  text-align: left;
   color: var(--color1);
   font-family: var(--main-font);
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: 1.6;
+  word-wrap: break-word;
+  word-break: keep-all;
+  white-space: pre-wrap;
+}
+
+.content-html {
+  /* HTML 콘텐츠를 위한 기본 스타일 - 인라인 스타일을 존중 */
+  color: var(--color1);
+  font-family: var(--main-font);
 }
 
 .modal-footer {
   display: flex;
   justify-content: center;
   gap: 0.8rem;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 }
 
 .modal-footer button {
@@ -129,10 +160,22 @@
   .common-modal {
     width: 95%;
     padding: 1rem;
+    max-height: 90vh;
   }
   
   .modal-content {
     padding: 1rem;
+    max-height: 50vh;
+  }
+  
+  .content-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  
+  .content-html {
+    /* 모바일에서 HTML 콘텐츠 최적화 */
+    font-size: 0.9rem;
   }
   
   .modal-footer button {

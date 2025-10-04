@@ -10,7 +10,7 @@
       <!-- 현재 위치 시작 토글 -->
       <div class="location-toggle-section">
         <label class="current-location-toggle">
-          <input type="checkbox" v-model="useCurrentLocation" class="toggle-checkbox">
+          <input type="checkbox" v-model="useCurrentLocation" class="toggle-checkbox" @change="handleCurrentLocationToggle">
           <span class="toggle-slider"></span>
           <span class="toggle-text">현재 위치 시작</span>
         </label>
@@ -305,6 +305,13 @@ export default {
         month: 'short',
         day: 'numeric'
       });
+    },
+    handleCurrentLocationToggle() {
+      if (this.useCurrentLocation && !this.currentLocation) {
+        this.showAlert('위치 권한 필요', '현재 위치를 사용하려면 브라우저에서 위치 권한을 허용해주세요. 브라우저 주소창 옆의 위치 아이콘을 클릭하여 권한을 허용할 수 있습니다.');
+        this.useCurrentLocation = false;
+        return;
+      }
     }
   },
   mounted() {
