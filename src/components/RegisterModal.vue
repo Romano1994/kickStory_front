@@ -416,7 +416,7 @@ export default {
       this.showCommonModal = true;
     },
     registerFail(error) {
-      console.log("error",error)
+      console.log("error", error)
       this.commonModalMessage = error.message;
       this.commonModalType = "alert";
       this.showCommonModal = true;
@@ -837,36 +837,36 @@ export default {
               rows="3"
           ></textarea>
         </div>
-<!--        <div v-if="['00030001'].includes(offlineStoreTypeCd)">-->
-<!--          <label class="form-label">취급 브랜드</label>-->
-<!--          <input class="form-input" type="text" v-model="usualBrandSearch" @input="searchUsualBrands"-->
-<!--                 placeholder="취급 브랜드명을 입력하세요"/>-->
-<!--          <div v-if="usualBrandList.length > 0" class="search-list">-->
-<!--            <div-->
-<!--                v-for="brand in usualBrandList"-->
-<!--                :key="brand.brandCd"-->
-<!--                @click="addUsualBrand(brand)"-->
-<!--                class="search-item"-->
-<!--            >-->
-<!--              {{ brand.brandNmKor }}-->
-<!--            </div>-->
-<!--          </div>-->
-<!--          <div v-else-if="usualBrandSearch.trim()" class="search-list">-->
-<!--            <div class="search-item" @click="showBrandRegistrationModal">-->
-<!--              등록하기-->
-<!--            </div>-->
-<!--          </div>-->
-<!--          <div class="selected-brands">-->
-<!--            <div-->
-<!--                v-for="brand in usualBrands"-->
-<!--                :key="brand.brandCd"-->
-<!--                class="selected-brand"-->
-<!--            >-->
-<!--              {{ brand.brandNmKor }}-->
-<!--              <span class="remove-brand" @click="removeUsualBrand(brand)">×</span>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </div>-->
+        <!--        <div v-if="['00030001'].includes(offlineStoreTypeCd)">-->
+        <!--          <label class="form-label">취급 브랜드</label>-->
+        <!--          <input class="form-input" type="text" v-model="usualBrandSearch" @input="searchUsualBrands"-->
+        <!--                 placeholder="취급 브랜드명을 입력하세요"/>-->
+        <!--          <div v-if="usualBrandList.length > 0" class="search-list">-->
+        <!--            <div-->
+        <!--                v-for="brand in usualBrandList"-->
+        <!--                :key="brand.brandCd"-->
+        <!--                @click="addUsualBrand(brand)"-->
+        <!--                class="search-item"-->
+        <!--            >-->
+        <!--              {{ brand.brandNmKor }}-->
+        <!--            </div>-->
+        <!--          </div>-->
+        <!--          <div v-else-if="usualBrandSearch.trim()" class="search-list">-->
+        <!--            <div class="search-item" @click="showBrandRegistrationModal">-->
+        <!--              등록하기-->
+        <!--            </div>-->
+        <!--          </div>-->
+        <!--          <div class="selected-brands">-->
+        <!--            <div-->
+        <!--                v-for="brand in usualBrands"-->
+        <!--                :key="brand.brandCd"-->
+        <!--                class="selected-brand"-->
+        <!--            >-->
+        <!--              {{ brand.brandNmKor }}-->
+        <!--              <span class="remove-brand" @click="removeUsualBrand(brand)">×</span>-->
+        <!--            </div>-->
+        <!--          </div>-->
+        <!--        </div>-->
         <div>
           <label class="form-label">연락처</label>
           <input class="form-input" type="text" v-model="contactInfo" placeholder="연락처를 입력하세요"/>

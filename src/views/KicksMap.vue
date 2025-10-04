@@ -76,7 +76,7 @@ export default {
         if (this.activeNavIndex === 0) {
           // KicksMapRoute 컴포넌트가 활성화되어 있을 때만 새로고침
           const kicksMapRoute = this.$refs.kicksMapRoute;
-          if (kicksMapRoute && kicksMapRoute.getCountryCount) {            
+          if (kicksMapRoute && kicksMapRoute.getCountryCount) {
             kicksMapRoute.getCountryCount();
           }
         }
@@ -101,10 +101,10 @@ export default {
             //TODO : 팝업샵 선택된 경로 전체 활성화 오류 수정 필요
             const isSelected = this.offlineStoreType != "00030003" ? Array.isArray(this.selectedStores) && this.selectedStores.some(s => s.branchCd === store.branchCd) :
                 Array.isArray(this.selectedStores) && this.selectedStores.some(s => s.storeCd === store.storeCd);
-            
+
             // active 상태 확인
             const isActive = this.offlineStoreType != "00030003" ? this.activeStore === store.branchCd : this.activeStore === store.storeCd;
-            
+
             let icon = this.storeIcon;
             if (isSelected) {
               icon = this.selectedStoreIcon;
@@ -113,7 +113,10 @@ export default {
               icon = this.activeStoreIcon;
             }
 
-            const marker = L.marker([store.lat, store.lon], {icon, zIndexOffset: isSelected ? 900 : (isActive ? 800 : 0)})
+            const marker = L.marker([store.lat, store.lon], {
+              icon,
+              zIndexOffset: isSelected ? 900 : (isActive ? 800 : 0)
+            })
                 .addTo(this.map)
             // .bindPopup(`${store.storeKorNm} ${store.branchNm}`);
             marker.on('click', () => {
@@ -144,10 +147,10 @@ export default {
     onStoreMarkerClick(store, district, city) {
       this.expandedCities = {...this.expandedCities, [city.admSidoNm]: true};
       this.expandedDistricts = {...this.expandedDistricts, [district.admRginCd]: true};
-      
+
       if (this.isMobileView) {
         this.bottomSheetHeight = 35; // 바텀시트를 35%로 설정
-        
+
         // 바텀시트가 올라간 후 마커를 지도 정중앙에 위치
         this.$nextTick(() => {
           setTimeout(() => {
@@ -159,17 +162,17 @@ export default {
         // 데스크톱에서는 기존 로직 유지
         this.map.setView([store.lat, store.lon], 16);
       }
-      
+
       // activeStore를 먼저 설정
       if (this.offlineStoreType != "00030003") {
         this.activeStore = store.branchCd;
       } else {
         this.activeStore = store.storeCd;
       }
-      
+
       // 그 다음에 마커 업데이트
       this.addStoreMarkers();
-      
+
       // 스크롤을 위해 약간의 지연 추가
       this.$nextTick(() => {
         setTimeout(() => {
@@ -668,7 +671,7 @@ export default {
     },
     activeStore: {
       handler(newActiveStore, oldActiveStore) {
-        console.log('activeStore 변경:', { newActiveStore, oldActiveStore });
+        console.log('activeStore 변경:', {newActiveStore, oldActiveStore});
         // activeStore가 변경될 때마다 마커를 다시 그려서 크기 업데이트
         this.addStoreMarkers();
       }
@@ -767,7 +770,9 @@ export default {
       </div>
 
       <!-- 모바일 바텀시트: 하단 도킹 + 드래그로 열기/닫기 -->
-      <div class="mobile-bottom-sheet" v-show="isMobileView" :class="{ 'is-minimized': bottomSheetHeight <= sheetMin + 0.1 }" :style="{ height: bottomSheetHeight + '%' }">
+      <div class="mobile-bottom-sheet" v-show="isMobileView"
+           :class="{ 'is-minimized': bottomSheetHeight <= sheetMin + 0.1 }"
+           :style="{ height: bottomSheetHeight + '%' }">
         <div class="sheet-grabber" @mousedown="startSheetDrag" @touchstart="startSheetDrag">
           <div class="grabber-bar"></div>
         </div>

@@ -192,7 +192,7 @@
         @close="closeAlertModal"
         @confirm="closeAlertModal"
     />
-    
+
     <StoreDetailModal
         :show="showStoreDetailModal"
         :store="storeDetailData || {}"
@@ -290,7 +290,7 @@ export default {
         ...this.expandedCities,
         [city]: !this.expandedCities[city]
       };
-      
+
       // 도시를 접을 때 하위 구/군도 함께 접기
       if (!newExpandedCities[city]) {
         const newExpandedDistricts = {...this.expandedDistricts};
@@ -311,7 +311,7 @@ export default {
         });
         this.$emit('update-expanded-districts', newExpandedDistricts);
       }
-      
+
       this.$emit('update-expanded-cities', newExpandedCities);
     },
     toggleDistrict(district) {
@@ -319,7 +319,7 @@ export default {
         ...this.expandedDistricts,
         [district]: !this.expandedDistricts[district]
       };
-      
+
       // 구/군을 접을 때 해당 구/군의 스토어가 active 상태라면 초기화
       if (!newExpandedDistricts[district]) {
         this.regionStoreList.forEach(cityData => {
@@ -335,7 +335,7 @@ export default {
           });
         });
       }
-      
+
       this.$emit('update-expanded-districts', newExpandedDistricts);
     },
     addStoreToRoute(store) {
@@ -346,25 +346,25 @@ export default {
       if (event) {
         event.stopPropagation();
       }
-      
+
       // 해당 스토어의 ID 결정
       const storeId = this.offlineStoreType !== '00030003' ? store.branchCd : store.storeCd;
-      
+
       // 로컬 active store 상태 업데이트
       this.localActiveStore = storeId;
-      
+
       // 부모 컴포넌트에도 전달
       this.$emit('update-active-store', storeId);
-      
+
       // 지도 중심으로 이동하는 이벤트 emit
       this.$emit('move-to-store', store);
-      
+
       console.log('스토어 선택:', {
         storeName: store.storeKorNm,
         branchName: store.branchNm,
         storeId: storeId,
         localActiveStore: this.localActiveStore,
-        coordinates: { lat: store.lat, lon: store.lon }
+        coordinates: {lat: store.lat, lon: store.lon}
       });
     },
     openStoreDetail(store) {
@@ -375,14 +375,18 @@ export default {
         activeStoreId = store.storeCd;
       }
       this.$emit('update-active-store', activeStoreId);
-      
+
       //TODO : 스토어 상세페이지 열기
       const storeCd = store && store.storeCd;
       if (!storeCd) {
         this.showAlert('', '스토어 정보보가 없습니다.');
         return;
       }
-      this.getApi('/branch', {storeCd:store.storeCd, branchCd:store.branchCd, offlineStoreTypeCd:this.offlineStoreType}, this.openStoreDetailSuccess, this.openStoreDetailFail);
+      this.getApi('/branch', {
+        storeCd: store.storeCd,
+        branchCd: store.branchCd,
+        offlineStoreTypeCd: this.offlineStoreType
+      }, this.openStoreDetailSuccess, this.openStoreDetailFail);
     },
     removeStore(store) {
       this.$emit('remove-store', store);
@@ -732,41 +736,41 @@ export default {
         // Vue ref를 사용하여 location-list 요소 찾기
         const locationList = this.$refs.locationListRef;
         if (!locationList) return;
-        
+
         // active store-item 찾기
         const activeStoreElement = locationList.querySelector('.store-item.active');
         if (!activeStoreElement) return;
-        
+
         // 1단계: location-list 내부 스크롤
         const locationListRect = locationList.getBoundingClientRect();
         const storeItemRect = activeStoreElement.getBoundingClientRect();
-        
+
         // store-item이 location-list 내부에서의 상대적 위치 계산
         const relativeTop = storeItemRect.top - locationListRect.top;
         const currentScrollTop = locationList.scrollTop;
         const targetScrollTop = currentScrollTop + relativeTop;
-        
+
         // location-list를 스크롤
         locationList.scrollTo({
           top: targetScrollTop,
           behavior: 'smooth'
         });
-        
+
         // 2단계: sheet-content 스크롤 (location-list가 최상단으로 오도록)
         setTimeout(() => {
           // 부모 컴포넌트의 sheet-content ref에 접근
           const parentComponent = this.$parent;
           if (parentComponent && parentComponent.$refs.sheetContentRef) {
             const sheetContent = parentComponent.$refs.sheetContentRef;
-            
+
             // location-list가 sheet-content 내부에서의 위치 계산
             const locationListRectAfter = locationList.getBoundingClientRect();
             const sheetContentRect = sheetContent.getBoundingClientRect();
-            
+
             const locationRelativeTop = locationListRectAfter.top - sheetContentRect.top;
             const currentSheetScrollTop = sheetContent.scrollTop;
             const targetSheetScrollTop = currentSheetScrollTop + locationRelativeTop - 20; // 여유 공간
-            
+
             sheetContent.scrollTo({
               top: targetSheetScrollTop,
               behavior: 'smooth'
@@ -796,7 +800,7 @@ export default {
       handler(newActiveStore) {
         // 부모에서 전달받은 activeStore를 로컬 상태와 동기화
         this.localActiveStore = newActiveStore;
-        
+
         if (newActiveStore) {
           this.scrollToActiveStore();
         }
