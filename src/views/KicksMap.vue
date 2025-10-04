@@ -71,16 +71,8 @@ export default {
     },
     closeRegisterModal() {
       this.showRegisterModal = false
-      // RegisterModal이 닫힐 때 KicksMapRoute의 데이터 새로고침
-      this.$nextTick(() => {
-        if (this.activeNavIndex === 0) {
-          // KicksMapRoute 컴포넌트가 활성화되어 있을 때만 새로고침
-          const kicksMapRoute = this.$refs.kicksMapRoute;
-          if (kicksMapRoute && kicksMapRoute.getCountryCount) {
-            kicksMapRoute.getCountryCount();
-          }
-        }
-      });
+      // 스토어 등록 후 사이트 전체 새로고침
+      window.location.reload();
     },
     onStoreClick(store) {
       if (store.lat && store.lon && this.map) {
@@ -516,7 +508,6 @@ export default {
     },
   },
   mounted() {
-    console.log('KicksMap mounted');
     //map 객체 반환
     //[coordinate],zoom level
     this.map = L.map('map', {

@@ -58,7 +58,7 @@ router.beforeEach(async(to, from, next) => {
 
 router.afterEach((to) => {
   window.dataLayer = window.dataLayer || [];
-  document.title = to.name;
+  document.title = 'LookUP'; // 브라우저 탭 제목을 LookUP으로 고정
 
   window.dataLayer.push({
     event: 'route_change',
