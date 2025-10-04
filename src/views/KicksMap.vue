@@ -371,9 +371,9 @@ export default {
               this.showCommonModal = true;
             },
             {
-              enableHighAccuracy: true,
-              timeout: 10000,
-              maximumAge: 60000
+              enableHighAccuracy: false, // 정확도 낮춰서 속도 향상
+              timeout: 8000, // 타임아웃 단축
+              maximumAge: 60000 // 캐시된 위치 사용
             }
         );
       } else {
@@ -557,19 +557,60 @@ export default {
       btn.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
+        
+        // 중복 클릭 방지
+        if (btn.classList.contains('loading')) {
+          return;
+        }
+        
+        // 로딩 상태 표시
+        btn.classList.add('loading');
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="31.416" stroke-dashoffset="31.416"><animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/><animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/></circle></svg>';
+        
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
               (position) => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
                 map.setView([lat, lon], 16);
+                
+                // 로딩 상태 해제
+                btn.classList.remove('loading');
+                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>';
               },
-              () => {
-                this.commonModalMessage = '현재 위치를 사용하려면 브라우저에서 위치 권한을 허용해주세요. 브라우저 주소창 옆의 위치 아이콘을 클릭하여 권한을 허용할 수 있습니다.';
+              (error) => {
+                // 로딩 상태 해제
+                btn.classList.remove('loading');
+                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>';
+                
+                let errorMessage = '';
+                switch(error.code) {
+                  case error.PERMISSION_DENIED:
+                    errorMessage = 'PWA에서 위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.';
+                    break;
+                  case error.POSITION_UNAVAILABLE:
+                    errorMessage = '위치 정보를 사용할 수 없습니다. GPS가 켜져 있는지 확인해주세요.';
+                    break;
+                  case error.TIMEOUT:
+                    errorMessage = '위치 요청 시간이 초과되었습니다. 다시 시도해주세요.';
+                    break;
+                  default:
+                    errorMessage = '현재 위치를 사용하려면 브라우저에서 위치 권한을 허용해주세요.';
+                    break;
+                }
+                this.commonModalMessage = errorMessage;
                 this.showCommonModal = true;
+              },
+              {
+                enableHighAccuracy: false, // 정확도 낮춰서 속도 향상
+                timeout: 8000, // 타임아웃 단축
+                maximumAge: 60000 // 캐시된 위치 사용
               }
           );
         } else {
+          // 로딩 상태 해제
+          btn.classList.remove('loading');
+          btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>';
           alert('브라우저가 위치 정보를 지원하지 않습니다.');
         }
       };

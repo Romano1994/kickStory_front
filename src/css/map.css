@@ -2031,6 +2031,25 @@
     height: 18px;
 }
 
+.my-locate-btn.loading {
+    cursor: not-allowed;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.my-locate-btn.loading svg {
+    animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 
 /* Waypoint marker */
 .waypoint-marker {
