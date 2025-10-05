@@ -450,6 +450,11 @@ export default {
       if (this.countryList.length > 0) {
         this.selectedCountry = this.countryList[0].cntryCd;
         this.getBranches(this.selectedCountry);
+      } else {
+        // 국가 목록이 비어있으면 regionList도 비워줌
+        this.regionStoreList = [];
+        this.originalStoreList = [];
+        this.$emit('update-region-list', this.regionStoreList);
       }
     },
     getCountryCountFail(error) {

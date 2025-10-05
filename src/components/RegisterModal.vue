@@ -922,7 +922,7 @@ export default {
   <BrandRegistrationModal
       v-if="showBrandModal"
       :show="showBrandModal"
-      :searchText="offlineStoreTypeCd === '00030002' ? selectedBrandNmKor : usualBrandSearch"
+      :searchText="['00030002', '00030003'].includes(offlineStoreTypeCd) ? selectedBrandNmKor : usualBrandSearch"
       @close="closeBrandModal"
       @register="handleBrandRegistration"
   />

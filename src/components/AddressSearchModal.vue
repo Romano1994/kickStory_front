@@ -7,15 +7,18 @@ export default {
     return {
       searchKeyword: '',
       addressList: [],
-      addressSearchTimeout: null
+      addressSearchTimeout: null,
+      hasSearched: false
     }
   },
   methods: {
     searchAddress() {
       if (this.searchKeyword.trim()) {
+        this.hasSearched = true
         this.getApi(`/store/address/${this.searchKeyword}`, null, this.searchAddressSuccess, this.searchAddressFail)
       } else {
         this.addressList = []
+        this.hasSearched = false
       }
     },
     handleKeyPress(e) {
@@ -25,10 +28,12 @@ export default {
     },
     searchAddressSuccess(res) {
       this.addressList = res.data
+      this.hasSearched = true
     },
     searchAddressFail(error) {
       console.error('Address search failed:', error)
       this.addressList = []
+      this.hasSearched = true
     },
     selectAddress(address) {
       this.$emit('select', {
@@ -53,45 +58,62 @@ export default {
 </script>
 
 <template>
-  <div class="modal-overlay" @click="closeModal">
-    <div class="address-search-modal" @click.stop>
-      <div class="modal-header">
+  <div class="address-modal-overlay" @click="closeModal">
+    <div class="address-modal-container" @click.stop>
+      <div class="address-modal-header">
         <h2>주소 검색</h2>
       </div>
-      <div class="modal-content">
-        <div class="search-input-container">
-          <div class="search-input-wrapper">
+      <div class="address-modal-body">
+        <div class="address-search-input-container">
+          <div class="address-search-input-wrapper">
             <input 
               type="text" 
               v-model="searchKeyword" 
               @keypress="handleKeyPress"
               placeholder="주소나 매장명을 입력하세요"
+              class="address-search-input"
             />
-            <button class="search-button" @click="searchAddress">검색</button>
+            <button class="address-search-btn" @click="searchAddress">검색</button>
           </div>
         </div>
-        <div v-if="addressList.length > 0" class="search-list">
+        
+        <!-- 검색 결과가 있을 때 -->
+        <div v-if="addressList.length > 0" class="address-result-list">
           <div 
             v-for="address in addressList" 
             :key="address.roadAddress" 
             @click="selectAddress(address)"
-            class="search-item"
+            class="address-result-item"
           >
-            <div class="store-name">{{ address.storeName }}</div>
-            <div class="store-address">
-              <div class="address-type">지번주소</div>
-              <div class="address-content">{{ address.address }}</div>
+            <div class="address-store-name">{{ address.storeName }}</div>
+            <div class="address-info-block">
+              <div class="address-label">지번주소</div>
+              <div class="address-text">{{ address.address }}</div>
             </div>
-            <div class="store-address">
-              <div class="address-type">도로명주소</div>
-              <div class="address-content">{{ address.roadAddress }}</div>
+            <div class="address-info-block">
+              <div class="address-label">도로명주소</div>
+              <div class="address-text">{{ address.roadAddress }}</div>
             </div>
           </div>
         </div>
+        
+        <!-- 검색 결과가 없을 때 -->
+        <div v-else-if="hasSearched && addressList.length === 0" class="address-no-results">
+          <div class="address-no-results-icon">🔍</div>
+          <div class="address-no-results-message">검색 결과가 없습니다</div>
+          <div class="address-no-results-hint">다른 키워드로 검색해보세요</div>
+        </div>
+        
+        <!-- 검색 전 상태 -->
+        <div v-else-if="!hasSearched" class="address-search-guide">
+          <div class="address-search-icon">📍</div>
+          <div class="address-search-message">주소나 매장명을 검색해보세요</div>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button @click="closeModal">닫기</button>
+      <div class="address-modal-footer">
+        <button class="address-close-btn" @click="closeModal">닫기</button>
       </div>
     </div>
   </div>
 </template>
+
