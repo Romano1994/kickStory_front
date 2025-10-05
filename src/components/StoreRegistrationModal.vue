@@ -16,6 +16,10 @@ export default {
     show: {
       type: Boolean,
       default: false
+    },
+    offlineStoreTypeCd: {
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -96,8 +100,8 @@ export default {
           return false;
         }
         
-        // 브랜드명(한글) validation: 한글 또는 숫자만 허용
-        const koreanRegex = /^[가-힣0-9\s]+$/;
+        // 브랜드명(한글) validation: 한글(자음, 모음 포함) 또는 숫자만 허용
+        const koreanRegex = /^[ㄱ-ㅎㅏ-ㅣ가-힣0-9\s]+$/;
         if (!koreanRegex.test(this.brand.brandNmKor.trim())) {
           this.showSuccessModal = true;
           this.message = "브랜드명(한글)은 한글과 숫자만 입력 가능합니다.";
@@ -117,8 +121,8 @@ export default {
 
       // 00030002가 아닐 때만 스토어명 validation 체크
       if (this.store.offlineStoreTypeCd !== '00030002') {
-        // 스토어명(한글) validation: 한글 또는 숫자만 허용
-        const koreanRegex = /^[가-힣0-9\s]+$/;
+        // 스토어명(한글) validation: 한글(자음, 모음 포함) 또는 숫자만 허용
+        const koreanRegex = /^[ㄱ-ㅎㅏ-ㅣ가-힣0-9\s]+$/;
         if (!koreanRegex.test(this.store.storeKorNm.trim())) {
           this.showSuccessModal = true;
           this.message = "스토어명(한글)은 한글과 숫자만 입력 가능합니다.";
@@ -145,9 +149,8 @@ export default {
     },
     handleRegisterFail(error) {
       this.showSuccessModal = true;
-      this.message = "스토어 등록에 실패했습니다.";
+      this.message = error.message || "스토어 등록에 실패했습니다.";
       this.isSuccess = false;
-      console.error('Failed to register store:', error);
     },
     closeSuccessModal() {
       this.showSuccessModal = false;
@@ -176,8 +179,10 @@ export default {
     handleStoreTypesSuccess(res) {
       // 팝업샵(00030002)은 제외하고 스토어 유형 목록 설정
       this.storeTypes = res.data;
-      // 기본값으로 첫 번째 유형 선택
-      if (this.storeTypes.length > 0) {
+      // props로 받은 offlineStoreTypeCd가 있으면 그것을 사용, 없으면 첫 번째 유형 선택
+      if (this.offlineStoreTypeCd) {
+        this.store.offlineStoreTypeCd = this.offlineStoreTypeCd;
+      } else if (this.storeTypes.length > 0) {
         this.store.offlineStoreTypeCd = this.storeTypes[0].commCdDtl;
       }
     },

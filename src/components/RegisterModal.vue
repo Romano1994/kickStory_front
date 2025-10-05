@@ -660,7 +660,7 @@ export default {
                    @keyup.enter="searchBrandsForShop" placeholder="브랜드명을 입력하세요"/>
             <button class="search-button" @click="searchBrandsForShop">검색</button>
           </div>
-          <div v-if="isSearchBrandList&&searchBrandList.length > 0" class="search-list">
+          <div v-if="isSearchBrandList" class="search-list">
             <div
                 v-for="brand in searchBrandList"
                 :key="brand.brandCd"
@@ -669,8 +669,6 @@ export default {
             >
               {{ brand.brandNmKor }}({{ brand.brandNmEng }})
             </div>
-          </div>
-          <div v-else-if="isSearchBrandList&&selectedBrandNmKor.trim() && !selectedBrand" class="search-list">
             <div class="search-item" @click="showBrandRegistrationModal">
               등록하기
             </div>
@@ -694,7 +692,7 @@ export default {
                      placeholder="스토어명을 입력하세요"/>
               <button class="search-button" @click="storeSearch">검색</button>
             </div>
-            <div v-if="isSearchStoreList&&storeList.length > 0" class="search-list">
+            <div v-if="isSearchStoreList" class="search-list">
               <div
                   v-for="store in storeList"
                   :key="store.storeId"
@@ -703,8 +701,6 @@ export default {
               >
                 {{ store.storeKorNm }}({{ store.storeEngNm }})
               </div>
-            </div>
-            <div v-else-if="isSearchStoreList&&storeKorNm.trim() && !storeCd" class="search-list">
               <div class="search-item" @click="showStoreRegistrationModal">
                 등록하기
               </div>
@@ -768,6 +764,7 @@ export default {
                 v-model="strtDt"
                 placeholder="YYYY-MM-DD"
                 readonly
+                autocomplete="off"
                 @click="startDatePicker && startDatePicker.open()"
             />
             <span class="calendar-icon" @click="startDatePicker && startDatePicker.open()">📅</span>
@@ -786,6 +783,7 @@ export default {
                 v-model="endDt"
                 placeholder="YYYY-MM-DD"
                 readonly
+                autocomplete="off"
                 @click="endDatePicker && endDatePicker.open()"
             />
             <span class="calendar-icon" @click="endDatePicker && endDatePicker.open()">📅</span>
@@ -932,6 +930,7 @@ export default {
       v-if="showStoreModal"
       :show="showStoreModal"
       :searchText="storeKorNm"
+      :offlineStoreTypeCd="offlineStoreTypeCd"
       @close="closeStoreModal"
       @register="handleStoreRegistration"
   />
