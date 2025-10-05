@@ -82,6 +82,12 @@ export default {
     },
     addStoreMarkers() {
       if (!this.regionStoreList || !this.map) return;
+      
+      // 즐겨찾기 탭에서는 지역 스토어 마커를 표시하지 않음
+      if (this.activeNavIndex === 1) {
+        return;
+      }
+      
       // 기존 매장 마커 제거 (중복 방지)
       if (this.storeMarkers) {
         this.storeMarkers.forEach(m => this.map.removeLayer(m));
@@ -297,6 +303,31 @@ export default {
         this.map.setView([37.547809, 126.979914], 13);
       }
     },
+    // 마커들만 정리 (현재 위치 마커는 유지)
+    clearMarkersOnly() {
+      if (!this.map) return;
+
+      // 모든 매장 마커 제거
+      if (this.storeMarkers) {
+        this.storeMarkers.forEach(marker => this.map.removeLayer(marker));
+        this.storeMarkers = [];
+      }
+
+      // 선택된 매장 마커 제거
+      if (this.selectedStoreMarkers) {
+        this.selectedStoreMarkers.forEach(marker => this.map.removeLayer(marker));
+        this.selectedStoreMarkers = [];
+      }
+
+      // 웨이포인트 마커 제거
+      this.clearWaypointMarkers();
+
+      // 경로 폴리라인 제거
+      if (this.routePolyline) {
+        this.map.removeLayer(this.routePolyline);
+        this.routePolyline = null;
+      }
+    },
     onTabChange(idx) {
       const isMobile = this.isMobileView;
       const itemName = this.navList[idx] && this.navList[idx].itemNm;
@@ -405,6 +436,10 @@ export default {
       } else {
         this.selectedStores = this.selectedStores.filter(s => s.storeCd !== store.storeCd);
       }
+    },
+    handleClearAllStores() {
+      // 모든 선택된 스토어 제거
+      this.selectedStores = [];
     },
     handleStoreTypeChange(newType) {
       this.offlineStoreType = newType;
@@ -714,11 +749,17 @@ export default {
     },
     activeNavIndex: {
       handler() {
-        this.clearAllMarkersAndResetLocation();
+        // 기존 마커들만 정리 (현재 위치는 유지)
+        this.clearMarkersOnly();
         // Reset active store when switching tabs
         this.activeStore = null;
         this.expandedCities = {};
         this.expandedDistricts = {};
+        // 탭 전환 후 마커 재표시
+        this.$nextTick(() => {
+          this.addStoreMarkers();
+          this.addSelectedStoreMarkers();
+        });
       }
     },
     activeStore: {
@@ -791,7 +832,7 @@ export default {
         <div class="legend-item">
           <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png"
                alt="선택된 매장"/>
-          <span>선택된 경로</span>
+          <span>선택된 스토어</span>
         </div>
       </div>
       <!-- 데스크톱 content-overlay -->
@@ -812,6 +853,7 @@ export default {
               @store-type-change="handleStoreTypeChange"
               @add-store="handleAddStore"
               @remove-store="handleRemoveStore"
+              @clear-all-stores="handleClearAllStores"
               @update-active-store="handleUpdateActiveStore"
               @update-expanded-cities="handleUpdateExpandedCities"
               @update-expanded-districts="handleUpdateExpandedDistricts"
@@ -850,6 +892,7 @@ export default {
               @store-type-change="handleStoreTypeChange"
               @add-store="handleAddStore"
               @remove-store="handleRemoveStore"
+              @clear-all-stores="handleClearAllStores"
               @update-active-store="handleUpdateActiveStore"
               @update-expanded-cities="handleUpdateExpandedCities"
               @update-expanded-districts="handleUpdateExpandedDistricts"

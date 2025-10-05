@@ -718,6 +718,13 @@
         gap: 0.75rem;
     }
 
+    .clear-all-btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        min-width: 45px;
+        height: 26px;
+    }
+
     .toggle-slider {
         width: 44px;
         height: 22px;
@@ -840,12 +847,47 @@
 
 .route-header-right {
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .store-count {
     color: var(--color6);
     font-size: 0.9rem;
     font-weight: bold;
+}
+
+/* 비우기 버튼 스타일 */
+.clear-all-btn {
+    background: rgba(255, 77, 79, 0.1);
+    border: 1px solid rgba(255, 77, 79, 0.3);
+    color: #ff4d4f;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    min-width: 50px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.clear-all-btn:hover {
+    background: rgba(255, 77, 79, 0.2);
+    border-color: rgba(255, 77, 79, 0.5);
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(255, 77, 79, 0.3);
+}
+
+.clear-all-btn:active {
+    transform: scale(0.95);
 }
 
 /* 현재 위치 시작 토글 */

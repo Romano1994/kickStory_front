@@ -632,3 +632,72 @@
   background-color: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
 }
+
+/* 즐겨찾기 제목 섹션 */
+.favorite-title-section {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .favorite-title-section {
+    gap: 0.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .favorite-title-section {
+    gap: 0.25rem;
+    justify-content: center;
+  }
+}
+
+/* 토글 버튼 스타일 */
+.toggle-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--color1);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  min-width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.toggle-btn:hover {
+  background: linear-gradient(135deg, var(--color6), rgba(54, 150, 156, 0.8));
+  border-color: var(--color6);
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(54, 150, 156, 0.4);
+  color: white;
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .toggle-btn {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.3rem;
+    min-width: 22px;
+    height: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .toggle-btn {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.25rem;
+    min-width: 20px;
+    height: 20px;
+  }
+}

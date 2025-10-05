@@ -28,7 +28,16 @@
           :class="{ active: currentCourseName === favorite.favoriteCourseName }"
       >
         <div class="favorite-header" @click="changeCurrentStores(favorite)">
-          <h3 class="favorite-name">{{ favorite.favoriteCourseName }}</h3>
+          <div class="favorite-title-section">
+            <h3 class="favorite-name">{{ favorite.favoriteCourseName }}</h3>
+            <button
+                class="toggle-btn"
+                @click.stop="toggleFavoriteCollapse(index)"
+                :title="isFavoriteCollapsed(index) ? '펼치기' : '접기'"
+            >
+              {{ isFavoriteCollapsed(index) ? '▶' : '▼' }}
+            </button>
+          </div>
           <div class="favorite-actions" @click.stop>
             <button
                 class="delete-btn"
@@ -42,22 +51,27 @@
         <div v-if="favorite.description" class="favorite-description">
           {{ favorite.description }}
         </div>
-        <div class="favorite-info">
-          <span class="store-count">스토어 {{ favorite.stores.length }}개</span>
-          <span class="created-date">{{ formatDate(favorite.createdAt) }}</span>
+        <div v-if="!isFavoriteCollapsed(index)" class="favorite-details">
+          <div class="favorite-info">
+            <span class="store-count">스토어 {{ favorite.stores.length }}개</span>
+            <span class="created-date">{{ formatDate(favorite.createdAt) }}</span>
+          </div>
+          <div class="store-preview">
+            <div
+                v-for="(store, storeIndex) in favorite.stores"
+                :key="storeIndex"
+                class="store-preview-item"
+            >
+              <span class="store-order">{{ storeIndex + 1 }}</span>
+              <span class="store-name">{{ store.storeKorNm }} {{ store.branchNm || '' }}</span>
+            </div>
+          </div>
         </div>
-        <div class="store-preview">
-          <div
-              v-for="(store, storeIndex) in favorite.stores.slice(0, 3)"
-              :key="storeIndex"
-              class="store-preview-item"
-          >
-            <span class="store-order">{{ storeIndex + 1 }}</span>
-            <span class="store-name">{{ store.storeKorNm }} {{ store.branchNm || '' }}</span>
-          </div>
-          <div v-if="favorite.stores.length > 3" class="more-stores">
-            +{{ favorite.stores.length - 3 }}개 더
-          </div>
+            <!-- 경로 찾기 버튼 (항상 표시) -->
+            <div class="favorite-route-action">
+          <button class="find-route-btn" @click.stop="loadFavoriteAndFindRoute(favorite)">
+            경로 찾기
+          </button>
         </div>
       </div>
     </div>
@@ -128,31 +142,11 @@ export default {
       alertContent: '',
       currentStores: [],
       currentCourseName: null,
+      collapsedFavorites: {} // 접힌 즐겨찾기 상태 관리
     }
   },
   watch: {
-    selectedType: {
-      handler() {
-        if (Array.isArray(this.currentStores) && this.currentStores.length > 0) {
-          this.findRoute();
-        }
-      }
-    },
-    currentStores: {
-      handler() {
-        if (Array.isArray(this.currentStores) && this.currentStores.length > 0) {
-          this.findRoute();
-        }
-      },
-      deep: true
-    },
-    useCurrentLocation: {
-      handler() {
-        if (Array.isArray(this.currentStores) && this.currentStores.length > 0) {
-          this.findRoute();
-        }
-      }
-    }
+  
   },
   methods: {
     loadFavoritesFromStorage() {
@@ -168,6 +162,14 @@ export default {
     changeCurrentStores(favorite) {
       this.currentStores = favorite.stores;
       this.currentCourseName = favorite.favoriteCourseName;
+      // KicksMap.vue의 selectedStores에 반영
+      this.$emit('add-stores', favorite.stores);
+    },
+    loadFavoriteAndFindRoute(favorite) {
+      // 즐겨찾기 로드
+      this.changeCurrentStores(favorite);
+      // 경로 찾기 실행
+      this.findRoute();
     },
     async findRoute() {
       if (this.useCurrentLocation && !this.currentLocation) {
@@ -322,6 +324,12 @@ export default {
         this.useCurrentLocation = false;
         return;
       }
+    },
+    toggleFavoriteCollapse(index) {
+      this.collapsedFavorites[index] = !this.collapsedFavorites[index];
+    },
+    isFavoriteCollapsed(index) {
+      return this.collapsedFavorites[index] !== undefined ? this.collapsedFavorites[index] : true;
     }
   },
   mounted() {

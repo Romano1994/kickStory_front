@@ -112,6 +112,14 @@
           <span class="store-count">({{ selectedStores.length }}개)</span>
         </div>
         <div class="route-header-right">
+          <button 
+            v-if="selectedStores.length > 0" 
+            class="clear-all-btn" 
+            @click="clearAllStores"
+            title="모든 스토어 제거"
+          >
+            비우기
+          </button>
           <label class="current-location-toggle">
             <input type="checkbox" v-model="useCurrentLocation" class="toggle-checkbox" @change="handleCurrentLocationToggle">
             <span class="toggle-slider"></span>
@@ -218,6 +226,7 @@ export default {
     'update-region-list',
     'add-store',
     'remove-store',
+    'clear-all-stores',
     'store-type-change',
     'update-active-store',
     'update-expanded-cities',
@@ -386,6 +395,12 @@ export default {
       if (this.activeStore === (store.branchCd || store.storeCd)) {
         this.$emit('update-active-store', null);
       }
+    },
+    clearAllStores() {
+      // 모든 선택된 스토어 제거
+      this.$emit('clear-all-stores');
+      // active 상태 초기화
+      this.$emit('update-active-store', null);
     },
     getSearchPlaceholder() {
       const placeholders = {
@@ -787,6 +802,13 @@ export default {
 
       });
     },
+    handleCurrentLocationToggle() {
+      if (this.useCurrentLocation && !this.currentLocation) {
+        this.showAlert('위치 권한 필요', '현재 위치를 사용하려면 브라우저에서 위치 권한을 허용해주세요. 브라우저 주소창 옆의 위치 아이콘을 클릭하여 권한을 허용할 수 있습니다.');
+        this.useCurrentLocation = false;
+        return;
+      }
+    }
   },
   watch: {
     regionStoreList: {
@@ -825,15 +847,8 @@ export default {
       if (this.selectedStores.length > 1) return false;
       return true;
     }
-    },
-    handleCurrentLocationToggle() {
-      if (this.useCurrentLocation && !this.currentLocation) {
-        this.showAlert('위치 권한 필요', '현재 위치를 사용하려면 브라우저에서 위치 권한을 허용해주세요. 브라우저 주소창 옆의 위치 아이콘을 클릭하여 권한을 허용할 수 있습니다.');
-        this.useCurrentLocation = false;
-        return;
-      }
-    },
-    mounted() {
+  },
+  mounted() {
       this.fetchBranchTypeList();
       this.getCountryCount();
 
