@@ -17,8 +17,7 @@ export default {
   },
   props: {
     initialOfflineStoreType: {
-      type: String,
-      default: '00030001'
+      type: String
     }
   },
   data() {
@@ -30,7 +29,7 @@ export default {
       storeEngNm: "",
       cntry: "",
       branchNm: "",
-      offlineStoreTypeCd: this.initialOfflineStoreType,
+      offlineStoreTypeCd: "00030001",
       place: "",
       website: "",
       shopDescription: "",
@@ -584,6 +583,7 @@ export default {
   },
   mounted() {
     this.fetchOfflineStoreTypeList();
+    this.offlineStoreTypeCd = this.initialOfflineStoreType;
   },
   watch: {
     selectedBrandNmKor() {
