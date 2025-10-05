@@ -21,7 +21,7 @@ import 'leaflet/dist/leaflet.css';
 
 import './registerServiceWorker'
 // SEO 유틸리티는 router.js에서 사용
-import './utils/antiCrawler' // 크롤링 방지 활성화
+// import './utils/antiCrawler' // 크롤링 방지 활성화
 
 const app = createApp(App);
 const COMMON_COMPONENTS=[];

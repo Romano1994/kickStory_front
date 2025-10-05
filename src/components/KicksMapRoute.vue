@@ -627,6 +627,16 @@ export default {
           // 순차 검색의 경우 routes 배열 사용
           if (data.routes && data.routes.length > 0) {
             routeData = data.routes[0];
+            
+            // 순차 검색일 때는 waypoint에 waypoint_index 추가 (selectedStores 순서대로)
+            if (wayPoints && this.selectedStores && this.selectedStores.length > 0) {
+              wayPoints = wayPoints.map((waypoint, index) => {
+                return {
+                  ...waypoint,
+                  waypoint_index: index
+                };
+              });
+            }
           }
         } else {
           // 최적경로, 도착지 고정의 경우 trips 배열 사용

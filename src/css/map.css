@@ -468,13 +468,14 @@
 
 .location-list {
     flex: 1;
-    overflow: hidden;
+    overflow-y: auto;
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: 4px;
     padding: 0.3rem;
     margin: 0.3rem 0;
     display: flex;
     flex-direction: column;
+    max-height: 400px;
 }
 
 /* 반응형 location-list */

@@ -99,9 +99,13 @@ export const antiCrawler = {
     const now = Date.now();
     const lastRequest = localStorage.getItem('lastRequest');
     
+    // 모바일 환경에서는 더 관대하게 처리
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const threshold = isMobile ? 500 : 1000; // 모바일은 0.5초, 데스크톱은 1초
+    
     if (lastRequest) {
       const timeDiff = now - parseInt(lastRequest);
-      if (timeDiff < 1000) { // 1초 이내 연속 요청
+      if (timeDiff < threshold) {
         return true;
       }
     }
@@ -112,15 +116,29 @@ export const antiCrawler = {
 
   // 의심스러운 행동 감지
   detectSuspiciousBehavior() {
-    // 마우스 움직임 없이 페이지 로드
-    let mouseMoved = false;
-    document.addEventListener('mousemove', () => {
-      mouseMoved = true;
-    });
+    // 모바일 환경에서는 터치 이벤트도 고려
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    // 3초 후에도 마우스 움직임이 없으면 의심
+    let interactionDetected = false;
+    
+    if (isMobile) {
+      // 모바일에서는 터치 이벤트 감지
+      document.addEventListener('touchstart', () => {
+        interactionDetected = true;
+      });
+      document.addEventListener('touchend', () => {
+        interactionDetected = true;
+      });
+    } else {
+      // 데스크톱에서는 마우스 움직임 감지
+      document.addEventListener('mousemove', () => {
+        interactionDetected = true;
+      });
+    }
+    
+    // 3초 후에도 상호작용이 없으면 의심
     setTimeout(() => {
-      if (!mouseMoved) {
+      if (!interactionDetected) {
         return true;
       }
     }, 3000);
