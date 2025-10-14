@@ -20,12 +20,12 @@
             <span class="value">{{ safe(store.branchNm) }}</span>
           </div>
           <div class="detail-row">
-            <span class="label">설명</span>
-            <span class="value">{{ safe(store.shopDescription) }}</span>
-          </div>
-          <div class="detail-row">
             <span class="label">연락처</span>
             <span class="value">{{ safe(store.contactInfo) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">비고</span>
+            <span class="value">{{ safe(store.shopDescription) }}</span>
           </div>
           <div class="detail-row">
             <span class="label">상태</span>
@@ -47,12 +47,12 @@
             <span class="value">{{ safe(store.branchNm) }}</span>
           </div>
           <div class="detail-row">
-            <span class="label">설명</span>
-            <span class="value">{{ safe(store.shopDescription) }}</span>
-          </div>
-          <div class="detail-row">
             <span class="label">연락처</span>
             <span class="value">{{ safe(store.contactInfo) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">비고</span>
+            <span class="value">{{ safe(store.shopDescription) }}</span>
           </div>
           <div class="detail-row">
             <span class="label">상태</span>
@@ -105,6 +105,10 @@
           <div class="detail-row">
             <span class="label">설명</span>
             <span class="value">{{ safe(store.description) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">비고</span>
+            <span class="value">{{ safe(store.shopDescription) }}</span>
           </div>
         </template>
 

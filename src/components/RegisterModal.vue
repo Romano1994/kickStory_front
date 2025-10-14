@@ -182,7 +182,7 @@ export default {
     searchAddressFail(error) {
       console.error("Address search failed:", error);
     },
-    handleAddressSelect(address) {
+    handleAddressSelect(address) {      
       this.selectedAddress.storeName = address.storeName;
       this.selectedAddress.branchAddr = address.address;
       this.selectedAddress.branchRoadAddr = address.roadAddress;
@@ -354,8 +354,7 @@ export default {
         }
       } else if (this.offlineStoreTypeCd === "00030003") {
         if (!this.storeCd || !this.storeEngNm || !this.storeKorNm || !this.selectedBrandCd ||
-            !this.strtDt || !this.endDt || !this.selectedAddress.branchRoadAddr ||
-            !this.selectedAddress.branchAddr || !this.selectedAddress.lon ||
+            !this.strtDt || !this.endDt || !this.selectedAddress.lon ||
             !this.selectedAddress.lat) {
           this.validationError = "필수 입력값을 모두 입력해주세요.";
           return;
@@ -421,6 +420,7 @@ export default {
           reservationLink: this.reservationLink,
           description: this.description,
           offlineStoreTypeCd: this.offlineStoreTypeCd,
+          shopDescription: this.shopDescription,
         };
       }
 
