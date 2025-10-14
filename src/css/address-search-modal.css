@@ -10,7 +10,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 2000;
 }
 
 .address-modal-container {
@@ -24,7 +24,7 @@
   width: 95%;
   max-width: 650px;
   max-height: 80vh;
-  z-index: 1000;
+  z-index: 2001;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.2);
   overflow: hidden;

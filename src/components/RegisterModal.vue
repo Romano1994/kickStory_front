@@ -56,6 +56,8 @@ export default {
       offlineStoreTypeList: [],
       isStoreSelect: false,
       isSearchStoreList: false,
+      hasSearchedStore: false,
+      hasSearchedBrand: false,
       lastSelectedStore: null,
       showBrandModal: false,
       newBrand: {
@@ -102,6 +104,7 @@ export default {
         }
 
         if (this.storeKorNm.trim()) {
+          this.hasSearchedStore = true;
           this.storeEngNm = "";
           this.getApi(
               "/store/offline",
@@ -292,6 +295,7 @@ export default {
     searchBrandsForShop() {
       this.isSearchBrandList = true;
       if (this.selectedBrandNmKor.trim()) {
+        this.hasSearchedBrand = true;
         this.getApi(
             "/brand",
             {name: this.selectedBrandNmKor},
@@ -310,10 +314,28 @@ export default {
       this.searchBrandList = [];
     },
     async register() {
+      // 추가 유효성 검사: 검색 기능 실행 여부 확인
+      if (this.offlineStoreTypeCd === "00030001") {
+        if (!this.hasSearchedStore) {
+          this.validationError = "스토어 검색을 먼저 실행해주세요.";
+          return;
+        }
+      } else if (this.offlineStoreTypeCd === "00030002") {
+        if (!this.hasSearchedBrand) {
+          this.validationError = "브랜드 검색을 먼저 실행해주세요.";
+          return;
+        }
+      } else if (this.offlineStoreTypeCd === "00030003") {
+        if (!this.hasSearchedStore || !this.hasSearchedBrand) {
+          this.validationError = "스토어와 브랜드 검색을 먼저 실행해주세요.";
+          return;
+        }
+      }
+
       if (this.offlineStoreTypeCd === "00030001") {
 
         if (!this.storeKorNm || !this.storeEngNm || !this.storeCd) {
-          this.validationError = "등록된 스토어가 아니거나 스토어가 올바르게게 선택이 되지 않았습니다.";
+          this.validationError = "등록된 스토어가 아니거나 스토어가 올바르게 선택이 되지 않았습니다.";
           return;
         }
         if (!this.branchNm) {
@@ -356,7 +378,7 @@ export default {
           offlineStoreTypeCd: this.offlineStoreTypeCd,
           branchKorNm: this.branchKorNm,
           branchCd: this.branchCd,
-          cntryCd: this.cntryCd,
+          cntryCd: "KR",
           branchNm: this.branchNm,
           branchRoadAddr: this.selectedAddress.branchRoadAddr,
           branchAddr: this.selectedAddress.branchAddr,
@@ -369,7 +391,7 @@ export default {
         branchData = {
           offlineStoreTypeCd: this.offlineStoreTypeCd,
           branchNm: this.branchNm,
-          cntryCd: this.cntryCd,
+          cntryCd: "KR",
           branchTypeCd: this.branchTypeCd,
           branchRoadAddr: this.selectedAddress.branchRoadAddr,
           branchAddr: this.selectedAddress.branchAddr,
@@ -476,6 +498,8 @@ export default {
       this.feeYn = "N";
       this.reservationLink = "";
       this.description = "";
+      this.hasSearchedStore = false;
+      this.hasSearchedBrand = false;
 
       // 팝업샵(00030003)을 선택했을 때 날짜 선택기 초기화
       if (type.commCdDtl === '00030003') {
