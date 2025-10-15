@@ -380,7 +380,7 @@ export default {
       //TODO : 스토어 상세페이지 열기
       const storeCd = store && store.storeCd;
       if (!storeCd) {
-        this.showAlert('', '스토어 정보보가 없습니다.');
+        this.showAlert('', '스토어 정보가 없습니다.');
         return;
       }
       this.getApi('/branch', {
