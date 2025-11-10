@@ -116,8 +116,8 @@ export default {
     },
     fetchBranchTypeList() {
       api.get(
-          '/comm-cd/detail',
-          {commCd: '0003'},
+          '/common-codes/0003/details',
+          null,
           this.handleBranchTypeListSuccess,
           this.handleBranchTypeListFail
       );
@@ -129,7 +129,7 @@ export default {
       console.error('지점 타입 목록 불러오기 실패', err);
     },
     getCountryCount() {
-      this.getApi('/store/offline/countries/count', {offlineStoreType: this.offlineStoreType}, this.getCountryCountSuccess, this.getCountryCountFail)
+      this.getApi('/stores/offline/countries/count', {offlineStoreType: this.offlineStoreType}, this.getCountryCountSuccess, this.getCountryCountFail)
     },
     getCountryCountSuccess(res) {
       this.countryList = res.data;
@@ -143,7 +143,7 @@ export default {
       this.countryList = [];
     },
     getBranches(cntryCd) {
-      this.getApi('/store/offline/branches', {
+      this.getApi('/stores/offline/branches', {
         cntryCd: cntryCd,
         offlineStoreType: this.offlineStoreType
       }, this.getBranchesSuccess, this.getBranchesFail)

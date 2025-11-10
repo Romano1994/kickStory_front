@@ -61,10 +61,10 @@ export default {
 
       // 00030002일 때는 브랜드 등록 API 호출
       if (this.store.offlineStoreTypeCd === '00030002') {
-        this.postApi('/brand/registration', this.brand, this.handleRegisterSuccess, this.handleRegisterFail);
+        this.postApi('/brands', this.brand, this.handleRegisterSuccess, this.handleRegisterFail);
       } else {
         // 다른 유형일 때는 스토어 등록 API 호출
-        this.postApi('/store/offline/registration', this.store, this.handleRegisterSuccess, this.handleRegisterFail);
+        this.postApi('/stores/offline', this.store, this.handleRegisterSuccess, this.handleRegisterFail);
       }
     },
     validateStoreData() {
@@ -170,8 +170,8 @@ export default {
     },
     fetchStoreTypes() {
       this.getApi(
-        "/comm-cd/detail",
-        { commCd: "0003" },
+        "/common-codes/0003/details",
+        null,
         this.handleStoreTypesSuccess,
         this.handleStoreTypesFail
       );
@@ -205,7 +205,7 @@ export default {
     },
     // 브랜드 관련 메서드 추가
     fetchBrandTypes() {
-      this.getApi('/comm-cd/detail', { commCd: '0002' }, this.handleBrandTypesSuccess, this.handleBrandTypesFail);
+      this.getApi('/common-codes/0002/details', null, this.handleBrandTypesSuccess, this.handleBrandTypesFail);
     },
     handleBrandTypesSuccess(res) {
       this.brandTypes = res.data;

@@ -107,7 +107,7 @@ export default {
           this.hasSearchedStore = true;
           this.storeEngNm = "";
           this.getApi(
-              "/store/offline",
+              "/stores/offline",
               {name: this.storeKorNm, offlineStoreTypeCd: this.offlineStoreTypeCd},
               this.storeSearchSuccess,
               this.storeSearchFail
@@ -136,7 +136,7 @@ export default {
     },
     srchCntryList() {
       this.getApi(
-          "/store/country/names",
+          "/stores/country/names",
           {cntryKorNm: this.cntry},
           this.srchCntrySucc,
           this.srchCntryFail
@@ -166,7 +166,7 @@ export default {
       this.addressSearchTimeout = setTimeout(() => {
         if (this.place.trim()) {
           this.getApi(
-              `/store/address/${this.place}`,
+              `/stores/address/${this.place}`,
               null,
               this.searchAddressSuccess,
               this.searchAddressFail
@@ -233,7 +233,7 @@ export default {
     searchUsualBrands() {
       if (this.usualBrandSearch.trim()) {
         this.getApi(
-            "/brand",
+            "/brands",
             {name: this.usualBrandSearch},
             this.searchUsualBrandsSuccess,
             this.searchUsualBrandsFail
@@ -297,7 +297,7 @@ export default {
       if (this.selectedBrandNmKor.trim()) {
         this.hasSearchedBrand = true;
         this.getApi(
-            "/brand",
+            "/brands",
             {name: this.selectedBrandNmKor},
             this.searchBrandsForShopSuccess,
             this.searchBrandsForShopFail
@@ -425,7 +425,7 @@ export default {
       }
 
       this.postApi(
-          "/store/offline-branch/registration",
+          "/stores/offline-branches",
           branchData,
           this.registerSuccess,
           this.registerFail
@@ -524,8 +524,8 @@ export default {
     },
     fetchOfflineStoreTypeList() {
       this.getApi(
-          "/comm-cd/detail",
-          {commCd: "0003"},
+          "/common-codes/0003/details",
+          null,
           this.handleOfflineStoreTypeListSuccess,
           this.handleOfflineStoreTypeListFail
       );

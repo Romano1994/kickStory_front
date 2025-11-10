@@ -44,7 +44,7 @@ export default {
         return;
       }
 
-      this.postApi('/brand/registration', this.brand, this.handleRegisterSuccess, this.handleRegisterFail);
+      this.postApi('/brands', this.brand, this.handleRegisterSuccess, this.handleRegisterFail);
     },
     handleRegisterSuccess(res) {
       this.showSuccessModal = true;
@@ -94,7 +94,7 @@ export default {
       }
     },
     fetchBrandTypes() {
-      this.getApi('/comm-cd/detail', {commCd: '0002'}, this.handleBrandTypesSuccess, this.handleBrandTypesFail);
+      this.getApi('/common-codes/0002/details', null, this.handleBrandTypesSuccess, this.handleBrandTypesFail);
     },
     handleBrandTypesSuccess(res) {
       this.brandTypes = res.data;

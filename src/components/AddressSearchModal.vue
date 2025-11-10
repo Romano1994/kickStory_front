@@ -15,7 +15,7 @@ export default {
     searchAddress() {
       if (this.searchKeyword.trim()) {
         this.hasSearched = true
-        this.getApi(`/store/address/${this.searchKeyword}`, null, this.searchAddressSuccess, this.searchAddressFail)
+        this.getApi(`/stores/address/${this.searchKeyword}`, null, this.searchAddressSuccess, this.searchAddressFail)
       } else {
         this.addressList = []
         this.hasSearched = false

@@ -445,8 +445,8 @@ export default {
     },
     fetchBranchTypeList() {
       api.get(
-          '/comm-cd/detail',
-          {commCd: '0003'},
+          '/common-codes/0003/details',
+          null,
           this.handleBranchTypeListSuccess,
           this.handleBranchTypeListFail
       );
@@ -458,7 +458,7 @@ export default {
       console.error('지점 타입 목록 불러오기 실패', err);
     },
     getCountryCount() {
-      this.getApi('/store/offline/countries/count', {offlineStoreType: this.offlineStoreType}, this.getCountryCountSuccess, this.getCountryCountFail)
+      this.getApi('/stores/offline/countries/count', {offlineStoreType: this.offlineStoreType}, this.getCountryCountSuccess, this.getCountryCountFail)
     },
     getCountryCountSuccess(res) {
       this.countryList = res.data;
@@ -477,7 +477,7 @@ export default {
       this.countryList = [];
     },
     getBranches(cntryCd) {
-      this.getApi('/store/offline/branches', {
+      this.getApi('/stores/offline/branches', {
         cntryCd: cntryCd,
         offlineStoreType: this.offlineStoreType
       }, this.getBranchesSuccess, this.getBranchesFail)
@@ -569,8 +569,8 @@ export default {
         return;
       }
       let coords = null;
-      let url = null;
-      let storeCds = this.selectedStores.map(store => store.storeCd).join(",");
+      let navigationParams = {};
+      let storeCds = this.selectedStores.map(store => store.storeCd);
 
       if (this.useCurrentLocation) {
         coords = this.currentLocation.lon + ',' + this.currentLocation.lat + ';' + this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
@@ -578,22 +578,33 @@ export default {
         coords = this.selectedStores.map(store => `${store.lon},${store.lat}`).join(';');
       }
 
+      // 공통 파라미터 설정
+      navigationParams.selectedType = this.selectedType;
+      navigationParams.coords = coords;
+      navigationParams.storeCds = storeCds;
+      navigationParams.overview = 'full';
+      navigationParams.geometries = 'polyline';
 
       if (this.selectedType === 'sequential') {
         // 순차 검색: 선택된 순서대로 방문
-        //url = `https://router.project-osrm.org/route/v1/foot/${coords}?overview=full&geometries=polyline`;
-        url = `selectedType=${this.selectedType}&coords=${coords}&storeCds=${storeCds}&overview=full&geometries=polyline`;
+        // 추가 파라미터 없음
       } else if (this.selectedType === 'optimal') {
         // 최적경로: 가장 효율적인 순서로 방문
-        // url = `https://router.project-osrm.org/trip/v1/foot/${coords}?roundtrip=false&source=first&destination=any&overview=full&geometries=polyline`;
-        url = `selectedType=${this.selectedType}&coords=${coords}&storeCds=${storeCds}&roundtrip=false&overview=full&geometries=polyline`;
+        navigationParams.roundtrip = 'false';
+        navigationParams.source = 'first';
+        navigationParams.destination = 'any';
       } else {
         // 도착지 고정: 마지막 스토어를 목적지로 고정
-        //url = `https://router.project-osrm.org/trip/v1/foot/${coords}?roundtrip=false&source=first&destination=last&overview=full&geometries=polyline`;
-        url = `selectedType=${this.selectedType}&coords=${coords}&storeCds=${storeCds}&roundtrip=false&source=first&destination=last&overview=full&geometries=polyline`;
+        navigationParams.roundtrip = 'false';
+        navigationParams.source = 'first';
+        navigationParams.destination = 'last';
       }
 
-      this.getApi("/navigation?" + url, null, this.findRouteSuccess, this.findRouteFail)
+      // navigationParams를 인스턴스 변수로 저장 (콜백에서 사용하기 위해)
+      this._navigationParams = navigationParams;
+
+      // 1. 먼저 /navigation/history POST 요청
+      api.post('/navigation/history', navigationParams, this.saveNavigationHistorySuccess, this.saveNavigationHistoryFail);
 
       // try {
       //   const res = await fetch(url);
@@ -678,6 +689,15 @@ export default {
       const serverMessage = err && err.response && err.response.data && (err.response.data.message || err.response.data.msg || err.response.data.error || err.response.data.statusMessage);
       const fallback = err && (err.message || '경로를 찾는 중 오류가 발생하였습니다.');
       this.showAlert('경로 오류', serverMessage || fallback);
+    },
+    saveNavigationHistorySuccess() {
+      // 히스토리 저장 성공 후 /navigation GET 요청 호출
+      this.getApi('/navigation', this._navigationParams, this.findRouteSuccess, this.findRouteFail);
+    },
+    saveNavigationHistoryFail(err) {
+      // 히스토리 저장 실패해도 경로 찾기는 계속 진행
+      console.warn('Navigation history save failed:', err);
+      this.getApi('/navigation', this._navigationParams, this.findRouteSuccess, this.findRouteFail);
     },
     decodePolyline(str, precision = 5) {
       let index = 0, lat = 0, lng = 0, coordinates = [], shift = 0, result = 0, byte = null;
